@@ -1,0 +1,156 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "painting",
+ "default_task_id": "painting/v1/wall/roll-strip/seed-0",
+ "description": "Apply paint in a US bedroom being repainted (3.66 x 3.35 m, 8 ft ceiling; primed drywall work wall with a window and casing, baseboard, duplex outlet and a cast-iron radiator) with a Franka Mobile FR3 Duo (holonomic TMR base, Spine lift, two FR3 arms with Franka Hands): roll and cut in interior latex with a 9 in roller (Wooster R404 tray), a 2.5 in angled sash brush and a 2 in dog-leg long-reach brush for behind the radiator (cut pail); paint fluid acrylic on watercolour paper with a round brush at a folding table; spray aerosol enamel through a stencil or clear-coat a photo print in a spray box, pressing the button with a fingertip. Paint is a physical field: yield-stress thin films that flow, level, sag, dry, soak into porous surfaces and lap; tools carry paint in nap and bristles and transfer it only by contact.",
+ "selectors": [
+  "preset",
+  "task",
+  "seed",
+  "contract"
+ ],
+ "cli_task_selector": "task",
+ "selector_choices": {
+  "preset": [
+   "wall",
+   "craft",
+   "spray"
+  ],
+  "task": [
+   "load-roller",
+   "roll-strip",
+   "cut-in-ceiling",
+   "cut-in-trim",
+   "behind-radiator",
+   "touch-up",
+   "fill-circle",
+   "brush-stroke",
+   "swatch-card",
+   "spray-stencil",
+   "clear-coat"
+  ],
+  "contract": [
+   "checks-v1",
+   "painting-tasks-v1",
+   "progress-v1"
+  ]
+ },
+ "resolver": "painting.variants:task_resolve",
+ "count": 11,
+ "count_scope": "eleven named tasks in three presets: wall (roll-strip, load-roller, cut-in-ceiling, cut-in-trim, behind-radiator, touch-up), craft (fill-circle, brush-stroke, swatch-card), spray (spray-stencil, clear-coat); seeds vary paint and old wall colour, tray fill, tool placement, room climate (drying rate) and spackle patches",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "split_note": "Frozen by hash of (task, seed) over seeds 0..999 of every task (painting/variations.json); seeds 1000..9999 resolve with split null.",
+ "evaluator": {
+  "available": true,
+  "source": "painting/task.py",
+  "scope": "World state only, with a settle rule: the film fields are advanced alone until set (sag, levelling, drying), then hide (dE*ab <= 1 to the paint's own colour over the old one), runs, lap marks, appearance uniformity (dE*ab), paint on protected trim/ceiling/plate/radiator, stencil edge sharpness, coat thickness, overspray and tool placement are measured. No autonomous-solution claim. The opt-in eight-task selections use continuous progress (painting/scoring.py) and corrected end-state checks (painting/task.py); every evaluation reports its contract. The behind-radiator contract (progress-v1) is unchanged."
+ },
+ "qualification": "Component-qualified with assisted evidence: film benches against Orchard/Hester/Eastman/Cobb, roller, brush and aerosol benches with a phantom mount, robot-held tool demonstrations by a scripted operator through the robot interface; phantom forces where labelled.",
+ "contract_selection": "Bare selections keep their original instructions, IDs and scores. checks-v1 selects that legacy score for every task except behind-radiator. The seven revised tasks opt into painting-tasks-v1; behind-radiator only accepts its own, unchanged progress-v1 contract.",
+ "task_set": {
+  "tasks": [
+   {
+    "selection": {
+     "preset": "wall",
+     "task": "load-roller",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/wall/load-roller/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "entry",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "craft",
+     "task": "swatch-card",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/craft/swatch-card/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "entry",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "wall",
+     "task": "roll-strip",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/wall/roll-strip/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "medium",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "spray",
+     "task": "clear-coat",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/spray/clear-coat/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "medium",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "wall",
+     "task": "cut-in-trim",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/wall/cut-in-trim/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "medium",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "spray",
+     "task": "spray-stencil",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/spray/spray-stencil/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "hard",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "craft",
+     "task": "brush-stroke",
+     "seed": 0,
+     "contract": "painting-tasks-v1"
+    },
+    "task_id": "painting/v1/craft/brush-stroke/painting-tasks-v1/seed-0",
+    "task_contract": "painting-tasks-v1",
+    "difficulty": "hard",
+    "existing": true
+   },
+   {
+    "selection": {
+     "preset": "wall",
+     "task": "behind-radiator",
+     "seed": 0
+    },
+    "task_id": "painting/v1/wall/behind-radiator/seed-0",
+    "task_contract": "progress-v1",
+    "difficulty": "hardest",
+    "existing": true
+   }
+  ],
+  "score_rule": "1 on success, otherwise 0.9 x continuous progress; zero at the untouched start. Formulas: painting/scoring.py.",
+  "swaps": [],
+  "qualification": "Checked in code and with stubbed states only. The revised contract is not yet run with the simulator or rendered. Four selections have no complete assisted episode. None of the eight tasks is shown to be physically impossible, so all eight are kept."
+ }
+}

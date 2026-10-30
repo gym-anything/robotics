@@ -1,0 +1,13 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "forklift-g1",
+  "description": "Unitree G1 (29 body joints, two Dex3-1 hands), floating, seated by contact on the forklift's suspension seat and held by its weight, the cushion's friction, its posture and the lap belt (forklift/operator.py)",
+  "instances": {
+    "g1": {
+      "model": "g1@1",
+      "mount": "operator_seat",
+      "controller_profile": "forklift"
+    }
+  },
+  "attachments": {}
+}

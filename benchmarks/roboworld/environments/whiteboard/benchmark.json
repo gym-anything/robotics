@@ -1,0 +1,89 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "whiteboard",
+  "default_task_id": null,
+  "description": "Write or draw the supplied color-aware reference with physical markers.",
+  "selectors": [
+    "variation_id",
+    "split",
+    "kind",
+    "selection_seed",
+    "task",
+    "contract"
+  ],
+  "resolver": "whiteboard.task_set.catalogue:resolve",
+  "count": 10000,
+  "count_scope": "10,000 native variations and seven fixed task presets",
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "split_note": "Native hash-derived whiteboard-classroom-v1 splits; unchanged.",
+  "evaluator": {
+    "available": true,
+    "source": "whiteboard/tasks.py (native); whiteboard/task_set/verifier.py (task presets)",
+    "scope": "Environment-owned task success; not physical qualification."
+  },
+  "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
+  "appended_task_count": 7,
+  "task_set": {
+    "tasks": [
+      "erase-board",
+      "write-text",
+      "write-in-colour",
+      "erase-except-boxed",
+      "draw-table",
+      "recap-and-tidy",
+      "correct-misspelling",
+      "bridge"
+    ],
+    "selections": [
+      {
+        "task": "erase-board",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "task": "write-text",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "task": "write-in-colour",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "task": "erase-except-boxed",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "task": "draw-table",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "task": "recap-and-tidy",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "task": "correct-misspelling",
+        "contract": "whiteboard-tasks-v1"
+      },
+      {
+        "variation_id": 0
+      }
+    ],
+    "contracts": {
+      "erase-board": "whiteboard-tasks-v1",
+      "write-text": "whiteboard-tasks-v1",
+      "write-in-colour": "whiteboard-tasks-v1",
+      "erase-except-boxed": "whiteboard-tasks-v1",
+      "draw-table": "whiteboard-tasks-v1/draw-table",
+      "recap-and-tidy": "whiteboard-tasks-v1",
+      "correct-misspelling": "whiteboard-tasks-v1",
+      "bridge": "bridge-copy-v1"
+    },
+    "score_rule": "1 on success, otherwise 0.9 x continuous progress; untouched starts score zero",
+    "legacy": "Omitted selection and all native variation/split/kind/selection_seed requests use the native resolver. Named presets require their explicit contract.",
+    "launch": "Resolve with GAR tasks and launch its LaunchSpec/TaskSpec (including saved manifests and managed sessions), or construct NewtonWhiteboardTaskSetBackend directly. The registry factory creates native whiteboard sessions only.",
+    "qualification": "Checked by constructed-state unit tests only; the seven presets have not been run with the simulator or rendered."
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "split": "train",
+  "description": "Training tasks from the RoboWorld simulations.",
+  "tasks": [
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "parcel",
+        "task": "smooth-corner",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "stockroom",
+        "task": "hold-scanner"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "trout",
+        "task": "take-knife",
+        "seed": 0,
+        "contract": "filleting-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "load",
+        "seed": 0,
+        "contract": "sewing-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "set-up-gun"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "start-and-park",
+        "seed": 0,
+        "contract": "forklift-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "push-in-chairs",
+        "seed": 0,
+        "contract": "classroom-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "wall",
+        "task": "load-roller",
+        "seed": 0,
+        "contract": "painting-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "pot-sink",
+        "task": "drain-wash-compartment",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "penetrate-marked",
+        "seed": 0,
+        "contract": "soil-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "service",
+        "task": "carry-glass",
+        "seed": 0,
+        "contract": "wine-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "therapy",
+        "task": "finger-tap"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "tool-sealant",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks/progress-v1"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "bench",
+        "task": "take-drill",
+        "seed": 0,
+        "contract": "drilling-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "home",
+        "task": "lift-lid",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "bake",
+        "task": "sauce-blend",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "injection",
+        "task": "sharps-away",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "single_can",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "front-m4",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "pen-on-notebook"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "swing-open"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "start-stirring",
+        "variation_id": 0
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "towel",
+        "task": "spread_flat",
+        "contract": "laundry-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "erase-board",
+        "contract": "whiteboard-tasks-v1"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "clearance"
+      }
+    }
+  ]
+}

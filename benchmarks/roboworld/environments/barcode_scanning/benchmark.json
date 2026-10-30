@@ -1,0 +1,60 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "barcode-scanning",
+  "default_task_id": "barcode-scanning/v1/stockroom/count-by-scanning/seed-0",
+  "description": "Operate a physically simulated handheld 1D/2D barcode imager (DS2278 class: spring-return trigger with microswitch, presentation cradle with seat sensor, thin-lens imager with its own red LEDs and amber aim line, monochrome sensor, zxing-cpp decoder) to record stock: cycle counts at stockroom shelving, checkout presentation at a counter, library check-in. Reads come only from decoded rendered frames.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed"
+  ],
+  "resolver": "barcode_scanning.variants:task_resolve",
+  "count": 8,
+  "count_scope": "eight named tasks (stockroom: count-by-scanning, scan-location, count-key-quantity, hold-scanner; counter: checkout-present, checkout-bulky, checkout-counter; library: library-checkin); seeds vary slot, stock mix, poses, basket or counter contents and pack contents",
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "split_note": "Frozen by hash of (task, seed) over seeds 0..999 of every task: test 777, train 6378, validation 845 (barcode_scanning/variations.json, sha256 476b8085a80887d5); seeds 1000..9999 resolve with split null.",
+  "evaluator": {
+    "available": true,
+    "source": "barcode_scanning/task.py",
+    "scope": "Host-app record against ground truth, ray attribution of every decode to the printed label that produced it, stock pose (in slot, upright, faced), scanner seated; score 1 on success, else 0.9 x continuous progress, with the task's scoring contract in the evaluation (task_set.contracts). No autonomous-solution claim."
+  },
+  "qualification": "Component-qualified with assisted evidence: trigger, keypad, cradle seat and book mechanics by phantom forces; robot take/carry/hold/reseat of the scanner by scripted joint targets; imaging chain on decode-range and optics benches (with the shipped sub-pixel front end the 1-D far limits are 0.63-1.15 of the datasheet, UPC-A 1.02; the 5 mil codes read in two bands; skew to +-50-60 deg against +-65; not every roll reads); end-to-end reads with a phantom trigger finger or a phantom item mount, scored by the unmodified evaluator (positive and negative controls), with labelled phantom hand-overs where the Franka Hand has no collision-free grasp; in checkout-counter the robot takes every item itself. One wrong read in 618 task-frame reads of the recorded runs (a checksum-valid UPC-E), far above the published rates of real scanners; a misread fails the task's no_misreads check. The G1's Dex3 index finger pulls the trigger itself (from a phantom setup); a Franka Hand pulling it for the other hand does not work with this scanner; a read with the trigger pulled by a robot hand from a robot-taken grip is not demonstrated. The two-arm FR3 has run every task; the two-arm Panda and the one-arm FR3 ran scan-location. No policy solves a task.",
+  "task_set": {
+    "tasks": [
+      "hold-scanner",
+      "scan-location",
+      "checkout-counter",
+      "library-checkin",
+      "checkout-present",
+      "count-key-quantity",
+      "checkout-bulky",
+      "count-by-scanning"
+    ],
+    "why": "The eight tasks, ordered entry to hardest: tool take, steady hold and reseat; one handheld aimed read; hands-free presentation and bagging from an open counter; the library's own label behind a hinged cover; the same checkout from a cluttered basket; keypad data entry and counting by eye; a heavy case scanned in place by hand; every unit turned, scanned once and faced back. Each has an assisted end-to-end run on record and none is blocked by a physical impossibility.",
+    "score_rule": "1 if every check passes, else 0.9 x progress; progress in [0, 1], 0 at an untouched start, independent of order, hand or route (count-by-scanning: its own contract; the other seven: barcode_scanning/scoring.py)",
+    "contracts": {
+      "count-by-scanning": "count-by-scanning-v1",
+      "hold-scanner": "hold-scanner-v1",
+      "scan-location": "scan-location-v1",
+      "count-key-quantity": "count-key-quantity-v1",
+      "checkout-present": "checkout-present-v1",
+      "checkout-bulky": "checkout-bulky-v1",
+      "checkout-counter": "checkout-counter-v1",
+      "library-checkin": "library-checkin-v1"
+    },
+    "progress": {
+      "hold-scanner": "min(1, steady hold / 5 s) x (0.7 + 0.3 x scanner back) x (0.5 if anything was read) - 0.5 x free bodies on the floor",
+      "scan-location": "target label read correctly and still the recorded location x (0.7 + 0.3 x scanner back) - 0.25 x reads of another slot's label - 0.5 x free bodies on the floor",
+      "checkout-counter": "(sum over items of rung x (0.6 + 0.4 x bagged) - one per other read (repeat, inner unit, misread, no item's label) - 0.5 x items bagged unpaid - 0.5 x free bodies on the floor) / N x (0.9 unless the scanner is back)",
+      "library-checkin": "(sum over books of checked in x (0.6 + 0.4 x in the bin) - one per other read (ISBN, misread, repeat, no book's library label) - 0.5 x free bodies on the floor) / N x (0.9 unless the scanner is back)",
+      "checkout-present": "as checkout-counter",
+      "count-key-quantity": "(sum over products of 0.3 x read under the slot + 0.7 x max(0, 1 - |keyed - truth| / truth) - one per quantity keyed under another location, for a product not in the slot or for a misread - 0.5 x disturbed units, cases, lanes and floor bodies) / products x (0.9 unless the scanner is back)",
+      "checkout-bulky": "as checkout-counter over the basket items plus the case, whose credit is read x (1 up to a 10 mm rise, falling linearly to 0 at 50 mm), divided by N + 1",
+      "count-by-scanning": "max(0, hits - errors - 0.5 x disturbed) / N x (0.9 unless the scanner is back)"
+    }
+  }
+}

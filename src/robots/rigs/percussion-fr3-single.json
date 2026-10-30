@@ -1,0 +1,18 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "percussion-fr3-single",
+  "instances": {
+    "right": {
+      "model": "fr3@1",
+      "mount": "right_arm_mount",
+      "controller_profile": "barcode_scanning"
+    }
+  },
+  "attachments": {
+    "right_hand": {
+      "model": "franka-hand@1",
+      "parent": "right/flange",
+      "mount_profile": "franka_native"
+    }
+  }
+}

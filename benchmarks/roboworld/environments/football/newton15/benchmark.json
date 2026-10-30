@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "football",
+  "default_task_id": "football/goal",
+  "description": "A footballer's ball work on a 34 x 24 m training sector of a natural-grass pitch with a fixed full-size goal and cord net: a free-floating Unitree G1/Dex3 commanded only by named joint targets (no balance or kick controller), a regulation ball with constitutive pitch, net and right-shoe contact. Eight tasks: the penalty (goal) and seven drills (clearance, pass-gate, trap, pass-square, corner-target, save, free-kick).",
+  "selectors": ["task", "seed"],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "task": ["goal", "clearance", "pass-gate", "trap", "pass-square", "corner-target", "save", "free-kick"]
+  },
+  "resolver": "football.newton15.variants:task_resolve",
+  "count": 8,
+  "count_scope": "eight named tasks (goal, the default; clearance, pass-gate, trap, pass-square, corner-target, save, free-kick); seed 0 of each is its nominal configuration. clearance, pass-gate, trap, pass-square and save accept seeds 1..999 drawing the spec's proposed ranges (ball lateral position; gate angle 25-45 deg; pass speed 4.0-4.6 m/s and aim; square distance 5.5-7.5 m and angle 15-30 deg; shot aim y 0.6-0.9 m, z 0.2-0.8 m); those seeds are proposals, not qualified. goal, corner-target and free-kick have seed 0 only. An empty selection is goal with no backend options.",
+  "splits": [],
+  "split_note": "No train/test split exists in this baseline; none invented.",
+  "evaluator": {
+    "available": true,
+    "source": "football/newton15/task.py (goal, free-kick); football/newton15/drills.py (clearance, pass-gate, trap, pass-square, corner-target, save); football/football_task.py",
+    "scope": "Environment-owned task success; not physical qualification. Goal (rules in task.py): the whole ball over the back edge of the drawn goal line, having passed the frame between the post axes and under the crossbar axis, with the robot's last touch a leg touch (hip links, i.e. hip-joint housing and thigh, knee/shin, ankle or foot; for success and progress 'kick' is read as leg play, deliberately wider than IFAB's foot/ankle definition, so a leg carry into the goal is accepted) and no arm or hand touch (upper arm from shoulder_yaw_link down; handball ends the attempt; the shoulder-joint housings count as trunk); the first whole-ball crossing of the line is final. Score: 1 on a goal, else 0.9 x progress, progress = how much nearer the goal window the ball is than at the start, frozen when the attempt ends; failures are credited by where the ball is at the end or when read (contract football-goal-progress-v1). free-kick uses that verifier unchanged from 24 m with a physical four-mannequin wall. The other drills (drills.py, contract football-drills-v1) keep goal's score rule (1 on success, else 0.9 x progress, progress 0 at the untouched start), link groups and kick/handball rule (trap also accepts a trunk touch; save accepts every link): clearance, the whole ball past the penalty-area line's outer edge; pass-gate, the ball along the ground through a 2 m gate of two discs; trap, a rolling pass held at rest within 1 m of the feet for 1 s with the robot upright; pass-square, the ball at rest inside a 2 x 2 m square for 1 s; corner-target, a goal through one of the two bottom-corner openings of a rigid target sheet; save, a machine shot resolved without a goal. Thresholds and progress formulas: drills.py. No autonomous-solution claim."
+  },
+  "qualification": "Defined task catalogue; does not imply every variation passed physical qualification. Only goal has been checked in full; the seven drills have neither a robot-free reference fixture nor a measured idle baseline yet."
+}

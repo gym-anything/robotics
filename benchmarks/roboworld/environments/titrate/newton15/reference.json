@@ -1,0 +1,28 @@
+{
+  "config": {"device": "cuda:0", "robot": true, "seed": 0},
+  "liquid_numerics": {
+    "spacing_m": 0.000625,
+    "dt_s": 0.000125,
+    "pressure_kernel": "cubic",
+    "surface_model": "interface_energy",
+    "pressure_graph": true,
+    "neighbor_cache": true,
+    "warm_start": true,
+    "warm_start_fraction": 0.5,
+    "accelerated_pressure": true,
+    "density_tolerance": 0.001,
+    "divergence_tolerance": 0.001,
+    "max_iterations": 1000,
+    "wall_clearance_fraction": 0.5
+  },
+  "reagents": {
+    "aliquot_ml": 10.0,
+    "dilution_ml": 15.0,
+    "burette_ml": 20.0,
+    "acid_bottle_ml": 20.0,
+    "base_bottle_ml": 20.0,
+    "acid_molar": 0.1,
+    "base_molar": 0.1,
+    "indicator_molar": 0.00006283
+  }
+}

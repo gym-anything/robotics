@@ -1,0 +1,137 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "ingredient-mixing",
+ "default_task_id": "ingredient-mixing/v1/bake/muffin-fold/seed-0",
+ "description": "Mix food ingredients at a teaching-kitchen station with a physically simulated mixture: a GPU material-point continuum that carries the mass of every ingredient (flour, sugar, leavening, milk, egg, oil, starch, finished pastes), with powders that pile and wet, lumps that form and break under shear, shear-thinning batters, yield-stress sauces, a cold-setting pudding and a starch sauce that thickens and can catch on a heated pan. Two FR3 arms with Franka Hands take a whisk, spatula, spoon or stirrer from a crock, hold the bowl or the pan's handle, work a hand mixer's slide switch or the hob's knob. Outcomes are measured from the material: uniformity at portion scale, dry powder, lumps, mixing work, temperature, burnt-on area, spills.",
+ "selectors": [
+  "preset",
+  "task",
+  "seed",
+  "variant",
+  "contract"
+ ],
+ "cli_task_selector": "task",
+ "selector_choices": {
+  "preset": [
+   "bake",
+   "hob"
+  ],
+  "task": [
+   "muffin-fold",
+   "dry-whisk",
+   "pancake-whisk",
+   "pudding-whisk",
+   "cake-mixer",
+   "sauce-blend",
+   "stir-sauce",
+   "reheat-porridge"
+  ],
+  "variant": [
+   "plain",
+   "mat",
+   "sleeves",
+   "spelt",
+   "honey",
+   "pet-meal"
+  ],
+  "contract": [
+   "v1",
+   "ingredient-mixing-tasks-v1"
+  ]
+ },
+ "resolver": "ingredient_mixing.variants:task_resolve",
+ "count": 25,
+ "count_scope": "25 task/variant pairs: 8 named tasks (bake: muffin-fold, dry-whisk, pancake-whisk, pudding-whisk, cake-mixer, sauce-blend; hob: stir-sauce, reheat-porridge) and 17 variants of them (--select variant=NAME; mat: the vessel stands on a silicone mat (friction 0.9) (muffin-fold, dry-whisk, pancake-whisk, pudding-whisk, cake-mixer, sauce-blend); sleeves: the hand tools carry square-section non-slip sleeves on their handles (flat faces for a parallel hand) (every task); spelt: pancake-whisk with the whole-spelt batter of the cited table (K 6.9 Pa s^n, n 0.33) (pancake-whisk); honey: sauce-blend with honey, mayonnaise and mustard (sauce-blend); pet-meal: sauce-blend as a pet's meal: canned food with a powdered supplement (sauce-blend); plain: the task as listed); seeds vary batch size, vessel and cart placement, mat, milk temperature, hob level, tool order and heap shapes",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "split_note": "Frozen by SHA-256 of (task, seed) over seeds 0..999 of every task (80/10/10); a variant has the split of its task and seed; seeds 1000..9999 resolve with split null.",
+ "evaluator": {
+  "available": true,
+  "source": "ingredient_mixing/scoring.py",
+  "scope": "From the material points and rigid state: coefficient of variation of a named ingredient over portion-sized cells, mass of ingredient still dry, mass in lumps, mixing work absorbed by wetted flour, cooked starch fraction and temperature, hottest and coldest portion, burnt-on area of the pan bottom, mass outside the vessel, vessel pose, appliance state, tools left in the vessel. No autonomous-solution claim.",
+  "legacy_source": "ingredient_mixing/task.py"
+ },
+ "qualification": "Component-qualified with assisted evidence: the mixture's solver against closed-form flows, each material law on a bench, tools and vessel coupling, robot demonstrations with scripted joint targets (some with labelled phantom assistance). The tasks themselves are not claimed solved by a policy.",
+ "task_set": {
+  "selections": [
+   {
+    "preset": "bake",
+    "task": "sauce-blend",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "bake",
+    "task": "muffin-fold",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "bake",
+    "task": "dry-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "bake",
+    "task": "pudding-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "bake",
+    "task": "pancake-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "bake",
+    "task": "cake-mixer",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "hob",
+    "task": "reheat-porridge",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+   },
+   {
+    "preset": "hob",
+    "task": "stir-sauce",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "v1"
+   }
+  ],
+  "difficulty": {
+   "sauce-blend": "entry",
+   "muffin-fold": "entry",
+   "dry-whisk": "medium",
+   "pudding-whisk": "medium",
+   "pancake-whisk": "medium",
+   "cake-mixer": "hard",
+   "reheat-porridge": "hard",
+   "stir-sauce": "hardest"
+  },
+  "score_rule": "1 on success, otherwise 0.9 x continuous progress, zero at hand-over. stir-sauce keeps its own cook_progress.",
+  "contracts": {
+   "revised": "ingredient-mixing-tasks-v1",
+   "stir-sauce": "stir-sauce-v1",
+   "legacy": "v1"
+  },
+  "legacy": "Bare selections and contract=v1 keep the existing instructions, criteria and scores. Revised task ids append the contract before the seed.",
+  "swaps": [],
+  "qualification": "Existing props and starts; their component and assisted evidence is in REPORT.pdf sections 11.5-11.6. The seven revised contracts are not yet run with the simulator or render-checked."
+ }
+}

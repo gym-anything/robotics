@@ -1,0 +1,244 @@
+{
+ "files": [
+  {
+   "path": "polyhaven/asphalt_02/asphalt_02_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_diff_2k.jpg",
+   "note": "yard asphalt, cracked (3 m tile); diff map; Poly Haven 'asphalt_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_02/asphalt_02_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_rough_2k.jpg",
+   "note": "yard asphalt, cracked (3 m tile); rough map; Poly Haven 'asphalt_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_02/asphalt_02_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_nor_gl_2k.jpg",
+   "note": "yard asphalt, cracked (3 m tile); nor_gl map; Poly Haven 'asphalt_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_pit_lane/asphalt_pit_lane_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_pit_lane/asphalt_pit_lane_diff_2k.jpg",
+   "note": "fresh asphalt for yard patches (2 m tile); diff map; Poly Haven 'asphalt_pit_lane', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_pit_lane/asphalt_pit_lane_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_pit_lane/asphalt_pit_lane_rough_2k.jpg",
+   "note": "fresh asphalt for yard patches (2 m tile); rough map; Poly Haven 'asphalt_pit_lane', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_pit_lane/asphalt_pit_lane_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_pit_lane/asphalt_pit_lane_nor_gl_2k.jpg",
+   "note": "fresh asphalt for yard patches (2 m tile); nor_gl map; Poly Haven 'asphalt_pit_lane', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_04/asphalt_04_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_04/asphalt_04_diff_2k.jpg",
+   "note": "broomed light-grey paving used as the concrete apron (4 m tile); diff map; Poly Haven 'asphalt_04', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_04/asphalt_04_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_04/asphalt_04_rough_2k.jpg",
+   "note": "broomed light-grey paving used as the concrete apron (4 m tile); rough map; Poly Haven 'asphalt_04', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/asphalt_04/asphalt_04_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_04/asphalt_04_nor_gl_2k.jpg",
+   "note": "broomed light-grey paving used as the concrete apron (4 m tile); nor_gl map; Poly Haven 'asphalt_04', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/dirty_concrete/dirty_concrete_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dirty_concrete/dirty_concrete_diff_2k.jpg",
+   "note": "stained cast concrete: dock face, pit walls, building base (3 m tile); diff map; Poly Haven 'dirty_concrete', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/dirty_concrete/dirty_concrete_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dirty_concrete/dirty_concrete_rough_2k.jpg",
+   "note": "stained cast concrete: dock face, pit walls, building base (3 m tile); rough map; Poly Haven 'dirty_concrete', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/dirty_concrete/dirty_concrete_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dirty_concrete/dirty_concrete_nor_gl_2k.jpg",
+   "note": "stained cast concrete: dock face, pit walls, building base (3 m tile); nor_gl map; Poly Haven 'dirty_concrete', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/painted_concrete_02/painted_concrete_02_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_concrete_02/painted_concrete_02_diff_2k.jpg",
+   "note": "painted concrete: dock wall inside face (4 m tile); diff map; Poly Haven 'painted_concrete_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/painted_concrete_02/painted_concrete_02_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_concrete_02/painted_concrete_02_rough_2k.jpg",
+   "note": "painted concrete: dock wall inside face (4 m tile); rough map; Poly Haven 'painted_concrete_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/painted_concrete_02/painted_concrete_02_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_concrete_02/painted_concrete_02_nor_gl_2k.jpg",
+   "note": "painted concrete: dock wall inside face (4 m tile); nor_gl map; Poly Haven 'painted_concrete_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/plywood/plywood_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/plywood/plywood_diff_2k.jpg",
+   "note": "trailer lining and door inner faces (0.5 m tile); diff map; Poly Haven 'plywood', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/plywood/plywood_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/plywood/plywood_rough_2k.jpg",
+   "note": "trailer lining and door inner faces (0.5 m tile); rough map; Poly Haven 'plywood', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/plywood/plywood_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/plywood/plywood_nor_gl_2k.jpg",
+   "note": "trailer lining and door inner faces (0.5 m tile); nor_gl map; Poly Haven 'plywood', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/oak_wood_planks/oak_wood_planks_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/oak_wood_planks/oak_wood_planks_diff_2k.jpg",
+   "note": "trailer laminated hardwood floor (1.2 m tile); diff map; Poly Haven 'oak_wood_planks', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/oak_wood_planks/oak_wood_planks_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/oak_wood_planks/oak_wood_planks_rough_2k.jpg",
+   "note": "trailer laminated hardwood floor (1.2 m tile); rough map; Poly Haven 'oak_wood_planks', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/oak_wood_planks/oak_wood_planks_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/oak_wood_planks/oak_wood_planks_nor_gl_2k.jpg",
+   "note": "trailer laminated hardwood floor (1.2 m tile); nor_gl map; Poly Haven 'oak_wood_planks', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/gravel_floor_02/gravel_floor_02_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravel_floor_02/gravel_floor_02_diff_2k.jpg",
+   "note": "gravel shoulder outside the yard fence (2 m tile); diff map; Poly Haven 'gravel_floor_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/gravel_floor_02/gravel_floor_02_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravel_floor_02/gravel_floor_02_rough_2k.jpg",
+   "note": "gravel shoulder outside the yard fence (2 m tile); rough map; Poly Haven 'gravel_floor_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/gravel_floor_02/gravel_floor_02_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravel_floor_02/gravel_floor_02_nor_gl_2k.jpg",
+   "note": "gravel shoulder outside the yard fence (2 m tile); nor_gl map; Poly Haven 'gravel_floor_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/leafy_grass/leafy_grass_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_diff_2k.jpg",
+   "note": "grass verge near the yard (2 m tile); diff map; Poly Haven 'leafy_grass', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/leafy_grass/leafy_grass_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_rough_2k.jpg",
+   "note": "grass verge near the yard (2 m tile); rough map; Poly Haven 'leafy_grass', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/leafy_grass/leafy_grass_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_nor_gl_2k.jpg",
+   "note": "grass verge near the yard (2 m tile); nor_gl map; Poly Haven 'leafy_grass', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/aerial_grass_rock/aerial_grass_rock_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_diff_2k.jpg",
+   "note": "distant ground around the yard (15 m tile); diff map; Poly Haven 'aerial_grass_rock', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/aerial_grass_rock/aerial_grass_rock_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_rough_2k.jpg",
+   "note": "distant ground around the yard (15 m tile); rough map; Poly Haven 'aerial_grass_rock', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/aerial_grass_rock/aerial_grass_rock_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_nor_gl_2k.jpg",
+   "note": "distant ground around the yard (15 m tile); nor_gl map; Poly Haven 'aerial_grass_rock', CC0 1.0"
+  },
+  {
+   "path": "ambientcg/DiamondPlate008D_2K-JPG.zip",
+   "url": "https://ambientcg.com/get?file=DiamondPlate008D_2K-JPG.zip",
+   "note": "worn steel tread plate: dock leveler deck and lip; zip of Color/Roughness/NormalGL/Metalness maps (read by forklift.visuals.dockyard); ambientCG 'DiamondPlate008D', CC0 1.0"
+  },
+  {
+   "path": "ambientcg/DiamondPlate004_2K-JPG.zip",
+   "url": "https://ambientcg.com/get?file=DiamondPlate004_2K-JPG.zip",
+   "note": "galvanised tread plate: trailer threshold plate, yard-ramp lip and approach plate; zip of Color/Roughness/NormalGL/Metalness maps (read by forklift.visuals.dockyard); ambientCG 'DiamondPlate004', CC0 1.0"
+  },
+  {
+   "path": "ambientcg/PaintedMetal001_2K-JPG.zip",
+   "url": "https://ambientcg.com/get?file=PaintedMetal001_2K-JPG.zip",
+   "note": "scratched yellow paint: yard ramp frame and curbs, bollards, track guards; zip of Color/Roughness/NormalGL/Metalness maps (read by forklift.visuals.dockyard); ambientCG 'PaintedMetal001', CC0 1.0"
+  },
+  {
+   "path": "ambientcg/Rubber004_2K-JPG.zip",
+   "url": "https://ambientcg.com/get?file=Rubber004_2K-JPG.zip",
+   "note": "rubber: dock bumpers, tyres, mud flaps; zip of Color/Roughness/NormalGL/Metalness maps (read by forklift.visuals.dockyard); ambientCG 'Rubber004', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/aerial_asphalt_01/aerial_asphalt_01_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_asphalt_01/aerial_asphalt_01_diff_2k.jpg",
+   "note": "weathered yard asphalt seen from afar (30 m tile, no visible repeat); diff map; Poly Haven 'aerial_asphalt_01', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/aerial_asphalt_01/aerial_asphalt_01_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_asphalt_01/aerial_asphalt_01_rough_2k.jpg",
+   "note": "weathered yard asphalt seen from afar (30 m tile, no visible repeat); rough map; Poly Haven 'aerial_asphalt_01', CC0 1.0"
+  },
+  {
+   "path": "polyhaven/aerial_asphalt_01/aerial_asphalt_01_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_asphalt_01/aerial_asphalt_01_nor_gl_2k.jpg",
+   "note": "weathered yard asphalt seen from afar (30 m tile, no visible repeat); nor_gl map; Poly Haven 'aerial_asphalt_01', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/searsia_lucida/searsia_lucida_1k.usdc",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/searsia_lucida/searsia_lucida_1k.usdc",
+   "note": "shrubs outside the yard and test-pad fences; Poly Haven model 'searsia_lucida', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/searsia_lucida/textures/searsia_lucida_alpha_1k.png",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/searsia_lucida/searsia_lucida_alpha_1k.png",
+   "note": "shrubs outside the yard and test-pad fences; Poly Haven model 'searsia_lucida', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/searsia_lucida/textures/searsia_lucida_diff_1k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/searsia_lucida/searsia_lucida_diff_1k.jpg",
+   "note": "shrubs outside the yard and test-pad fences; Poly Haven model 'searsia_lucida', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/island_tree_02/island_tree_02_1k.usdc",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/island_tree_02/island_tree_02_1k.usdc",
+   "note": "trees of the yard's and test pad's surroundings; Poly Haven model 'island_tree_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/island_tree_02/textures/island_tree_02_branches_diff_1k.png",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_02/island_tree_02_branches_diff_1k.png",
+   "note": "trees of the yard's and test pad's surroundings; Poly Haven model 'island_tree_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/island_tree_02/textures/island_tree_02_diff_1k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_diff_1k.jpg",
+   "note": "trees of the yard's and test pad's surroundings; Poly Haven model 'island_tree_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/island_tree_02/textures/island_tree_02_leaves_alpha_1k.png",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_02/island_tree_02_leaves_alpha_1k.png",
+   "note": "trees of the yard's and test pad's surroundings; Poly Haven model 'island_tree_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/island_tree_02/textures/island_tree_02_leaves_diff_1k.png",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_02/island_tree_02_leaves_diff_1k.png",
+   "note": "trees of the yard's and test pad's surroundings; Poly Haven model 'island_tree_02', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/wild_rooibos_bush/wild_rooibos_bush_1k.usdc",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/wild_rooibos_bush/wild_rooibos_bush_1k.usdc",
+   "note": "dry bushes scattered on the surrounding ground; Poly Haven model 'wild_rooibos_bush', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/wild_rooibos_bush/textures/wild_rooibos_bush_alpha_1k.png",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/wild_rooibos_bush/wild_rooibos_bush_alpha_1k.png",
+   "note": "dry bushes scattered on the surrounding ground; Poly Haven model 'wild_rooibos_bush', CC0 1.0"
+  },
+  {
+   "path": "polyhaven_models/wild_rooibos_bush/textures/wild_rooibos_bush_diff_1k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wild_rooibos_bush/wild_rooibos_bush_diff_1k.jpg",
+   "note": "dry bushes scattered on the surrounding ground; Poly Haven model 'wild_rooibos_bush', CC0 1.0"
+  }
+ ]
+}

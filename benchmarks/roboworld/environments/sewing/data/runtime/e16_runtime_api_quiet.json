@@ -1,0 +1,1192 @@
+{
+ "probe": "E16 runtime through gar run + HTTP (policy key, the robot's policy cameras, images every action)",
+ "robot": "dual-fr3",
+ "physics_hash": "455e1568e40552d1",
+ "launch_s": 161.5782340648584,
+ "rows": [
+  {
+   "step": "first observation (render worker cold start)",
+   "wall_s": 0.9135820209048688,
+   "sim_s": 0.0,
+   "cameras": [
+    "needle",
+    "operator",
+    "overhead"
+   ],
+   "host": {
+    "loadavg": [
+     2.5009765625,
+     2.763671875,
+     4.25439453125
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "left hand above the stack (machine idle)",
+   "wall_s": 113.15605407999828,
+   "sim_s": 1.0,
+   "host": {
+    "loadavg": [
+     3.0302734375,
+     2.88623046875,
+     4.1181640625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 57,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "left hand resting on the stack (machine idle)",
+   "wall_s": 57.26362715708092,
+   "sim_s": 0.5,
+   "host": {
+    "loadavg": [
+     3.43408203125,
+     3.041015625,
+     4.09130859375
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "machine on, 600 sti/min",
+   "wall_s": 59.37982006277889,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033586654,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 5.0
+   },
+   "host": {
+    "loadavg": [
+     3.48486328125,
+     3.13671875,
+     4.06298828125
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 42,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 0",
+   "wall_s": 59.71702556870878,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033588249,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 10.0
+   },
+   "host": {
+    "loadavg": [
+     3.29541015625,
+     3.1416015625,
+     4.00341796875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 48,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 1",
+   "wall_s": 59.978993146214634,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033589841,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 15.0
+   },
+   "host": {
+    "loadavg": [
+     3.14453125,
+     3.12841796875,
+     3.9443359375
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 48,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 2",
+   "wall_s": 60.50474708015099,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.54491103359144,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 20.0
+   },
+   "host": {
+    "loadavg": [
+     3.4228515625,
+     3.2109375,
+     3.92041015625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 59,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 3",
+   "wall_s": 59.93911279924214,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033580206,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 25.0
+   },
+   "host": {
+    "loadavg": [
+     3.248046875,
+     3.2001953125,
+     3.87158203125
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 67,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 4",
+   "wall_s": 60.64647850114852,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033567594,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 30.0
+   },
+   "host": {
+    "loadavg": [
+     3.24072265625,
+     3.2041015625,
+     3.82470703125
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 1,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 5",
+   "wall_s": 60.859716448932886,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033554982,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 35.0
+   },
+   "host": {
+    "loadavg": [
+     3.7353515625,
+     3.36328125,
+     3.83935546875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 6",
+   "wall_s": 60.764620155096054,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.54491103354237,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 40.0
+   },
+   "host": {
+    "loadavg": [
+     3.357421875,
+     3.32421875,
+     3.79443359375
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 88,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "sewing 7",
+   "wall_s": 61.190863349009305,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 5.544911033529758,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 45.0
+   },
+   "host": {
+    "loadavg": [
+     20.70166015625,
+     9.06689453125,
+     5.77587890625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 90,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.2 s #0",
+   "wall_s": 25.464470906183124,
+   "sim_s": 0.2,
+   "tool": {
+    "shaft_angle_rad": 5.544911033524713,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 47.0
+   },
+   "host": {
+    "loadavg": [
+     14.92138671875,
+     8.6416015625,
+     5.72216796875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 35,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.2 s #1",
+   "wall_s": 25.248516959603876,
+   "sim_s": 0.2,
+   "tool": {
+    "shaft_angle_rad": 5.544911033519668,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 49.0
+   },
+   "host": {
+    "loadavg": [
+     10.9951171875,
+     8.22021484375,
+     5.65966796875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.2 s #2",
+   "wall_s": 25.343959693796933,
+   "sim_s": 0.2,
+   "tool": {
+    "shaft_angle_rad": 5.544911033514623,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 51.0
+   },
+   "host": {
+    "loadavg": [
+     8.26611328125,
+     7.80029296875,
+     5.587890625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 62,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.1 s #0",
+   "wall_s": 13.120811716187745,
+   "sim_s": 0.1,
+   "tool": {
+    "shaft_angle_rad": 5.544911033512101,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 52.0
+   },
+   "host": {
+    "loadavg": [
+     7.09912109375,
+     7.564453125,
+     5.54541015625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.1 s #1",
+   "wall_s": 13.21084822434932,
+   "sim_s": 0.1,
+   "tool": {
+    "shaft_angle_rad": 5.544911033509578,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 53.0
+   },
+   "host": {
+    "loadavg": [
+     6.34423828125,
+     7.373046875,
+     5.51513671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 44,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.1 s #2",
+   "wall_s": 13.286753560882062,
+   "sim_s": 0.1,
+   "tool": {
+    "shaft_angle_rad": 5.544911033507056,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 54.0
+   },
+   "host": {
+    "loadavg": [
+     5.90966796875,
+     7.2451171875,
+     5.4931640625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 54,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.05 s #0",
+   "wall_s": 7.278321865014732,
+   "sim_s": 0.05,
+   "tool": {
+    "shaft_angle_rad": 2.4033183799160014,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 54.0
+   },
+   "host": {
+    "loadavg": [
+     5.5419921875,
+     7.12158203125,
+     5.47119140625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 65,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.05 s #1",
+   "wall_s": 7.041650298051536,
+   "sim_s": 0.05,
+   "tool": {
+    "shaft_angle_rad": 5.544911033504533,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 55.0
+   },
+   "host": {
+    "loadavg": [
+     5.41845703125,
+     7.0693359375,
+     5.462890625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.05 s #2",
+   "wall_s": 7.1931321350857615,
+   "sim_s": 0.05,
+   "tool": {
+    "shaft_angle_rad": 2.403318379913479,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 55.0
+   },
+   "host": {
+    "loadavg": [
+     4.96630859375,
+     6.91796875,
+     5.4306640625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 36,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.02 s #0",
+   "wall_s": 3.4482121341861784,
+   "sim_s": 0.02,
+   "tool": {
+    "shaft_angle_rad": 3.6599554413488917,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 55.0
+   },
+   "host": {
+    "loadavg": [
+     4.96630859375,
+     6.91796875,
+     5.4306640625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 35,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.02 s #1",
+   "wall_s": 3.9246776453219354,
+   "sim_s": 0.02,
+   "tool": {
+    "shaft_angle_rad": 4.9165925027843045,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.80859375,
+     6.8525390625,
+     5.41748046875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 21,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.02 s #2",
+   "wall_s": 3.989027724135667,
+   "sim_s": 0.02,
+   "tool": {
+    "shaft_angle_rad": 6.173229564219717,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.82421875,
+     6.82177734375,
+     5.4150390625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 1,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.01 s #0",
+   "wall_s": 2.3515963018871844,
+   "sim_s": 0.01,
+   "tool": {
+    "shaft_angle_rad": 0.5183627877578374,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.82421875,
+     6.82177734375,
+     5.4150390625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.01 s #1",
+   "wall_s": 2.3869312070310116,
+   "sim_s": 0.01,
+   "tool": {
+    "shaft_angle_rad": 1.1466813184755438,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.7578125,
+     6.77490234375,
+     5.4072265625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "short 0.01 s #2",
+   "wall_s": 2.352824894245714,
+   "sim_s": 0.01,
+   "tool": {
+    "shaft_angle_rad": 1.7749998491932502,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.7578125,
+     6.77490234375,
+     5.4072265625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 93,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "one-tick tool_io #0",
+   "wall_s": 1.1106092990376055,
+   "sim_s": 0.0005,
+   "tool": {
+    "shaft_angle_rad": 1.8064157757291355,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.53662109375,
+     6.6953125,
+     5.388671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "one-tick tool_io #1",
+   "wall_s": 1.0110794412903488,
+   "sim_s": 0.0005,
+   "tool": {
+    "shaft_angle_rad": 1.8378317022650208,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.53662109375,
+     6.6953125,
+     5.388671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "one-tick tool_io #2",
+   "wall_s": 1.013607497792691,
+   "sim_s": 0.0005,
+   "tool": {
+    "shaft_angle_rad": 1.8692476288009061,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 56.0
+   },
+   "host": {
+    "loadavg": [
+     4.53662109375,
+     6.6953125,
+     5.388671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "observation only #0",
+   "wall_s": 0.7121565798297524,
+   "sim_s": 0.0,
+   "host": {
+    "loadavg": [
+     4.53662109375,
+     6.6953125,
+     5.388671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "observation only #1",
+   "wall_s": 0.7090991577133536,
+   "sim_s": 0.0,
+   "host": {
+    "loadavg": [
+     4.53662109375,
+     6.6953125,
+     5.388671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 1,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "observation only #2",
+   "wall_s": 0.7099842079915106,
+   "sim_s": 0.0,
+   "host": {
+    "loadavg": [
+     4.53662109375,
+     6.6953125,
+     5.388671875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 49,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "paused 5 s, 0.05 s command #0",
+   "wall_s": 7.4149879571050406,
+   "sim_s": 0.05,
+   "pause_s": 5.0,
+   "tool": {
+    "shaft_angle_rad": 5.010840282389438,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 57.0
+   },
+   "host": {
+    "loadavg": [
+     4.1953125,
+     6.513671875,
+     5.349609375
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 1,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "paused 5 s, 0.05 s command #1",
+   "wall_s": 7.2014510477893054,
+   "sim_s": 0.05,
+   "pause_s": 5.0,
+   "tool": {
+    "shaft_angle_rad": 1.8692476287983837,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 57.0
+   },
+   "host": {
+    "loadavg": [
+     4.0908203125,
+     6.4140625,
+     5.32958984375
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "paused 5 s, 0.05 s command #2",
+   "wall_s": 7.0627281377092,
+   "sim_s": 0.05,
+   "pause_s": 5.0,
+   "tool": {
+    "shaft_angle_rad": 5.010840282386916,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 58.0
+   },
+   "host": {
+    "loadavg": [
+     3.78076171875,
+     6.22998046875,
+     5.2861328125
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "paused 15 s, 0.05 s command #0",
+   "wall_s": 7.26584927784279,
+   "sim_s": 0.05,
+   "pause_s": 15.0,
+   "tool": {
+    "shaft_angle_rad": 1.8692476287958613,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 58.0
+   },
+   "host": {
+    "loadavg": [
+     3.41650390625,
+     5.98779296875,
+     5.2255859375
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "paused 15 s, 0.05 s command #1",
+   "wall_s": 7.678844078909606,
+   "sim_s": 0.05,
+   "pause_s": 15.0,
+   "tool": {
+    "shaft_angle_rad": 5.010840282384393,
+    "speed_spm": 600.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 59.0
+   },
+   "host": {
+    "loadavg": [
+     3.16015625,
+     5.7158203125,
+     5.15478515625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "paused 15 s, 0.05 s command #2",
+   "wall_s": 7.267767658922821,
+   "sim_s": 0.05,
+   "pause_s": 15.0,
+   "tool": {
+    "shaft_angle_rad": 1.8692476287933388,
+    "speed_spm": 600.0,
+    "needle_down": 1.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 1.0,
+    "fault": 0.0,
+    "stitch_counter": 59.0
+   },
+   "host": {
+    "loadavg": [
+     2.98486328125,
+     5.5068359375,
+     5.09716796875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4735
+   }
+  },
+  {
+   "step": "stop needle-up and trim",
+   "wall_s": 61.170575669035316,
+   "sim_s": 0.5,
+   "tool": {
+    "shaft_angle_rad": 6.283185307179558,
+    "speed_spm": 0.0,
+    "needle_down": 0.0,
+    "presser_down": 1.0,
+    "reverse": 0.0,
+    "running": 0.0,
+    "fault": 0.0,
+    "stitch_counter": 60.0
+   },
+   "host": {
+    "loadavg": [
+     3.0751953125,
+     5.04248046875,
+     4.962890625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 89,
+    "gpu_mem_mib": 4735
+   }
+  }
+ ],
+ "load_start": {
+  "loadavg": [
+   1.82373046875,
+   3.08251953125,
+   4.6298828125
+  ],
+  "cpu_quota": 16.0,
+  "gpu_util_pct": 0,
+  "gpu_mem_mib": 4
+ },
+ "load_end": {
+  "loadavg": [
+   3.0751953125,
+   5.04248046875,
+   4.962890625
+  ],
+  "cpu_quota": 16.0,
+  "gpu_util_pct": 0,
+  "gpu_mem_mib": 682
+ },
+ "by_command_length": {
+  "0.01": {
+   "n": 3,
+   "median": 235.2824894245714,
+   "worst": 238.69312070310116
+  },
+  "0.02": {
+   "n": 3,
+   "median": 196.23388226609677,
+   "worst": 199.45138620678335
+  },
+  "0.05": {
+   "n": 3,
+   "median": 143.86264270171523,
+   "worst": 145.56643730029464
+  },
+  "0.1": {
+   "n": 3,
+   "median": 132.1084822434932,
+   "worst": 132.86753560882062
+  },
+  "0.2": {
+   "n": 3,
+   "median": 126.71979846898466,
+   "worst": 127.32235453091562
+  },
+  "0.5": {
+   "n": 8,
+   "median": 121.29295700229704,
+   "worst": 122.38172669801861
+  }
+ },
+ "lengths_inside_200x": [
+  0.02,
+  0.05,
+  0.1,
+  0.2,
+  0.5
+ ],
+ "shortest_command_inside_200x_s": 0.02,
+ "one_tick_tool_io_wall_s": [
+  1.1106092990376055,
+  1.0110794412903488,
+  1.013607497792691
+ ],
+ "observation_only_wall_s": [
+  0.7121565798297524,
+  0.7090991577133536,
+  0.7099842079915106
+ ],
+ "paused_wall_s": {
+  "5": [
+   7.4149879571050406,
+   7.2014510477893054,
+   7.0627281377092
+  ],
+  "15": [
+   7.26584927784279,
+   7.678844078909606,
+   7.267767658922821
+  ]
+ },
+ "sewing_wall_per_sim": 120.90038926212583,
+ "idle_wall_per_sim": 113.61312082471947,
+ "worst_action_wall_per_sim": 122.38172669801861,
+ "limit": 200.0,
+ "stitches": 45.0,
+ "final_state": {
+  "machine": {
+   "shaft_angle_rad": 6.283185307179558,
+   "speed_spm": 0.0,
+   "needle": "up",
+   "presser": "down",
+   "reverse": false,
+   "mode": "idle",
+   "fault": null,
+   "stitch_counter": 60
+  },
+  "seam": {
+   "holes": 120,
+   "stitches": 60,
+   "formed": 60,
+   "faults": [],
+   "needle": "ok",
+   "foot_z_mm": 0.7826254780139253,
+   "foot_load_n": 41.17911724500239,
+   "threads": "trimmed"
+  },
+  "history": {
+   "reflex_while_sewing": 0,
+   "max_finger_force_n": 21.41564114859403,
+   "sewing_s": 6.136499999999319,
+   "max_speed_spm": 600.0
+  },
+  "evaluation": {
+   "task": "plain-seam",
+   "success": false,
+   "score": 0.5882352941176471,
+   "primary_outcome": true,
+   "checks": {
+    "stitches_formed": {
+     "ok": true,
+     "value": 60
+    },
+    "joined_far_end": {
+     "ok": false,
+     "value": 9.79,
+     "target": "<= 6 mm"
+    },
+    "joined_near_end": {
+     "ok": false,
+     "value": 263.92,
+     "target": "<= 6 mm"
+    },
+    "seam_line": {
+     "ok": false,
+     "value": 11.779,
+     "target": "|d - 10| <= 1.6 mm"
+    },
+    "seam_mean": {
+     "ok": false,
+     "value": 12.81,
+     "target": "10 +- 0.8 mm"
+    },
+    "stitch_length": {
+     "ok": true,
+     "value": [
+      2.42,
+      2.6
+     ],
+     "target": "1.5-3.5 mm"
+    },
+    "stitch_density": {
+     "ok": true,
+     "value": [
+      10,
+      11
+     ],
+     "target": "9-11 SPI per inch window"
+    },
+    "skips": {
+     "ok": true,
+     "value": {
+      "isolated": 0,
+      "longest_run": 0
+     }
+    },
+    "backtack_start": {
+     "ok": false,
+     "value": 0,
+     "target": ">= 3 reverse stitches"
+    },
+    "backtack_end": {
+     "ok": false,
+     "value": 0,
+     "target": ">= 3 reverse stitches"
+    },
+    "no_tucks": {
+     "ok": false,
+     "value": {
+      "stitches_through_a_fold": 0,
+      "farthest_hole_mm": 21.78
+     },
+     "note": "no hole beyond 20 mm of the edge (a fold carried under the needle puts one there); no ply pierced twice by one stitch"
+    },
+    "ends_meet": {
+     "ok": true,
+     "value": 1.12,
+     "target": "<= 3 mm"
+    },
+    "needle_intact": {
+     "ok": true,
+     "value": "ok",
+     "note": "a needle that struck the plate or the hook ('damaged') is burred and is replaced in practice: it fails, as a bent or broken one does"
+    },
+    "no_reflex_while_sewing": {
+     "ok": true,
+     "value": 0
+    },
+    "threads_trimmed": {
+     "ok": true,
+     "value": "trimmed",
+     "note": "tails 3 / 3 mm (<= 38 mm)"
+    },
+    "released": {
+     "ok": true
+    },
+    "no_thread_break": {
+     "ok": true
+    }
+   },
+   "info": {
+    "balance": {
+     "value": 1.0,
+     "target": ">= 0.95 balanced (FED-STD-751a)",
+     "note": "not scored: set by the tensions, which the tasks fix"
+    },
+    "pucker": {
+     "value": {
+      "rms_mm": 0.638,
+      "contraction": 0.0052
+     },
+     "ok": false,
+     "target": "RMS <= 0.5 mm, contraction <= 2 %",
+     "note": "not scored while identical inputs give two seam shapes"
+    }
+   }
+  }
+ },
+ "pause_beyond_release_adds_s": 0.07463552383705974,
+ "passed": true,
+ "passed_note": "passed: every command of 0.3 s or longer inside 200x; shorter commands: shortest_command_inside_200x_s",
+ "tag": "quiet"
+}

@@ -1,0 +1,1020 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "fr3",
+  "revision": 1,
+  "asset": {
+    "format": "urdf",
+    "resolver": "franka_bundle",
+    "path": "urdf/fr3.urdf",
+    "lock": "assets.lock.json"
+  },
+  "root": {
+    "frame": "fr3_link0",
+    "mounting": "fixed"
+  },
+  "groups": {
+    "arm": {
+      "joints": [
+        "fr3_joint1",
+        "fr3_joint2",
+        "fr3_joint3",
+        "fr3_joint4",
+        "fr3_joint5",
+        "fr3_joint6",
+        "fr3_joint7"
+      ],
+      "role": "arm"
+    },
+    "gripper": {
+      "joints": [
+        "fr3_finger_joint1",
+        "fr3_finger_joint2"
+      ],
+      "role": "gripper"
+    }
+  },
+  "frames": {
+    "base": {
+      "parent": "fr3_link0"
+    },
+    "wrist": {
+      "parent": "fr3_link7"
+    },
+    "flange": {
+      "parent": "fr3_link8"
+    }
+  },
+  "actuation": {
+    "profiles": {
+      "deposit_cans": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "wsg_finger_joint1": {
+            "kp": 1800.0,
+            "kd": 8.0,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.05
+          },
+          "wsg_finger_joint2": {
+            "kp": 1800.0,
+            "kd": 8.0,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.05
+          }
+        },
+        "initial_pose": "deposit_cans",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.6
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": "wsg50"
+      },
+      "wiping": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 20.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.05
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 20.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.05
+          }
+        },
+        "initial_pose": "wiping",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "control_cable": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "control_cable",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "tighten": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "tighten",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "label_application": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "label_application",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "filleting": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "filleting",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": 0.0,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "barcode_scanning": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "barcode_scanning",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "welding": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "welding",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": 0.0,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      },
+      "welding_torch": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          }
+        },
+        "initial_pose": "welding_torch",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": 0.0,
+        "transform_stage": "compose",
+        "default_tool": null
+      },
+      "sewing": {
+        "joints": {
+          "fr3_joint1": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint2": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint3": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint4": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "fr3_joint5": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_joint6": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "fr3_joint7": {
+            "kp": 600.0,
+            "kd": 45.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          },
+          "fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.2
+          }
+        },
+        "initial_pose": "sewing",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": 0.0,
+        "transform_stage": "compose",
+        "default_tool": "franka-hand"
+      }
+    }
+  },
+  "poses": {
+    "deposit_cans": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.4,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.2,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.9,
+      "fr3_joint7": 0.79,
+      "wsg_finger_joint1": 0.055,
+      "wsg_finger_joint2": 0.055
+    },
+    "wiping": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.4,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.2,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.9,
+      "fr3_joint7": 0.79,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "control_cable": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.4,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.2,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.9,
+      "fr3_joint7": 0.79,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "tighten": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.4,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.2,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.9,
+      "fr3_joint7": 0.79,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "label_application": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.35,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.25,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.95,
+      "fr3_joint7": 0.785,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "filleting": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.35,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.25,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.95,
+      "fr3_joint7": 0.785,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "barcode_scanning": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.35,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.25,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.95,
+      "fr3_joint7": 0.785,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "welding": {
+      "fr3_joint1": 0.0,
+      "fr3_joint2": -0.35,
+      "fr3_joint3": 0.0,
+      "fr3_joint4": -2.25,
+      "fr3_joint5": 0.0,
+      "fr3_joint6": 1.95,
+      "fr3_joint7": 0.785,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    },
+    "welding_torch": {
+      "fr3_joint1": -0.3198,
+      "fr3_joint2": 0.3563,
+      "fr3_joint3": -1.2349,
+      "fr3_joint4": -2.1113,
+      "fr3_joint5": 0.803,
+      "fr3_joint6": 1.948,
+      "fr3_joint7": 2.6651
+    },
+    "sewing": {
+      "fr3_joint1": -0.1513,
+      "fr3_joint2": 0.8048,
+      "fr3_joint3": 0.2842,
+      "fr3_joint4": -2.5525,
+      "fr3_joint5": 0.8162,
+      "fr3_joint6": 3.4226,
+      "fr3_joint7": 1.6085,
+      "fr3_finger_joint1": 0.04,
+      "fr3_finger_joint2": 0.04
+    }
+  },
+  "support": {
+    "backend": "newton",
+    "version": "1.5.0"
+  },
+  "sources": {
+    "baseline_commit": "4166fdf076d756593fc67a9ce4e9eacc9638ea6a",
+    "extraction": "Exact effective legacy controller values; no retuning"
+  }
+}

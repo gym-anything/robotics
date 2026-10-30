@@ -1,0 +1,18 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "lockkey-panda",
+  "instances": {
+    "panda": {
+      "model": "panda@1",
+      "mount": "panda_arm_mount",
+      "controller_profile": "lockkey"
+    }
+  },
+  "attachments": {
+    "panda_hand": {
+      "model": "franka-hand@1",
+      "parent": "panda/flange",
+      "mount_profile": "franka_native"
+    }
+  }
+}

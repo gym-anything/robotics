@@ -1,0 +1,13 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "forklift-drive-kit",
+  "description": "Driving-robot kit fitted to the forklift's own controls: steering robot on the wheel (fork around the spinner knob), accelerator, brake and inching pedal actuators, lift, tilt and side-shift lever actuators, direction-stalk, hand-brake, ignition-key and horn-button actuators, a cab camera and an IMU; its frame and mounts bolted to the truck, a 67 kg ballast strapped to the seat for the operator-presence switch (forklift/operator.py, kit fit)",
+  "instances": {
+    "drive_kit": {
+      "model": "drive_kit@1",
+      "mount": "cab",
+      "controller_profile": "forklift"
+    }
+  },
+  "attachments": {}
+}

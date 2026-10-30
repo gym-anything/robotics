@@ -1,0 +1,107 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "lockkey",
+  "default_task_id": "lockkey/unlock",
+  "description": "Unlock the padlock on the chest with its key from the near (-Y) stand and swing the shackle open. Leave the other key on its stand. The chest lid does not need to be opened.",
+  "selectors": [
+    "task"
+  ],
+  "resolver": "lockkey.task_set.catalogue:task_resolve",
+  "count": 8,
+  "count_scope": "Eight named tasks; fixed starts, no seeds",
+  "splits": [],
+  "split_note": "No train/test split exists in this baseline; none invented.",
+  "evaluator": {
+    "available": true,
+    "source": "lockkey/newton15/evaluation.py",
+    "scope": "Environment-owned success and 1 on success else 0.9 x state progress. Default unlock keeps open-padlock-v1; new tasks use lockkey-tasks-v1. Not physical qualification.",
+    "sources": [
+      "lockkey/newton15/evaluation.py",
+      "lockkey/task_set/scoring.py"
+    ]
+  },
+  "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
+  "selector_choices": {
+    "task": [
+      "unlock",
+      "swing-open",
+      "turn-to-open",
+      "insert-key",
+      "return-key",
+      "remove-key",
+      "which-key",
+      "unlock-and-stow"
+    ]
+  },
+  "task_set": {
+    "tasks": [
+      {
+        "task_id": "lockkey/swing-open",
+        "selection": {
+          "task": "swing-open"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "task_id": "lockkey/turn-to-open",
+        "selection": {
+          "task": "turn-to-open"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "task_id": "lockkey/insert-key",
+        "selection": {
+          "task": "insert-key"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "task_id": "lockkey/return-key",
+        "selection": {
+          "task": "return-key"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "task_id": "lockkey/remove-key",
+        "selection": {
+          "task": "remove-key"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "task_id": "lockkey/unlock",
+        "selection": {
+          "task": "unlock"
+        },
+        "contract": "open-padlock-v1",
+        "difficulty": "hard"
+      },
+      {
+        "task_id": "lockkey/which-key",
+        "selection": {
+          "task": "which-key"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "task_id": "lockkey/unlock-and-stow",
+        "selection": {
+          "task": "unlock-and-stow"
+        },
+        "contract": "lockkey-tasks-v1",
+        "difficulty": "hardest"
+      }
+    ],
+    "score_rule": "1 if success else 0.9 x progress; zero at each untouched constructed start",
+    "swaps": [],
+    "qualification": "Code and constructed-state checks only; not yet run with the simulator (no settle, contact, render or policy run)."
+  }
+}

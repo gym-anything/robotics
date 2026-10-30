@@ -1,0 +1,43 @@
+mdl 1.7;
+import ::OmniPBR::*;
+import ::scene::*;
+import ::state::*;
+import ::df::*;
+
+// Normalized scan microstructure, with actual per-vertex water/soil color.
+// Reuses the repo's qualified laundry sheen construction, not plastic clearcoat.
+// No time input, animation or authored cleaning mask exists in this material.
+export material microfiber(
+    uniform texture_2d albedo = texture_2d(),
+    uniform texture_2d normal_map = texture_2d(),
+    uniform texture_2d roughness_map = texture_2d(),
+    float brightness = 1.0,
+    float side_m = 0.4
+) = let {
+    color dye = scene::data_lookup_color("displayColor", color(1.0, 0.0, 1.0));
+    float3 uv = state::texture_coordinate(0);
+    float u = uv.x*0.367054;
+    float v = uv.y*0.3632;
+    bool hem = u<0.004 || v<0.004 || u>side_m-0.004 || v>side_m-0.004;
+    material foundation = OmniPBR::OmniPBR(
+    diffuse_color_constant: dye,
+    diffuse_texture: albedo,
+    albedo_desaturation: 1.0,
+    albedo_brightness: brightness,
+    diffuse_tint: hem ? dye*0.82 : dye,
+    normalmap_texture: normal_map,
+    bump_factor: 1.0,
+    flip_tangent_v: false,
+    reflectionroughness_texture: roughness_map,
+    reflection_roughness_texture_influence: 1.0,
+    reflection_roughness_constant: 0.88,
+    metallic_constant: 0.0,
+    project_uvw: false);
+} in material(
+    surface: material_surface(scattering: df::weighted_layer(
+        weight: hem ? 0.04 : 0.14,
+        layer: df::sheen_bsdf(roughness: 0.65, tint: dye*0.8+color(0.2),
+            multiscatter_tint: color(1.0), multiscatter: foundation.surface.scattering),
+        base: foundation.surface.scattering, normal: foundation.geometry.normal)),
+    geometry: foundation.geometry, ior: foundation.ior, thin_walled: true
+);

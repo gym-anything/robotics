@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "welding-fr3-single",
+  "description": "Robotic GMAW cell, torch arm only: one FR3 (right) carrying a light MIG torch (RM2 + KS-2 class, ~1.6 kg, mounted on link8 by the welding environment)",
+  "instances": {
+    "right": {
+      "model": "fr3@1",
+      "mount": "right_arm_mount",
+      "controller_profile": "welding_torch"
+    }
+  }
+}

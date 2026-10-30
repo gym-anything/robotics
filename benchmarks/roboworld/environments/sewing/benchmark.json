@@ -1,0 +1,140 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "sewing",
+  "default_task_id": "sewing/v1/sample-room/plain-seam/seed-0",
+  "description": "Sample-room sewing cell: two FR3 arms with Franka Hands at an industrial single-needle lockstitch machine (Juki DDL-9000C class). Lay two muslin plies under the presser foot, join them with a plain seam 10 mm from their edges with backtacks at both ends, baste with the 5 mm stitch, turn a corner with the needle down, or steer a seam around a rounded corner; the machine is driven through its control box (pedal speed, needle stop, presser lift, touch-back reverse, trimmer). Feeding, puncture, needle deflection and strikes, loop pickup, stitch formation and thread tension come from the physics.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed",
+    "variation_id",
+    "contract"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "task": [
+      "load",
+      "plain-seam",
+      "baste",
+      "pivot",
+      "curve",
+      "seam-to-notch",
+      "square-plies",
+      "three-sides",
+      "load-and-seam"
+    ],
+    "preset": [
+      "sample-room"
+    ],
+    "contract": [
+      "sewing-v1",
+      "sewing-tasks-v1",
+      "sewing-curve-v1"
+    ]
+  },
+  "resolver": "sewing.variations:task_resolve",
+  "count": 9,
+  "count_scope": "Nine named tasks in the sample-room preset, seeds 0-9: the first five tasks use variation ids 0-49 and the four others 50-89. task_set lists the eight exact selections; baste is registered outside that set.",
+  "splits": [],
+  "split_note": "No train/test split invented.",
+  "variation_catalogue": {
+    "version": "sewing-sample-room-v1",
+    "count": 90,
+    "resolver": "sewing.variations",
+    "sha256": "a6b9ddbddf685d2d386c70c9f35736fbe3aad763bd03126dc1df37dde00a71d1",
+    "selection": "at launch: gar run sewing --variation N (or --select variation_id=N; a task or seed given beside it must be the entry's); in a session: GET /v1/variations; POST /v1/variations/start, or reset with options {variation_id}; variation_id = task index x 10 + seed",
+    "notes": "9 tasks x seeds 0-9; original entries 0-49 unchanged. Optional contract selects revised load/plain-seam/pivot. square-plies uses a separate slipped-start cache; other new starts reuse existing physics configurations."
+  },
+  "evaluator": {
+    "available": true,
+    "source": "sewing/task.py",
+    "scope": "Physical state only: the machine's stitch ledger in the plies' material coordinates (seam line, stitch length and density, skips, backtacks, balance, tucks), ply corners (ends meet, alignment), seam-band heights (pucker), the needle's state, thread breaks and trimming, robot reflexes and the hands' contact with the cloth. No autonomous-solution claim.",
+    "task_set_source": "sewing/task_set_scoring.py"
+  },
+  "qualification": "Components are qualified by probes and assisted demonstrations.",
+  "task_set": {
+    "tasks": [
+      {
+        "task_id": "sewing/v1/sample-room/load/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "load",
+          "seed": 0,
+          "contract": "sewing-tasks-v1"
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/seam-to-notch/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "seam-to-notch",
+          "seed": 0
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/plain-seam/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "plain-seam",
+          "seed": 0,
+          "contract": "sewing-tasks-v1"
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/square-plies/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "square-plies",
+          "seed": 0
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/pivot/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "pivot",
+          "seed": 0,
+          "contract": "sewing-tasks-v1"
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/three-sides/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "three-sides",
+          "seed": 0
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/load-and-seam/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "load-and-seam",
+          "seed": 0
+        },
+        "task_contract": "sewing-tasks-v1"
+      },
+      {
+        "task_id": "sewing/v1/sample-room/curve/seed-0",
+        "selection": {
+          "preset": "sample-room",
+          "task": "curve",
+          "seed": 0
+        },
+        "task_contract": "sewing-curve-v1"
+      }
+    ],
+    "failure_factor": 0.95,
+    "qualification": "Checked in code and with stubbed states only. The four new tasks and the revised load, plain-seam and pivot judgements are not yet run with the simulator or rendered, and no success rate is measured.",
+    "omitted": {
+      "baste": "The needle bends by stitch 25-32 at the 6 mm allowance; baste stays in the catalogue."
+    },
+    "contract_selection": "Bare existing selections keep sewing-v1 (curve keeps its own sewing-curve-v1 contract, unchanged). The task_set explicitly selects sewing-tasks-v1 for load/plain-seam/pivot. New tasks use that contract by default. Task ids remain stable; every evaluation reports task_contract."
+  }
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forklift · Manual control</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<header><div><span class="eyebrow">GYM ANYTHING / ROBOTICS · FORKLIFT</span><h1>Manual control <span class="tag">Unitree H1-2 · LowCmd nudges</span></h1></div>
+<span id="badge" class="badge">Connecting…</span></header>
+<main>
+<div id="notice" role="status" aria-live="polite">Connecting to the session through the local proxy…</div>
+<div class="workspace">
+<section class="panel view">
+  <div class="bar"><h2>Head camera</h2><div class="bar-right"><span id="stamp" class="muted">No image yet</span><button id="refresh" disabled>Refresh camera (no physics)</button></div></div>
+  <div id="frames" class="frames"><div class="empty">The robot's head-camera image appears here.</div></div>
+  <h3>Joint feedback <span id="group-title" class="muted"></span></h3>
+  <table class="joints"><thead><tr><th>Motor</th><th>Position (rad)</th><th>Velocity (rad/s)</th><th>Torque (N m)</th><th>Limits (rad)</th></tr></thead>
+    <tbody id="joint-rows"><tr><td colspan="5" class="muted">Take a camera image to read the joints.</td></tr></tbody></table>
+  <p id="imu" class="mono small">IMU: –</p>
+  <h3>Last command</h3><pre id="feedback" class="feedback">No command sent yet.</pre>
+  <details open><summary>Command log</summary><ol id="log" class="log"><li class="muted">No commands yet</li></ol></details>
+  <section id="owner" class="owner" hidden>
+    <div class="bar"><h2>Evaluator <span class="tag">owner key</span></h2><button id="owner-refresh">Refresh</button></div>
+    <p id="owner-summary" class="mono small">Loading…</p>
+    <table class="joints"><thead><tr><th>Criterion</th><th>Measured</th><th>Threshold</th><th>Result</th></tr></thead>
+      <tbody id="owner-rows"></tbody></table>
+  </section>
+</section>
+<aside>
+  <section class="panel"><h2>Task</h2><p id="task">Not connected</p><p id="identity" class="muted small"></p></section>
+  <section class="panel">
+    <h2>Motor</h2>
+    <label>Selected motor <select id="motor" aria-label="Selected motor"></select></label>
+    <p id="motor-pos" class="mono small">position: –</p>
+    <label class="check"><input id="enabled" type="checkbox" checked> Keys drive the robot (ignored while typing in a field)</label>
+    <div class="grid2">
+      <button data-cmd="up">↑<small>target +step</small></button><button data-cmd="down">↓<small>target −step</small></button>
+      <button data-cmd="prev">[<small>previous motor in group</small></button><button data-cmd="next">]<small>next motor in group</small></button>
+      <button data-cmd="torsop">W<small>torso +step</small></button><button data-cmd="torsom">S<small>torso −step</small></button>
+      <button data-cmd="lclose">Q<small>close left hand</small></button><button data-cmd="lopen">A<small>open left hand</small></button>
+      <button data-cmd="rclose">E<small>close right hand</small></button><button data-cmd="ropen">D<small>open right hand</small></button>
+      <button data-cmd="hold">Space<small>hold: advance time</small></button><span></span>
+    </div>
+    <p class="small">Groups (keys 1–7): <span id="group-keys"></span></p>
+    <div class="settings">
+      <label>Step (rad)<input id="step" type="number" min="0.005" max="1" step="0.005" value="0.05"></label>
+      <label>Duration (s)<input id="dur" type="number" min="0.002" max="10" step="0.05" value="0.25"></label>
+    </div>
+    <p class="hint">Each key is one command: the selected motor's position target becomes its measured position ± step (Shift ×4, Alt ×0.2), every other channel keeps its last value, then physics runs for the duration. A target outside the joint's limits is refused and nothing runs. Unitree LowCmd semantics: tau = kp (q* − q) + kd (dq* − dq) + tau_ff, within the motor's torque–speed envelope. Closing or opening a hand sets that hand's five finger motors (not the thumb's rotation) to their closed or open limit.</p>
+  </section>
+</aside>
+</div>
+<footer>Keys command the robot only; the truck moves only when the robot's hands and feet move its controls by contact. Every command renders the head camera in an Isaac render worker (about 1.5 s when warm; about 40 s when cold, at the first command and after 2 minutes without an image), and physics ran 6–7.6 wall seconds per simulated second in testing on a shared host. Closing this page disconnects only; the session keeps running.</footer>
+</main>
+<script src="/app.js"></script></body></html>

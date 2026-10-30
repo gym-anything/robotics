@@ -1,0 +1,66 @@
+{
+  "catalogue": "welding-steel-cell-v1",
+  "count": 10000,
+  "sha256": "baf4e605c10ad45355ee09f4df59ff298202ccb54238755cf049e3729a8648e1",
+  "splits": {
+    "train": 7982,
+    "validation": 983,
+    "test": 1035
+  },
+  "parameters": {
+    "coupon_dx_m": {
+      "low": -0.003,
+      "high": 0.003,
+      "unit": "m",
+      "label": "authored",
+      "basis": "the play of a part a fitter places by hand under the toggle clamps (+-3 mm); world x, along the table and the joint",
+      "physical_effect": "where the joint is"
+    },
+    "coupon_dy_m": {
+      "low": -0.003,
+      "high": 0.003,
+      "unit": "m",
+      "label": "authored",
+      "basis": "+-3 mm; world y, toward / away from the robots",
+      "physical_effect": "where the joint is"
+    },
+    "coupon_yaw_deg": {
+      "low": -2.0,
+      "high": 2.0,
+      "unit": "deg",
+      "label": "authored",
+      "basis": "+-2 deg about the vertical through the root's start",
+      "physical_effect": "the joint's direction"
+    },
+    "wire_stickout_m": {
+      "low": 0.00635,
+      "high": 0.0127,
+      "unit": "m",
+      "label": "derived",
+      "basis": "the wire a previous weld leaves: electrical stick-out = contact tip to work - 1/4 in (Lincoln L-56, read) over the robotic contact-tip-to-work 1/2-3/4 in (Bernard/Tregaskiss, Lincoln C4.200, read) = 1/4-1/2 in",
+      "physical_effect": "how far the wire stands out of the contact tip at tick 0 (run-in to the strike, touch sensing, the position-torch wire-on-root check)"
+    },
+    "draft_m_s": {
+      "low": 0.0,
+      "high": 2.0,
+      "unit": "m/s",
+      "label": "authored range under a read limit",
+      "basis": "AWS D1.1 s5.12.1: GMAW only where the wind at the weld is <= 5 mph (2.2 m/s) unless sheltered (read); 0-2.0 m/s keeps every entry under the limit",
+      "physical_effect": "air reaches the shield from 1.4 m/s (Kobelco's chart at the cell's 19 L/min, arc.air_fraction): at most 0.6 % air at 2 m/s, under the porosity onset alone, adding to a longer stand-off or a steeper torch; convection does not depend on air speed"
+    }
+  },
+  "variation_0": "authored layout (= legacy seed 0), split train",
+  "config_seed": "Config.seed = 100000 + variation_id (0 for variation 0): the entry's identity in the world's configuration (the tack weld is cached per physics hash, not per entry)",
+  "fixture_check": {
+    "min_pad_margin_m": 0.0020189092278320962,
+    "all_ok": true,
+    "redrawn_coupon_poses": 45,
+    "rule": "both clamp pads on the plate with >= 2 mm to every edge (authored); plate on the table; a pose outside is redrawn (the box's corner with dy > 2.3 mm and yaw > 1.7 deg)"
+  },
+  "dimensions_changed": false,
+  "procedure_changed": false,
+  "masses_changed": false,
+  "physics_parameters_changed": false,
+  "solver_included": false,
+  "generator": "python -m welding.variations --export"
+}

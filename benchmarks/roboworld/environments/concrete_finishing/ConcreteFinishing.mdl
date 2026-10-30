@@ -1,0 +1,42 @@
+mdl 1.7;
+import ::df::*;
+import ::math::*;
+import ::scene::*;
+import ::base::*;
+import ::state::*;
+import ::OmniSurface::OmniSurfaceBase::*;
+
+// Render-only appearance of concrete_finishing's wet materials (concrete_finishing/render.py). No physics reads these.
+//
+// The paste surfaces are meshes of the regions' height fields; per-vertex primvars written by the client from each
+// cell's state (render.cell_look):
+//   displayColor  linear RGB of the surface at the vertex (paste, stone showing through, darkening of a densified or
+//                 late-tooled surface, tone of a skinned bead)
+//   gloss         0 = matte (struck concrete, floated sand, compound) .. 0.6 = a closed steel-troweled face or fresh
+//                 sealant .. 1 = standing bleed water (a mirror-like film)
+//   tex           0 = smooth .. 1 = 1 mm of relief from the tool that last shaped it (a float's sand, a broom, the
+//                 struck surface's grain); finer than the mesh, drawn as a bump
+export material ConcreteFinishingPaste(
+    color fallback = color(0.42, 0.41, 0.39)
+) = let {
+    color base = scene::data_lookup_color("displayColor", fallback);
+    float g = math::saturate(scene::data_lookup_float("gloss", 0.0));
+    float tx = math::saturate(scene::data_lookup_float("tex", 0.0));
+    // a uniform-strength grain whose share is taken per vertex by blending normals (bump strengths must be uniform)
+    float3 grain_n = base::perlin_noise_bump_texture(
+        uvw: base::coordinate_source(coordinate_system: base::texture_coordinate_world),
+        factor: 0.55, size: 0.0022, noise_levels: 3, absolute_noise: false, ridged_noise: false);
+    float3 nrm = math::normalize(math::lerp(state::normal(), grain_n, tx));
+    float wet = math::smoothstep(0.75, 1.0, g);
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: base,
+    diffuse_reflection_roughness: 0.6*(1.0 - g),
+    specular_reflection_weight: math::lerp(0.03, 0.55, g),
+    specular_reflection_roughness: math::lerp(0.85, 0.18, g),
+    specular_reflection_ior: 1.45,
+    coat_weight: wet,
+    coat_roughness: 0.02,
+    coat_ior: 1.33,
+    geometry_normal: nrm
+);

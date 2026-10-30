@@ -1,0 +1,93 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "laundry",
+  "default_task_id": null,
+  "description": "Eight named garment tasks, with the original garment-only defaults preserved.",
+  "selectors": [
+    "garment",
+    "task",
+    "contract"
+  ],
+  "cli_task_selector": "garment",
+  "selector_choices": {
+    "garment": [
+      "tee",
+      "shirt",
+      "jeans",
+      "towel",
+      "asymmetric"
+    ],
+    "task": [
+      "sleeve_tuck_fold",
+      "sleeve_fold",
+      "leg_align_fold",
+      "half_fold",
+      "tie_untangle",
+      "spread_flat",
+      "turn_face_down",
+      "thirds_fold"
+    ],
+    "contract": [
+      "laundry-semantic-legacy",
+      "laundry-tasks-v1",
+      "laundry-shirt-sleeve-fold-v1"
+    ]
+  },
+  "resolver": "laundry.task_set:resolve",
+  "count": 8,
+  "count_scope": "Eight distinct task ids; five original garment-only selections retain their original start, instruction and evaluator. Four existing tasks additionally select the new contract explicitly. No random seeds or new train/test split.",
+  "splits": [],
+  "split_note": "No train/test split exists in this baseline; none invented.",
+  "evaluator": {
+    "available": true,
+    "source": "laundry/garment_task.py; laundry/task_set_goals.py; laundry/task_set_env.py",
+    "scope": "Environment-owned task success; not physical qualification."
+  },
+  "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
+  "task_set": {
+    "selections": [
+      {
+        "garment": "towel",
+        "task": "spread_flat",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "towel",
+        "task": "half_fold",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "asymmetric",
+        "task": "tie_untangle",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "tee",
+        "task": "sleeve_tuck_fold",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "tee",
+        "task": "turn_face_down",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "towel",
+        "task": "thirds_fold",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "jeans",
+        "task": "leg_align_fold",
+        "contract": "laundry-tasks-v1"
+      },
+      {
+        "garment": "shirt"
+      }
+    ],
+    "score_rule": "1 if success else 0.9 * continuous start-relative progress; crossings give zero. Shirt keeps its original evaluator.",
+    "contract": "laundry-tasks-v1",
+    "shirt_contract": "laundry-shirt-sleeve-fold-v1",
+    "qualification": "Code and constructed-state checks only; not yet run with the simulator or render-checked. Authored starts must pass existing IPC/table guards and bounded settling at runtime; failure to qualify aborts construction."
+  }
+}

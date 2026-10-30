@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "forklift-h1-2",
+  "instances": {
+    "h1_2": {
+      "model": "h1_2@1",
+      "mount": "operator_seat",
+      "controller_profile": "forklift"
+    }
+  },
+  "attachments": {}
+}

@@ -1,0 +1,12 @@
+mdl 1.7;
+import ::df::*;
+
+// Clear dielectric USD preview only. Spatial indicator absorption is evaluated
+// by the required volumetric renderer, from the archived 3D concentration field.
+// Never substitute the former boundary-only pink_molar lookup for that field.
+export material TitrationWater(uniform float water_ior = 1.333) = material(
+    thin_walled: false,
+    surface: material_surface(scattering:
+        df::specular_bsdf(tint: color(1.0), mode: df::scatter_reflect_transmit)),
+    ior: color(water_ior)
+);

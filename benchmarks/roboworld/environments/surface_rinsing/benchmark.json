@@ -1,0 +1,161 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "surface-rinsing",
+ "default_task_id": "surface-rinsing/v1/pot-sink/rinse-glassware/seed-0",
+ "description": "Rinse surfaces in the wet back-of-house of a full-service restaurant (7.2 x 5.4 m dish room: an Advance Tabco FS-3-1824-24RL three-compartment pot sink with a pre-rinse unit and swing faucet, a soiled dish table with a 20 x 20 in pre-rinse sink, a prep sink and work table, a can-wash bay with a sloped floor drain and a hose reel) with a Franka Mobile FR3 Duo. Water is physical state from the supply to the drain: valves open only because a lever or wrist blade is moved by contact; jets are momentum-carrying packets that splatter (Bhunia-Lienhard); inertial thin films drain, round rims or separate (Duez), drip; pools fill, drain, overflow and float things; surfactant (with adsorption and foam), soil (soaking, impingement, Wilson cleaning front, shear) and contamination tracer are carried by the water; soap on a glass lowers the finger-pad friction.",
+ "selectors": [
+  "preset",
+  "task",
+  "seed",
+  "contract"
+ ],
+ "cli_task_selector": "task",
+ "selector_choices": {
+  "preset": [
+   "pot-sink",
+   "pre-rinse",
+   "prep-sink",
+   "can-wash"
+  ],
+  "task": [
+   "rinse-glassware",
+   "rinse-dishware",
+   "scrub-rinse-pan",
+   "rinse-sponge",
+   "pre-rinse-plates",
+   "rinse-tomatoes",
+   "rinse-garbage-can",
+   "flush-floor",
+   "drain-wash-compartment"
+  ],
+  "contract": [
+   "legacy",
+   "surface-rinsing-tasks-v1",
+   "progress-v1"
+  ]
+ },
+ "resolver": "surface_rinsing.task_set.catalogue:task_resolve",
+ "count": 9,
+ "count_scope": "Nine named tasks; eight exact benchmark selections in task_set. Bare legacy selections retain their instructions, ids and scoring. rinse-dishware remains selectable outside the eight.",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "split_note": "Legacy variations.json and its 8000 rows are unchanged. All tasks, including drain-wash-compartment, use the same frozen SHA-256 (task, seed) split for seeds 0..999; seeds 1000..9999 resolve with split null. New-task rows are resolved by surface_rinsing.task_set.catalogue.",
+ "evaluator": {
+  "available": true,
+  "source": "surface_rinsing/task_set/evaluator.py (explicit revised contract); surface_rinsing/task.py (legacy and pan)",
+  "scope": "World state only, with a settle rule (30 s of the whole world advanced with the robot holding, then measured and restored): surfactant per item and per 1 cm gauge, foam, sanitizer immersion time, soil per 1 cm gauge against the 1 ug/cm2 visible-residue limit, pooled water per item, placement in racks/colander/bowl, valves released and parked, soil, tracer and water on clean surfaces and the floor, glass/china impact speeds; no autonomous-solution claim."
+ },
+ "qualification": "Component-qualified with assisted evidence: water benches without the robot, phantom-actuated valves and phantom-held items, and robot demonstrations by a scripted operator through the robot interface; phantom forces where labelled.",
+ "task_set": {
+  "tasks": [
+   {
+    "selection": {
+     "preset": "pot-sink",
+     "task": "rinse-sponge",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/pot-sink/rinse-sponge/surface-rinsing-tasks-v1/seed-0",
+    "existing": true,
+    "difficulty": "entry",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "pot-sink",
+     "task": "drain-wash-compartment",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/pot-sink/drain-wash-compartment/surface-rinsing-tasks-v1/seed-0",
+    "existing": false,
+    "difficulty": "entry",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "prep-sink",
+     "task": "rinse-tomatoes",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/prep-sink/rinse-tomatoes/surface-rinsing-tasks-v1/seed-0",
+    "existing": true,
+    "difficulty": "medium",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "can-wash",
+     "task": "flush-floor",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/can-wash/flush-floor/surface-rinsing-tasks-v1/seed-0",
+    "existing": true,
+    "difficulty": "medium",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "pot-sink",
+     "task": "rinse-glassware",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/pot-sink/rinse-glassware/surface-rinsing-tasks-v1/seed-0",
+    "existing": true,
+    "difficulty": "medium",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "pre-rinse",
+     "task": "pre-rinse-plates",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/pre-rinse/pre-rinse-plates/surface-rinsing-tasks-v1/seed-0",
+    "existing": true,
+    "difficulty": "hard",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "can-wash",
+     "task": "rinse-garbage-can",
+     "seed": 0,
+     "contract": "surface-rinsing-tasks-v1"
+    },
+    "task_id": "surface-rinsing/v1/can-wash/rinse-garbage-can/surface-rinsing-tasks-v1/seed-0",
+    "existing": true,
+    "difficulty": "hard",
+    "contract": "surface-rinsing-tasks-v1"
+   },
+   {
+    "selection": {
+     "preset": "pot-sink",
+     "task": "scrub-rinse-pan",
+     "seed": 0
+    },
+    "task_id": "surface-rinsing/v1/pot-sink/scrub-rinse-pan/seed-0",
+    "existing": true,
+    "difficulty": "hardest",
+    "contract": "progress-v1"
+   }
+  ],
+  "score_rule": "1 on success, else 0.9 x continuous progress; None if state is unverifiable. Pan retains progress-v1 unchanged.",
+  "swaps": [
+   {
+    "out": "rinse-dishware",
+    "reason": "Replaced for variety: it repeats the rinse, sanitize and place sequence of rinse-glassware. It stays selectable outside the eight. No task is shown to be impossible.",
+    "replacement": "drain-wash-compartment"
+   }
+  ],
+  "qualification": "Checked in code and with pure-Python tests only. The revised contract and drain-wash-compartment are not yet run with the simulator or rendered, and no autonomous solution is claimed.",
+  "legacy": "Omit contract (or use legacy) for every existing task to retain its original id, instruction, start and evaluator. The pan also accepts its progress-v1 contract explicitly."
+ }
+}

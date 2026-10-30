@@ -1,0 +1,161 @@
+{
+  "split": "test",
+  "description": "The hardest task of each of the 25 RoboWorld simulations, used for the main evaluation.",
+  "tasks": [
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "specimen",
+        "task": "tube-label"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "stockroom",
+        "task": "count-by-scanning"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "trout",
+        "task": "fillet-whole-fish"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "task": "curve"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "task": "fillet-2f"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "load-bales"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "group-work"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "wall",
+        "task": "behind-radiator"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "pot-sink",
+        "task": "scrub-rinse-pan"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "set-post"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "service",
+        "task": "split-bottle"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "therapy",
+        "task": "melody"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "task": "pad-finish"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "wall",
+        "task": "ledger-anchor"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "counter",
+        "task": "bag-purchase"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "hob",
+        "task": "stir-sauce"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "injection",
+        "task": "vial-to-pad"
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "high_fill"
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "mixed"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {}
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {}
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "variation_id": 0
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "shirt"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "variation_id": 0
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {}
+    }
+  ]
+}

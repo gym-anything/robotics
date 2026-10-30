@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "classroom-mobile-fr3-duo",
+  "instances": {
+    "robot": {
+      "model": "mobile-fr3-duo@1",
+      "mount": "floor_start",
+      "controller_profile": "classroom"
+    }
+  },
+  "attachments": {}
+}

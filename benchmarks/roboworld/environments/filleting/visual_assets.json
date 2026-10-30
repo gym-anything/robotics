@@ -1,0 +1,56 @@
+{
+ "WetFloorSign_01": {
+  "files": {
+   "WetFloorSign_01_1k.usdc": {
+    "bytes": 18179,
+    "sha256": "7e3db2a9741ba65be360481e082f3a3568443cb2724e606dd6f6e9016339d4b4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/WetFloorSign_01/WetFloorSign_01_1k.usdc"
+   },
+   "textures/WetFloorSign_01_diff_1k.jpg": {
+    "bytes": 39755,
+    "sha256": "01e18486a858defc0f44a73ec5037c4bee770bae88e7fed5beb6877df120fa90",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WetFloorSign_01/WetFloorSign_01_diff_1k.jpg"
+   },
+   "textures/WetFloorSign_01_metallic_1k.exr": {
+    "bytes": 4784,
+    "sha256": "99cab71c3d25094044d99b1d4bb96c1541129a18d419e166a93d06d15ab4ab15",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/WetFloorSign_01/WetFloorSign_01_metallic_1k.exr"
+   },
+   "textures/WetFloorSign_01_nor_gl_1k.exr": {
+    "bytes": 438754,
+    "sha256": "8fefacb952382412b0be9cd123fb8912909d6900aa03e02bee2c8c94681dd1d0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/WetFloorSign_01/WetFloorSign_01_nor_gl_1k.exr"
+   },
+   "textures/WetFloorSign_01_roughness_1k.jpg": {
+    "bytes": 115788,
+    "sha256": "1631aa88843688996a32f74e28c6c0e0b975e4c1209047c3124d72ddac47aa1e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WetFloorSign_01/WetFloorSign_01_roughness_1k.jpg"
+   }
+  },
+  "kind": "model",
+  "license": "CC0 1.0 (https://polyhaven.com/license)",
+  "source": "https://polyhaven.com/a/WetFloorSign_01"
+ },
+ "terracotta_floor_tiles": {
+  "files": {
+   "terracotta_floor_tiles_diff_2k.jpg": {
+    "bytes": 2731407,
+    "sha256": "dd1adc1d35618db8fd58f2d22b51242bc570dc83c23518a1100d3570dfe05559",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/terracotta_floor_tiles/terracotta_floor_tiles_diff_2k.jpg"
+   },
+   "terracotta_floor_tiles_nor_gl_2k.jpg": {
+    "bytes": 2676771,
+    "sha256": "7378375dd7d7ec01a33bce4fc679f8a10fad4085746c7ad698724e8ca1113807",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/terracotta_floor_tiles/terracotta_floor_tiles_nor_gl_2k.jpg"
+   },
+   "terracotta_floor_tiles_rough_2k.jpg": {
+    "bytes": 2607419,
+    "sha256": "3cf4cc8570a87aec65731d81d07c42c81b18635028ddc42be8de336ec0dda2dd",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/terracotta_floor_tiles/terracotta_floor_tiles_rough_2k.jpg"
+   }
+  },
+  "kind": "texture",
+  "license": "CC0 1.0 (https://polyhaven.com/license)",
+  "source": "https://polyhaven.com/a/terracotta_floor_tiles"
+ }
+}

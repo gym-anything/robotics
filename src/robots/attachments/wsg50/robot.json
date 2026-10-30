@@ -1,0 +1,63 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "wsg50",
+  "revision": 1,
+  "asset": {
+    "format": "authored",
+    "resolver": "wsg50",
+    "path": "wsg50"
+  },
+  "root": {
+    "frame": "mount",
+    "mounting": "attachment"
+  },
+  "support": {
+    "mount_profiles": {
+      "fr3_wsg_adapter": {
+        "source": "Retained existing physical mounting"
+      },
+      "panda_wsg_adapter": {
+        "source": "Authored Panda-flange alternative using the same physical adapter geometry; separate integration evidence"
+      }
+    }
+  },
+  "sources": {
+    "baseline_commit": "4166fdf076d756593fc67a9ce4e9eacc9638ea6a"
+  },
+  "frames": {
+    "tcp": {
+      "parent": "wsg_base",
+      "position_m": [
+        0,
+        0,
+        0.142
+      ]
+    },
+    "mount": {
+      "parent": "wsg_adapter"
+    }
+  },
+  "mechanisms": {
+    "belt": {
+      "type": "opposed_prismatic_equal_coordinate",
+      "joints": [
+        "wsg_finger_joint1",
+        "wsg_finger_joint2"
+      ],
+      "implementation": "robots.attachments.wsg50.mechanism",
+      "required_backend_hook": "native bounded-drive VBD with explicit dependency scheduling"
+    }
+  },
+  "effectors": {
+    "jaws": {
+      "type": "parallel_jaw",
+      "aperture_m": [
+        0,
+        0.11
+      ],
+      "legacy_command": "half_width_m: 0..0.055 per jaw",
+      "inward_effort_n": "5..80 total, half per jaw; integration-specific GRIP mode",
+      "object_attachments": false
+    }
+  }
+}

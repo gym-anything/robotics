@@ -1,0 +1,262 @@
+{
+  "source": "Installed Newton franka_emika_panda asset bundle, same bytes as retained baseline",
+  "license": "Apache-2.0; see source bundle LICENSE",
+  "files": {
+    "LICENSE": {
+      "sha256": "4b25434e6ec2012e28a484f1d7924a0fd1a8bf232c2be2d50d584d299d04d6d6",
+      "bytes": 12926
+    },
+    "README.md": {
+      "sha256": "3d68f328ece69a5c91272f2663bc0ca33e8f82507de902d660f8d6c064ffa443",
+      "bytes": 670
+    },
+    "fep3.png": {
+      "sha256": "cb4daf99163f531e2d726227d59390015838ad8536cd224e4ee487bd05910525",
+      "bytes": 70113
+    },
+    "meshes/robot_arms/fer/collision/hand.stl": {
+      "sha256": "94493e94f30fe940f2c8ca2f155c3bbe67bbff406d3edf5e261670d2f0f6e2ed",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fer/collision/link0.stl": {
+      "sha256": "dfc6d94330de8ddb005b311bfdba9f3b8e1aa7c256b71592ee7ff32cb9a9a5aa",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fer/collision/link1.stl": {
+      "sha256": "e41a39a94108fcf56aacff603fc91ec80541f4c1af17b51a0de5617f5566e6d2",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fer/collision/link2.stl": {
+      "sha256": "370f7605a0fae3529db169ded50f52f171024aa792d4d773bc84197301f6a039",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fer/collision/link3.stl": {
+      "sha256": "0a8d638b9349c6c0eefc4e888636ac4838c4b27170f18a51699321118af709c1",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fer/collision/link4.stl": {
+      "sha256": "0180ebb5772ec9840cb049750cffb29a9ddc90311752a16ea34757782ef9e48d",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fer/collision/link5.stl": {
+      "sha256": "dd17e688c7870e722283525879643d53a74c0024d328b0e14b034b54c8b6c31a",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fer/collision/link6.stl": {
+      "sha256": "20b768e99a0e0440b5754dcca108016434e57937cc356acd9c352ccd3cb27f77",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fer/collision/link7.stl": {
+      "sha256": "92ac6afcf7574c034d3170d8a68e95ac9048ab9d0dd5bbd8311b86e551b9ab1c",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fer/visual/finger.dae": {
+      "sha256": "12c7bc9b55ffd0d1d0e3442d3e213ecc4fbebbced15259a20195af464f871fcd",
+      "bytes": 52371
+    },
+    "meshes/robot_arms/fer/visual/hand.dae": {
+      "sha256": "1b50601d3157f810176aba6db7164d6bdb4ec8b6546a8a725baba2fa2a21c58a",
+      "bytes": 550371
+    },
+    "meshes/robot_arms/fer/visual/link0.dae": {
+      "sha256": "a7f5e5a0143e423ffb5ec1aeaa1cf2ab389ac843d74d8c4ddbebcb1a5ae5a279",
+      "bytes": 1592724
+    },
+    "meshes/robot_arms/fer/visual/link1.dae": {
+      "sha256": "92bc7949d546c2e34a7f1af54df7b4f91c34d3012a74c6133020013a544cfd74",
+      "bytes": 979605
+    },
+    "meshes/robot_arms/fer/visual/link2.dae": {
+      "sha256": "e5427e7e0c5f2f0de631650347b7e4e2acef40b8b8d6cc52d98e055bba422da7",
+      "bytes": 999676
+    },
+    "meshes/robot_arms/fer/visual/link3.dae": {
+      "sha256": "feca6e5e97002d454eb1b6482bf07e2574fcf066b8a3cfe81f64e25a23d40573",
+      "bytes": 1101015
+    },
+    "meshes/robot_arms/fer/visual/link4.dae": {
+      "sha256": "1ef9069b94d0d26fbf166654789559006d9ff61ae6de056956b469886697ce70",
+      "bytes": 1146855
+    },
+    "meshes/robot_arms/fer/visual/link5.dae": {
+      "sha256": "9e3f45fd1a7366949e8e8aa25cee6f90842793276e2d62ac4489f6c58c7f6376",
+      "bytes": 1439475
+    },
+    "meshes/robot_arms/fer/visual/link6.dae": {
+      "sha256": "3b55327b084952b49beb6f1f730494f16de6bd4d4b5464cbf1d4f3cd590162b7",
+      "bytes": 1729885
+    },
+    "meshes/robot_arms/fer/visual/link7.dae": {
+      "sha256": "5fa145c2c900a3f4c2b328e6ac2e642b7d78461b88f8d19eb9908baa4aa75f79",
+      "bytes": 937548
+    },
+    "meshes/robot_arms/fp3/collision/link0.stl": {
+      "sha256": "dfc6d94330de8ddb005b311bfdba9f3b8e1aa7c256b71592ee7ff32cb9a9a5aa",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fp3/collision/link1.stl": {
+      "sha256": "e41a39a94108fcf56aacff603fc91ec80541f4c1af17b51a0de5617f5566e6d2",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fp3/collision/link2.stl": {
+      "sha256": "370f7605a0fae3529db169ded50f52f171024aa792d4d773bc84197301f6a039",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fp3/collision/link3.stl": {
+      "sha256": "0a8d638b9349c6c0eefc4e888636ac4838c4b27170f18a51699321118af709c1",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fp3/collision/link4.stl": {
+      "sha256": "0180ebb5772ec9840cb049750cffb29a9ddc90311752a16ea34757782ef9e48d",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fp3/collision/link5.stl": {
+      "sha256": "dd17e688c7870e722283525879643d53a74c0024d328b0e14b034b54c8b6c31a",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fp3/collision/link6.stl": {
+      "sha256": "20b768e99a0e0440b5754dcca108016434e57937cc356acd9c352ccd3cb27f77",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fp3/collision/link7.stl": {
+      "sha256": "92ac6afcf7574c034d3170d8a68e95ac9048ab9d0dd5bbd8311b86e551b9ab1c",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fp3/visual/link0.dae": {
+      "sha256": "b529bf0dfc931aeaa7b8e43d4f3478cc7c7b962aa8044dee1562551be8daeed3",
+      "bytes": 7079745
+    },
+    "meshes/robot_arms/fp3/visual/link1.dae": {
+      "sha256": "11cb8b23bed1da8e363799de00bed93695fb97c4dc431d6f84c7bc6ff7a3e556",
+      "bytes": 906869
+    },
+    "meshes/robot_arms/fp3/visual/link2.dae": {
+      "sha256": "69c495376f1f143398a4b861eb39d7624663992e77760f6ceb6554f07bb1c334",
+      "bytes": 921741
+    },
+    "meshes/robot_arms/fp3/visual/link3.dae": {
+      "sha256": "04dabc8f8eda357bea8ea028f6659e05ddd8511db606646bad1d95a98a5e6662",
+      "bytes": 2475300
+    },
+    "meshes/robot_arms/fp3/visual/link4.dae": {
+      "sha256": "128308873e1b5ce8ed3e8a641fd4b97a99720f5476d1e4bf264e39bc77fd481e",
+      "bytes": 2533254
+    },
+    "meshes/robot_arms/fp3/visual/link5.dae": {
+      "sha256": "769aa34d986ee7b1f226d1045fbf97a654e4d864de408912d3129e269ef61e65",
+      "bytes": 3259318
+    },
+    "meshes/robot_arms/fp3/visual/link6.dae": {
+      "sha256": "da70f3303e61d0b3402ee553a60f6653104257b64bcf07dd9a031149de1c77c4",
+      "bytes": 5252689
+    },
+    "meshes/robot_arms/fp3/visual/link7.dae": {
+      "sha256": "e141040c6b74cec011f189f7b5b9751ec3e6c4b649affc8d50072df2f4d6df7a",
+      "bytes": 4243549
+    },
+    "meshes/robot_arms/fr3/collision/link0.stl": {
+      "sha256": "dfc6d94330de8ddb005b311bfdba9f3b8e1aa7c256b71592ee7ff32cb9a9a5aa",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fr3/collision/link1.stl": {
+      "sha256": "e41a39a94108fcf56aacff603fc91ec80541f4c1af17b51a0de5617f5566e6d2",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fr3/collision/link2.stl": {
+      "sha256": "370f7605a0fae3529db169ded50f52f171024aa792d4d773bc84197301f6a039",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fr3/collision/link3.stl": {
+      "sha256": "0a8d638b9349c6c0eefc4e888636ac4838c4b27170f18a51699321118af709c1",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fr3/collision/link4.stl": {
+      "sha256": "0180ebb5772ec9840cb049750cffb29a9ddc90311752a16ea34757782ef9e48d",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fr3/collision/link5.stl": {
+      "sha256": "dd17e688c7870e722283525879643d53a74c0024d328b0e14b034b54c8b6c31a",
+      "bytes": 15084
+    },
+    "meshes/robot_arms/fr3/collision/link6.stl": {
+      "sha256": "20b768e99a0e0440b5754dcca108016434e57937cc356acd9c352ccd3cb27f77",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fr3/collision/link7.stl": {
+      "sha256": "92ac6afcf7574c034d3170d8a68e95ac9048ab9d0dd5bbd8311b86e551b9ab1c",
+      "bytes": 10084
+    },
+    "meshes/robot_arms/fr3/visual/link0.dae": {
+      "sha256": "3c52a112d1610d645934945b80ea8d9bb3d1635f345098480a33a537bd43224e",
+      "bytes": 7079719
+    },
+    "meshes/robot_arms/fr3/visual/link1.dae": {
+      "sha256": "5c5846eabc714aefc82ef051a4d09c4fc1c092bca6258b1290227345dd217fcb",
+      "bytes": 906843
+    },
+    "meshes/robot_arms/fr3/visual/link2.dae": {
+      "sha256": "90a1bd38abdc53d0141719cd8e040f788db337b768a845bb6d53c5c52590498f",
+      "bytes": 921715
+    },
+    "meshes/robot_arms/fr3/visual/link3.dae": {
+      "sha256": "1c7a2a8124e39ad07096c0cce8461b0e650f6752900cfd777bf87c181e81749b",
+      "bytes": 2475274
+    },
+    "meshes/robot_arms/fr3/visual/link4.dae": {
+      "sha256": "dd134cf13cdaced2b67739e4d9fe2ca011cc533936397d9f6303fc740424e2a2",
+      "bytes": 2533228
+    },
+    "meshes/robot_arms/fr3/visual/link5.dae": {
+      "sha256": "cbcabd369e044eba3f1c2cab84b9ed2ebc1b2f424c6104ad9c5d7410e92fabfe",
+      "bytes": 3259292
+    },
+    "meshes/robot_arms/fr3/visual/link6.dae": {
+      "sha256": "907b16fea84931f4881174234065bb647700abf105b432c3ff65360e0ad5cf8b",
+      "bytes": 5252660
+    },
+    "meshes/robot_arms/fr3/visual/link7.dae": {
+      "sha256": "b9d05ac502ff269b1323705de811d07a8eb9920ce711b32ee0497bf16b74989b",
+      "bytes": 4243523
+    },
+    "meshes/robot_ee/cobot_pump/collision/cobot_pump.stl": {
+      "sha256": "a00f8acc46fa2e1746a7543c3e964a01dc47c9c1fc941099f6cdb05472249db8",
+      "bytes": 4961734
+    },
+    "meshes/robot_ee/cobot_pump/visual/cobot_pump.dae": {
+      "sha256": "69a9418a508919585a414d5a7cbf95c3b9c190823455419a7dbbb9c20ea6e056",
+      "bytes": 9812625
+    },
+    "meshes/robot_ee/franka_hand_black/collision/hand.stl": {
+      "sha256": "94493e94f30fe940f2c8ca2f155c3bbe67bbff406d3edf5e261670d2f0f6e2ed",
+      "bytes": 10084
+    },
+    "meshes/robot_ee/franka_hand_black/visual/finger.dae": {
+      "sha256": "12c7bc9b55ffd0d1d0e3442d3e213ecc4fbebbced15259a20195af464f871fcd",
+      "bytes": 52371
+    },
+    "meshes/robot_ee/franka_hand_black/visual/hand.dae": {
+      "sha256": "dfb158b62f22a542f35e5d718f3819e016be5906cd539d041a555f4ef7b218aa",
+      "bytes": 561219
+    },
+    "meshes/robot_ee/franka_hand_white/collision/hand.stl": {
+      "sha256": "94493e94f30fe940f2c8ca2f155c3bbe67bbff406d3edf5e261670d2f0f6e2ed",
+      "bytes": 10084
+    },
+    "meshes/robot_ee/franka_hand_white/visual/finger.dae": {
+      "sha256": "12c7bc9b55ffd0d1d0e3442d3e213ecc4fbebbced15259a20195af464f871fcd",
+      "bytes": 52371
+    },
+    "meshes/robot_ee/franka_hand_white/visual/hand.dae": {
+      "sha256": "1b50601d3157f810176aba6db7164d6bdb4ec8b6546a8a725baba2fa2a21c58a",
+      "bytes": 550371
+    },
+    "urdf/fr3.urdf": {
+      "sha256": "79f761a5322d64ab6e7c9827d5e57efc593ecffe55522b5bbcc3c700772bd217",
+      "bytes": 11484
+    },
+    "urdf/fr3_franka_hand.urdf": {
+      "sha256": "2a270e19a9b9c7ca5eb62ec9d503d779281605b6bba881f5ac6e8090aa382497",
+      "bytes": 15803
+    }
+  }
+}

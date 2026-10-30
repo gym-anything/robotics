@@ -1,0 +1,18 @@
+mdl 1.7;
+import ::OmniSurface::OmniSurfaceBase::*;
+
+// Finite3mm optical shell, not an alpha-cutout object. IOR is representative
+// clear PC (Covestro Makrolon2205); roughness/absorption are documented estimates.
+export material polycarbonate() = OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 0.0,
+    metalness: 0.0,
+    specular_reflection_weight: 1.0,
+    specular_reflection_roughness: 0.07,
+    specular_reflection_ior: 1.586,
+    enable_specular_transmission: true,
+    specular_transmission_weight: 1.0,
+    specular_transmission_color: color(0.978),
+    specular_transmission_scattering_depth: 0.003,
+    specular_transmission_scattering_color: color(0.0),
+    thin_walled: false
+);

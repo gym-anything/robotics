@@ -1,0 +1,24 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "welding-panda",
+  "description": "Robotic GMAW cell with two Panda arms: the right Panda carries a light MIG torch (RM2 + KS-2 class, ~1.6 kg, mounted on link8 by the welding environment; its Franka Hand removed), the left Panda a Franka Hand",
+  "instances": {
+    "left": {
+      "model": "panda@1",
+      "mount": "left_arm_mount",
+      "controller_profile": "welding"
+    },
+    "right": {
+      "model": "panda@1",
+      "mount": "right_arm_mount",
+      "controller_profile": "welding_torch"
+    }
+  },
+  "attachments": {
+    "left_hand": {
+      "model": "franka-hand@1",
+      "parent": "left/flange",
+      "mount_profile": "franka_native"
+    }
+  }
+}

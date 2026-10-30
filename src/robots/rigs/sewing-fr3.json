@@ -1,0 +1,28 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "sewing-fr3",
+  "instances": {
+    "left": {
+      "model": "fr3@1",
+      "mount": "left_arm_mount",
+      "controller_profile": "sewing"
+    },
+    "right": {
+      "model": "fr3@1",
+      "mount": "right_arm_mount",
+      "controller_profile": "sewing"
+    }
+  },
+  "attachments": {
+    "left_hand": {
+      "model": "franka-hand@1",
+      "parent": "left/flange",
+      "mount_profile": "franka_native"
+    },
+    "right_hand": {
+      "model": "franka-hand@1",
+      "parent": "right/flange",
+      "mount_profile": "franka_native"
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "robot": "Franka Panda",
+  "description_version": "0.7.1",
+  "source": "Isaac Sim 5.1 bundled franka_description; source package declares Apache 2.0",
+  "urdf": "robots/panda_arm_hand.urdf",
+  "files": {
+    "meshes/collision/finger.stl": {
+      "sha256": "eade0765d87446c8833d88511a4c46573baba2e8eacc15b975aecd123d740296",
+      "bytes": 2884
+    },
+    "meshes/collision/hand.stl": {
+      "sha256": "94493e94f30fe940f2c8ca2f155c3bbe67bbff406d3edf5e261670d2f0f6e2ed",
+      "bytes": 10084
+    },
+    "meshes/collision/link0.stl": {
+      "sha256": "dfc6d94330de8ddb005b311bfdba9f3b8e1aa7c256b71592ee7ff32cb9a9a5aa",
+      "bytes": 10084
+    },
+    "meshes/collision/link1.stl": {
+      "sha256": "e41a39a94108fcf56aacff603fc91ec80541f4c1af17b51a0de5617f5566e6d2",
+      "bytes": 15084
+    },
+    "meshes/collision/link2.stl": {
+      "sha256": "370f7605a0fae3529db169ded50f52f171024aa792d4d773bc84197301f6a039",
+      "bytes": 15084
+    },
+    "meshes/collision/link3.stl": {
+      "sha256": "0a8d638b9349c6c0eefc4e888636ac4838c4b27170f18a51699321118af709c1",
+      "bytes": 15084
+    },
+    "meshes/collision/link4.stl": {
+      "sha256": "0180ebb5772ec9840cb049750cffb29a9ddc90311752a16ea34757782ef9e48d",
+      "bytes": 15084
+    },
+    "meshes/collision/link5.stl": {
+      "sha256": "dd17e688c7870e722283525879643d53a74c0024d328b0e14b034b54c8b6c31a",
+      "bytes": 15084
+    },
+    "meshes/collision/link6.stl": {
+      "sha256": "20b768e99a0e0440b5754dcca108016434e57937cc356acd9c352ccd3cb27f77",
+      "bytes": 10084
+    },
+    "meshes/collision/link7.stl": {
+      "sha256": "92ac6afcf7574c034d3170d8a68e95ac9048ab9d0dd5bbd8311b86e551b9ab1c",
+      "bytes": 10084
+    },
+    "meshes/visual/finger.dae": {
+      "sha256": "a9d5471e9cdf76f85493df6fe6c76d29810edd21577c204009160496d5b77fbb",
+      "bytes": 51123
+    },
+    "meshes/visual/hand.dae": {
+      "sha256": "9602bbad114cfefd4bbb0cd0a57f3021bce9efbaaa1604a5e72bfb76926bb019",
+      "bytes": 548949
+    },
+    "meshes/visual/link0.dae": {
+      "sha256": "d9ceaa66bb3a734e3a32f2f737ae57a29e922f4a962ed77b9bb8d8e25cd33159",
+      "bytes": 1590896
+    },
+    "meshes/visual/link1.dae": {
+      "sha256": "9c8b7b7c1217d620a811fc0ee52d1d1b0e1470de955e7453872aac3f15cf7c5e",
+      "bytes": 978415
+    },
+    "meshes/visual/link2.dae": {
+      "sha256": "c44d0364f0030007e427106a4e842d835ca43902716cc46ee4f3342dab189e12",
+      "bytes": 998486
+    },
+    "meshes/visual/link3.dae": {
+      "sha256": "dab39a126153fb82f3650cca6de63a8e978f851aa5020a8e91b3d9d548dbba3d",
+      "bytes": 1099651
+    },
+    "meshes/visual/link4.dae": {
+      "sha256": "9e03d680e3a4a4555d673bcb8cb466e479f5cb069a5fc8a0b0f99c089c50fd63",
+      "bytes": 1145491
+    },
+    "meshes/visual/link5.dae": {
+      "sha256": "0be76681192578a14d6ace89527e4ee418f7395e825e285125e05fd998d24e3e",
+      "bytes": 1438169
+    },
+    "meshes/visual/link6.dae": {
+      "sha256": "ed9c57432b079d55b9954775f2ddfe34e8b904f683949b8eb6314238f8afa46e",
+      "bytes": 1727767
+    },
+    "meshes/visual/link7.dae": {
+      "sha256": "71be614f734bd27b2d7dec3e8bb022251cbbfce38b0a12dbfc1b88bc0513822a",
+      "bytes": 935952
+    },
+    "package.xml": {
+      "sha256": "c23371b24fd94068d9bdcd69bdf6ff94b026a0be8d7491302661341879c09f50",
+      "bytes": 676
+    },
+    "robots/panda_arm_hand.urdf": {
+      "sha256": "5aece94c95106e722825bc0487ec9ba3b1162a202c00f38a936a7a18523e8c92",
+      "bytes": 10514
+    }
+  }
+}

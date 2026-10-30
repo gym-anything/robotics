@@ -1,0 +1,42 @@
+mdl 1.7;
+import ::math::*;
+import ::state::*;
+import ::df::*;
+import ::OmniPBR::*;
+
+// Raised cotton fibres add broad grazing reflection, not plastic clear coat.
+// Appearance prior only; material dye, UV scale and physical mesh are unchanged.
+export material LaundryTextile(
+    color dye = color(0.8, 0.7, 0.3),
+    uniform texture_2d albedo = texture_2d(),
+    uniform texture_2d normalmap = texture_2d(),
+    uniform texture_2d roughmap = texture_2d(),
+    float brightness = 1.0,
+    float roughness = 0.8,
+    float repeats_per_m = 16.0,
+    bool woven_borders = false
+) = let {
+    float3 uv = state::texture_coordinate(0);
+    float x = uv.x/repeats_per_m;
+    float y = uv.y/repeats_per_m;
+    bool edge = x < 0.025 || x > 0.425 || y < 0.025 || y > 0.675;
+    bool dobby = math::abs(y-0.075) < 0.0175 || math::abs(y-0.625) < 0.0175;
+    bool band = woven_borders && (edge || dobby);
+    material foundation = OmniPBR::OmniPBR(
+        diffuse_color_constant: dye, diffuse_texture: albedo,
+        albedo_desaturation: 1.0, albedo_brightness: brightness,
+        diffuse_tint: band ? dye*0.82 : dye,
+        normalmap_texture: normalmap, bump_factor: 1.0, flip_tangent_v: false,
+        reflection_roughness_constant: roughness, reflectionroughness_texture: roughmap,
+        reflection_roughness_texture_influence: 1.0, enable_opacity: false, project_uvw: false);
+} in material(
+    surface: material_surface(scattering: df::weighted_layer(
+        weight: band ? 0.04 : 0.18,
+        layer: df::sheen_bsdf(roughness: 0.65, tint: dye*0.8+color(0.2),
+            multiscatter_tint: color(1.0), multiscatter: foundation.surface.scattering),
+        base: foundation.surface.scattering,
+        normal: foundation.geometry.normal)),
+    geometry: foundation.geometry,
+    ior: foundation.ior,
+    thin_walled: foundation.thin_walled
+);

@@ -1,0 +1,71 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "classroom-arrangement",
+ "default_task_id": "classroom-arrangement/v1/room114/straighten-row/seed-0",
+ "description": "Rearrange the furniture of a furnished 71 m2 U.S. secondary classroom (Room 114: 24 Virco 785 student desks and 24 9018 stack chairs on glides, a tutoring table with four chairs, a teacher's desk and chair, a book tote, a wastebasket) with a Franka Mobile FR3 Duo (holonomic TMR base, Spine lift, two FR3 arms with Franka Hands). Furniture are free rigid bodies with catalogue masses; glide-floor friction is pair-specific with a static-to-sliding transition; desks tip or slide according to push height and glide type.",
+ "selectors": [
+  "preset",
+  "task",
+  "seed",
+  "glides",
+  "contents",
+  "contract"
+ ],
+ "resolver": "classroom_arrangement.variants:task_resolve",
+ "count": 10,
+ "count_scope": "ten named tasks in preset room114: straighten-row (entry), push-in-chairs (entry), seat-tutoring-group (entry-intermediate), make-pod (intermediate-hard), exam-row (intermediate), chairs-up (hard), chairs-down (hard), clear-floor (intermediate), move-teacher-desk (hard), group-work (hard (extended)); seeds vary the start perturbations; glides (nylon/felt/steel) and contents (0-3 books per involved desk) are physics variations",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "split_note": "Frozen by hash of (task, seed) over seeds 0..999 of every task: {'train': 8016, 'validation': 985, 'test': 999} (classroom_arrangement/variations.json, sha256 a659cd3df40a037c); seeds 1000..9999 resolve with split null.",
+ "evaluator": {
+  "available": true,
+  "source": "classroom_arrangement/task.py",
+  "scope": "World state only: glides on floor dots, desk yaw, chair tuck depth / in-use distance / facing, pods (edge gap), exam spacing, chairs inverted on their own desk, accessible 0.915 m route on the floor occupancy grid, items upright and at rest over a 1 s window, nothing toppled or in the door swing; group-work matches its identical desks and chairs to the pod places and checks that the rest of the room is as found, and scores 1 on success, else 0.9 x a continuous progress credit x penalties. No autonomous-solution claim. Explicit contract classroom-tasks-v1 adds state-only continuous progress, place matching and rest-of-room preservation for the seven other task_set entries; 1 on success, else 0.9 x progress."
+ },
+ "qualification": "Component-qualified with assisted evidence: rest, friction, tip/slide, base, spine, grasps, reflex and robot pushes/turns/lifts of furniture by a scripted operator through the robot interface; phantom forces where labelled.",
+ "task_set": [
+  {
+   "task": "push-in-chairs",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "straighten-row",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "seat-tutoring-group",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "clear-floor",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "exam-row",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "move-teacher-desk",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "chairs-up",
+   "seed": 0,
+   "contract": "classroom-tasks-v1"
+  },
+  {
+   "task": "group-work",
+   "seed": 0
+  }
+ ],
+ "task_set_note": "Seven tasks select contract classroom-tasks-v1; group-work keeps its own evaluator. Bare selections and all ten original task IDs remain available. The classroom-tasks-v1 grading is tested on constructed states only and has not yet been run with the simulator."
+}

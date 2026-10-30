@@ -1,0 +1,123 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "syringe-handling",
+ "default_task_id": "syringe-handling/v1/injection/set-dose/seed-0",
+ "description": "Handle syringes at a clinical skills-laboratory counter: Luer-lock syringes whose plungers push against a liquid network (seal stick and slip, needle and cannula resistance, trapped air, a vial's closed headspace, a saline lock's extension tube and clamp, tissue that stores and gives back), needles that puncture and track with elastic deflection and a terminal yield flag, Luer joints that have to be turned, sheaths, a sharps container. Two FR3 arms with Franka Hands take a syringe from a tray, unsheathe it, clear its air, set, draw, give or flush a dose and clear away. Outcomes are measured from the liquid itself (millilitres by place and by time of arrival), pressures, what bare needles and nozzles touched, where a needle went in and how it came out.",
+ "cli_task_selector": "task",
+ "resolver": "syringe_handling.variants:task_resolve",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "evaluator": {
+  "available": true,
+  "source": "syringe_handling/task.py; syringe_handling/scoring.py (contract syringe-tasks-v1)",
+  "scope": "From the liquid ledger and the rigid state: dose and air in a syringe (ISO 7886-1 tolerance), liquid delivered to the vein or to a tissue layer and its rate, air delivered, line pressure, the vial's pose, pressure and contents, the lock's clamp and connector, needle path (entry, angle, lever, withdrawal), what bare needles and nozzles touched, resheathing by hand, spills by place, sharps in the container, rest. No autonomous-solution claim."
+ },
+ "qualification": "Component-qualified with assisted evidence: the plunger's force law against the closed form and a published table, each fit and each needle law on a bench, robot demonstrations with scripted joint targets. The tasks themselves are not claimed solved by a policy.",
+ "selectors": [
+  "preset",
+  "task",
+  "seed",
+  "variant",
+  "contract"
+ ],
+ "selector_choices": {
+  "preset": [
+   "injection",
+   "iv-lock"
+  ],
+  "task": [
+   "sharps-away",
+   "set-dose",
+   "draw-dose",
+   "inject",
+   "vial-to-pad",
+   "flush-lock",
+   "slow-push",
+   "fast-bolus"
+  ],
+  "variant": [
+   "plain",
+   "upright",
+   "adapter",
+   "half-vial",
+   "vacuum-vial",
+   "subcut",
+   "blocked",
+   "clamp-open",
+   "g22",
+   "g18",
+   "short"
+  ],
+  "contract": [
+   "v1",
+   "syringe-tasks-v1"
+  ]
+ },
+ "count": 25,
+ "count_scope": "25 task/variant pairs: 8 named tasks (injection: sharps-away, set-dose, draw-dose, inject, vial-to-pad; iv-lock: flush-lock, slow-push, fast-bolus) and 17 variants of them (--select variant=NAME; upright: inject / vial-to-pad with the pad strapped to an upright upper-arm model (its skin vertical, facing the robot) (inject, vial-to-pad); adapter: draw-dose through a vented needle-free vial adapter instead of the blunt fill needle (draw-dose); half-vial: draw-dose / vial-to-pad from a vial that holds 5 mL (draw-dose, vial-to-pad); vacuum-vial: draw-dose from a vial left 25 kPa under ambient by an earlier draw (draw-dose); subcut: inject as a subcutaneous dose: 0.3 mL from a 1 mL syringe through a 27 G x 13 mm needle (inject); blocked: flush-lock with a cannula that is blocked (do not force it) (flush-lock); clamp-open: flush-lock / slow-push / fast-bolus with the slide clamp found open (flush-lock, slow-push, fast-bolus); g22: the iv-lock tasks with a 22 G cannula (flush-lock, slow-push); g18: the iv-lock tasks with an 18 G cannula (flush-lock, slow-push, fast-bolus); short: slow-push as 1 mL over one minute (slow-push); plain: the task as listed); seeds move the loose things and change what the syringe and the vial hold",
+ "split_note": "Frozen by SHA-256 of (task, seed) over seeds 0..999 of every task (80/10/10); a variant has the split of its task and seed; seeds 1000..9999 resolve with split null.",
+ "task_set": {
+  "selections": [
+   {
+    "preset": "injection",
+    "task": "sharps-away",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "injection",
+    "task": "set-dose",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "injection",
+    "task": "draw-dose",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "iv-lock",
+    "task": "flush-lock",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "injection",
+    "task": "inject",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "iv-lock",
+    "task": "fast-bolus",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "iv-lock",
+    "task": "slow-push",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+   },
+   {
+    "preset": "injection",
+    "task": "vial-to-pad",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "v1"
+   }
+  ],
+  "note": "Existing placements and success predicates; the seven other tasks select the continuous-reward contract syringe-tasks-v1 explicitly. vial-to-pad keeps its own evaluator (contract v1). The new rewards have not been checked in rendered episodes."
+ }
+}

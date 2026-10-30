@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GAR · Session console</title><link rel="stylesheet" href="/dashboard/style.css"></head>
+<body><header><div><span class="eyebrow">GYM ANYTHING / ROBOTICS</span><h1>Session console</h1></div><span id="connection" class="badge">Disconnected</span></header>
+<main><section class="connection panel"><label>API key<input id="key" type="password" autocomplete="off" placeholder="Bearer key · held only in this tab"></label>
+<button id="connect">Connect</button><button id="disconnect" disabled>Disconnect</button><p>Attach to this existing environment. Connecting never resets it.</p></section>
+<div id="notice" role="status" aria-live="polite">Enter a key to connect. No simulation is started by this page.</div>
+<div class="workspace"><section class="panel view"><div class="bar"><h2>Camera observation</h2><button id="refresh" disabled>Refresh observation</button></div>
+<div id="frames" class="frames"><div class="empty">Your robot cameras will appear here.</div></div><p id="stamp">No observation captured</p>
+<details><summary>Proprioception</summary><pre id="proprio"></pre></details></section>
+<aside><section class="panel"><h2>Task &amp; session</h2><p id="task">Not connected</p><div id="reference"></div><p id="identity" class="muted"></p>
+<div id="owner" hidden><p id="clock">Command-driven clock · idle does not advance physics.</p><button id="pause" disabled>Pause commands</button><button id="resume" disabled>Resume commands</button></div></section>
+<section class="panel"><h2>Send robot command</h2><p class="muted">Exact JSON from the API contract. One request per click; no automatic retries.</p>
+<label>Action JSON<textarea id="action" spellcheck="false" placeholder='{"type": "..."}'></textarea></label>
+<button id="send" class="primary" disabled>Send action</button><pre id="result" aria-live="polite"></pre></section>
+<details class="panel"><summary>Available actions &amp; capabilities</summary><pre id="help"></pre></details></aside></div>
+<footer>Closing this page only disconnects. Reset, restore and server stop are explicit owner operations in the CLI.</footer></main>
+<script src="/dashboard/app.js"></script></body></html>

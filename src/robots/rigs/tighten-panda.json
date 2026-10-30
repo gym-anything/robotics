@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "tighten-panda",
+  "instances": {
+    "left": {"model": "panda@1", "mount": "left_arm_mount", "controller_profile": "tighten"},
+    "right": {"model": "panda@1", "mount": "right_arm_mount", "controller_profile": "tighten"}
+  },
+  "attachments": {
+    "left_hand": {"model": "franka-hand@1", "parent": "left/flange", "mount_profile": "franka_native"},
+    "right_hand": {"model": "franka-hand@1", "parent": "right/flange", "mount_profile": "franka_native"}
+  }
+}

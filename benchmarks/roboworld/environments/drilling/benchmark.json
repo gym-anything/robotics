@@ -1,0 +1,151 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "drilling",
+  "default_task_id": "drilling/v1/wall/anchor-holes/seed-0",
+  "description": "Drill holes the way building and shop technicians do, with real tools operated only by contact: in a basement maintenance workshop a two-armed robot technician (two FR3 arms with Franka Hands on a docked cart) drills anchor holes into a 200 mm C25/30 concrete wall with an SDS-plus rotary hammer (blows only under push, per-blow removal by energy, seeded #4 rebar and aggregate; marks laid out clear of the bars, except the rebar-relocate task's one hidden bar), removes the drilling dust with the nozzle of a shop vacuum it switches on and sets wedge anchors (drives them to their nominal embedment, then torques their nuts with an impact wrench whose adaptive-torque module stops at the 68 N m installation torque; the expansion clip grips by friction and an anchor in an oversize hole spins), and at a drill-press bench centre-punches, clamps and drills steel, aluminium, sheet and timber with a drill press and a cordless drill. Holes are physical records that become contact geometry; feed follows the applied force through published cutting laws (Machinery's Handbook / Shaw-Oxford for metal, a measured wood law, energy per volume for concrete).",
+  "selectors": [
+    "preset",
+    "task",
+    "seed",
+    "contract"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "preset": [
+      "bench",
+      "wall"
+    ],
+    "task": [
+      "anchor-holes",
+      "rebar-relocate",
+      "clean-and-set",
+      "ledger-anchor",
+      "take-drill",
+      "punch-layout",
+      "press-drill",
+      "press-blind",
+      "match-bolt",
+      "panel-holes",
+      "timber-bolt"
+    ],
+    "contract": [
+      "v1",
+      "drilling-tasks-v1"
+    ]
+  },
+  "resolver": "drilling.catalogue:task_resolve",
+  "count": 11,
+  "count_scope": "eleven named tasks (wall: anchor-holes, rebar-relocate, clean-and-set, ledger-anchor; bench: take-drill, punch-layout, press-drill, press-blind, match-bolt, panel-holes, timber-bolt). What a seed varies, task by task: the four wall tasks - the marks, the rebar offset, the aggregate packing and the hammer's starting mode; take-drill - where the drill lies on the bench (10 mm, 3 degrees); punch-layout - where the bar lies (10 mm, 6 degrees) and the punch's cap setting (60 to 130 N); press-drill and match-bolt - the loose bar's yaw (6 degrees); panel-holes - the four marks (10 by 15 mm) and the punch's setting; timber-bolt - the mark (10 by 30 mm); press-blind - nothing (one scene at every seed)",
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "split_note": "Frozen by SHA-256 of (task, seed) over seeds 0..999 of every task (80/10/10); seeds 1000..9999 resolve with split null.",
+  "evaluator": {
+    "available": true,
+    "source": "drilling/task.py",
+    "scope": "Hole records (entry position against the marks, axis, depth, diameter, through, burr, tear-out, spall, rebar damage, dust left in anchor holes), insertions of bolts and anchors with their peak axial force, anchor preload, expansion and spin, workpiece rotation while drilling, bit state (intact, temperature), tool end state. No autonomous-solution claim.",
+    "sources": [
+      "drilling/task.py",
+      "drilling/catalogue_evaluator.py"
+    ],
+    "contract_note": "Bare selections and v1 keep the original evaluator; the task set explicitly opts seven bench tasks into continuous scoring (drilling-tasks-v1). ledger-anchor keeps its own progress v3 scoring."
+  },
+  "qualification": "Component-qualified with assisted evidence (drilling/REPORT.pdf: component experiments, robot demonstrations, stability and runtime): cutting laws against published thrust/torque data, tool mechanisms, holes as contact geometry, percussion, cleaning and anchor setting; no policy solves a task.",
+  "task_set": {
+    "tasks": [
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "take-drill",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/take-drill/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "press-drill",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/press-drill/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "punch-layout",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/punch-layout/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "press-blind",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/press-blind/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "panel-holes",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/panel-holes/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "timber-bolt",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/timber-bolt/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "bench",
+          "task": "match-bolt",
+          "seed": 0,
+          "contract": "drilling-tasks-v1"
+        },
+        "task_id": "drilling/v1/bench/match-bolt/drilling-tasks-v1/seed-0",
+        "task_contract": "drilling-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "wall",
+          "task": "ledger-anchor",
+          "seed": 0
+        },
+        "task_id": "drilling/v1/wall/ledger-anchor/seed-0",
+        "task_contract": "ledger-anchor progress v3: score = 1 on success, else 0.9 x progress; progress = mean over the four marks of the opening carrying the most work, placement x (bore + level x position x (embedment + torque))/3, less a quarter per bar cut off a mark's opening and each other defect hole's share of a bore; embedment and torque count only at the embedment reached once torqued",
+        "difficulty": "hardest"
+      }
+    ],
+    "score_rule": "1 on success, else 0.9 x continuous state-based progress; untouched start = 0. Unevaluable state has no score. ledger-anchor keeps its own progress v3.",
+    "swap": "match-bolt is in the set in place of rebar-relocate: a recorded two-hand attempt with the rotary hammer still breaks the arms' payload limit. rebar-relocate and that limit stay as they are. match-bolt has assisted completions at seeds 0, 3 and 777.",
+    "start_states": "Existing presets, objects, marks and placements unchanged. No new props.",
+    "qualification": "Tested with constructed Python states only; the drilling-tasks-v1 evaluator has not yet been run with the simulator."
+  }
+}

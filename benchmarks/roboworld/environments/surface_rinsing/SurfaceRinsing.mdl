@@ -1,0 +1,14 @@
+mdl 1.7;
+import ::df::*;
+
+// Smooth dielectric with Beer-Lambert volume absorption (surface_rinsing/render.py): glassware walls, water streams and
+// pools. absorption: natural-log absorption coefficient per metre for R, G, B. Same model as wine_pouring's.
+export material RinsingDielectric(
+    uniform color absorption = color(0.0),
+    uniform float dielectric_ior = 1.5
+) = material(
+    thin_walled: false,
+    surface: material_surface(scattering: df::specular_bsdf(tint: color(1.0), mode: df::scatter_reflect_transmit)),
+    volume: material_volume(absorption_coefficient: absorption),
+    ior: color(dielectric_ior)
+);

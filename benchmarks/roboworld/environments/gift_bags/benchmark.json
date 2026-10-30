@@ -1,0 +1,142 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "gift-bags",
+  "default_task_id": "gift-bags/v1/counter/open-bag/seed-0",
+  "description": "Open paper packaging the way a sales clerk or a person at home does: take a factory-flat laminated rope-handle gift bag from a stack, open it, square its block bottom, drop in a bottom board and stand it on the counter mat (and put a boxed candle in it); take the telescoping lid off a two-piece gift box without the air film dragging the base up; tear the taped wrapping paper off a present; open a sealed corrugated supply carton at a back-room receiving table by removing its packing-tape seam and folding its four creased flaps open.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed",
+    "contract"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "preset": [
+      "counter",
+      "home",
+      "receiving"
+    ],
+    "task": [
+      "open-bag",
+      "bag-purchase",
+      "lift-lid",
+      "unwrap-gift",
+      "open-present",
+      "open-carton",
+      "open-flaps",
+      "put-lid-on",
+      "bag-candle"
+    ],
+    "contract": [
+      "legacy",
+      "gift-bags-tasks-v1",
+      "bag-purchase-v1"
+    ]
+  },
+  "resolver": "gift_bags.task_set_catalog:task_resolve",
+  "count": 9,
+  "count_scope": "Nine named tasks; the original six retain their bare selections and default meanings. Three appended tasks. The eight-task set selects new contracts explicitly.",
+  "splits": [],
+  "split_note": "No train/test split invented.",
+  "evaluator": {
+    "available": true,
+    "source": "gift_bags/task_set_evaluator.py (adapter); gift_bags/task.py (the original evaluator, unchanged)",
+    "scope": "Simulator state only: bag rim hull, bottom flatness, gusset crease angles, board and candle placement, lid overlap and base lift/tilt history, paper coverage of the box, seam-tape bond state and flap angles of the carton with carton and contents displacement, robot contact over a 3 s hands-off window. No autonomous-solution claim."
+  },
+  "qualification": "Contact world 2026-10-07b. Shown: home/lift-lid by two unassisted FR3 arms at 1 cm/s (at 10 cm/s the lid slips out of the squeeze in five runs of five); receiving/open-carton with phantom assistance, by peeling the seam tape (no knife is modelled), evaluator success in three runs. NOT shown: counter/open-bag and counter/bag-purchase (with the holds of two hands the mouth opens without a tear but the block bottom does not square; the openings that reach the goal state guide 2,760 of the tote's 3,559 vertices and used an incorrect friction model); home/unwrap-gift and home/open-present (phantom hands peel the end tape and open the end; nine attempts to get the paper off by sliding or tearing failed). No robot has opened the tote, unwrapped the present or opened the carton. Not established: whether an opened but unworked tote passes the two gusset checks (140 degrees with the board crease law, 93 with the paper-class law; the limit is 120). Known defects of the world: the wrapped present's start state is made without its photo frame, so its end tapes hold 6-7.5 N at rest; a 180 degree packing-tape peel is four times too strong; paper in contact runs far above 200x wall/sim. Friction is Coulomb's law with rest, checked on a tilted plane; paper, crease, tape, tear and air-film physics are component-qualified by benches.",
+  "task_set": {
+    "tasks": [
+      {
+        "selection": {
+          "preset": "home",
+          "task": "lift-lid",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/home/lift-lid/gift-bags-tasks-v1/seed-0",
+        "task_contract": "lift-lid/gift-bags-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "receiving",
+          "task": "open-flaps",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/receiving/open-flaps/gift-bags-tasks-v1/seed-0",
+        "task_contract": "open-flaps/gift-bags-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "home",
+          "task": "put-lid-on",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/home/put-lid-on/gift-bags-tasks-v1/seed-0",
+        "task_contract": "put-lid-on/gift-bags-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "counter",
+          "task": "bag-candle",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/counter/bag-candle/gift-bags-tasks-v1/seed-0",
+        "task_contract": "bag-candle/gift-bags-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "receiving",
+          "task": "open-carton",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/receiving/open-carton/gift-bags-tasks-v1/seed-0",
+        "task_contract": "open-carton/gift-bags-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "counter",
+          "task": "open-bag",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/counter/open-bag/gift-bags-tasks-v1/seed-0",
+        "task_contract": "open-bag/gift-bags-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "home",
+          "task": "unwrap-gift",
+          "seed": 0,
+          "contract": "gift-bags-tasks-v1"
+        },
+        "task_id": "gift-bags/v1/home/unwrap-gift/gift-bags-tasks-v1/seed-0",
+        "task_contract": "unwrap-gift/gift-bags-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "counter",
+          "task": "bag-purchase",
+          "seed": 0
+        },
+        "task_id": "gift-bags/v1/counter/bag-purchase/seed-0",
+        "task_contract": "bag-purchase-v1",
+        "difficulty": "hardest"
+      }
+    ],
+    "score_rule": "1 on success; otherwise 0.9 x continuous task progress; untouched start 0. bag-purchase keeps its original evaluator unchanged.",
+    "status": "Code and stub tests only: the task set is not yet run with the simulator or render-checked.",
+    "swaps": [],
+    "selection_notes": "open-present stays registered outside the eight. The recorded routes for open-bag and unwrap-gift failed, which does not show that every strategy fails; both are kept with that risk. bag-candle keeps the bag's factory crease memory and does not reset the creases to a worked state."
+  }
+}

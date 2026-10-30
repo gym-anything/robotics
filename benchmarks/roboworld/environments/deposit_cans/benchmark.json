@@ -1,0 +1,93 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "deposit-cans",
+  "default_task_id": "deposit-cans/v1/reference/seed-0",
+  "description": "Consolidate the designated drained beverage cans from the return counter and bussing tub into the retained collection bag. Preserve existing cans and reusable items; avoid floor loss; leave the station upright and intact, tub returned, and cans released and settled.",
+  "selectors": [
+    "variant",
+    "seed",
+    "contract"
+  ],
+  "resolver": "deposit_cans.variants:task_resolve",
+  "count": 8,
+  "count_scope": "Eight variants in one venue-service alcove, all with the same bag and station: single_can (1 counter can; entry), lid_cans (3 cans standing on the station lid; entry), sort_cups (8 counter cans with the 3 reusable cups among them on the right-hand row, cups back on the tray; medium), sort_waste (6 counter cans to the bag and 2 paper cups to the landfill bin; medium), empty_tub (the tub's 16 cans, tub back on the counter; medium), tub_cups (the tub's 8 cans with the 3 reusable cups standing among them, cups to the tray first; hard), reference (24 cans from counter and tub, 48 already in the bag; hard), high_fill (the same 24 into a bag already holding 120; hardest). All but high_fill have 48 cans already in the bag. Seeds vary initial can yaw (high_fill: the spin of each pre-existing can); they are not independently qualified episodes. The contract selector applies to reference only: v1 (the default: the reference instruction, the count-score evaluator and task id deposit-cans/v1/reference/seed-N) or deposit-tasks-v2 (task id deposit-cans/v1/reference/deposit-tasks-v2/seed-N). The eight-task catalogue is task_set below; its reference entry selects deposit-tasks-v2 explicitly.",
+  "splits": [],
+  "split_note": "No train/test split invented.",
+  "evaluator": {
+    "available": true,
+    "source": "deposit_cans/task.py",
+    "scope": "Deforming-bag containment, substep swept-surface validity, release/settling and preservation. Documented component evidence; no autonomous-solution claim. high_fill (contract high-fill-v1: job-level instruction, end-state verifier with a trailing 1 s rest window, tub, tray and cups let go, authored lying pre-existing pile, continuous score 1 if success else 0.9 x signed progress in [-0.9, 1]; tolerances returned in evaluation['thresholds']). single_can and empty_tub: the same evaluator (contract deposit-tasks-v1). lid_cans, sort_cups, sort_waste, tub_cups and reference selected with contract deposit-tasks-v2: the same evaluator under contract deposit-tasks-v2, which adds per-task items (cups on the tray credited and cups in the bag or on the floor charged for sort_cups and tub_cups; paper cups in the landfill bin credited, in the bag or on the floor charged, landfill bin upright for sort_waste); rules in deposit_cans/task.py. reference by default: the v1 evaluator (count score). Every evaluation reports task_contract."
+  },
+  "qualification": "Component-qualified v6/scene7 seed0 reference/high_fill presets and documented component fixtures. Strict loaded-pile stationary checks remain false; continuing packing, model limits and startup-inclusive cost are disclosed in the environment's report. The six other variants reuse that scene and component evidence and are not separately qualified. Other seeds/configurations are not independently qualified.",
+  "selector_choices": {
+    "variant": [
+      "single_can",
+      "lid_cans",
+      "sort_cups",
+      "sort_waste",
+      "empty_tub",
+      "tub_cups",
+      "reference",
+      "high_fill"
+    ],
+    "contract": [
+      "v1",
+      "deposit-tasks-v2"
+    ]
+  },
+  "task_set": {
+    "why": "Eight tasks by difficulty (entry: single_can, lid_cans; medium: sort_cups, sort_waste, empty_tub; hard: tub_cups, reference; hardest: high_fill) and diversity: counter, lid and tub sources; sorting reusable cups to the tray and paper cups to the landfill bin; single transfers or tipping; a bag already holding 120 cans.",
+    "score_rule": "1 if success else 0.9 x signed progress (the high_fill factor); see each task's task_contract.",
+    "seed_note": "seed 0 is the documented episode; other seeds change initial can yaw only and are not independently qualified.",
+    "tasks": [
+      {
+        "selection": {"variant": "single_can", "seed": 0},
+        "task_id": "deposit-cans/v1/single_can/seed-0",
+        "task_contract": "deposit-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {"variant": "lid_cans", "seed": 0},
+        "task_id": "deposit-cans/v1/lid_cans/seed-0",
+        "task_contract": "deposit-tasks-v2",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {"variant": "sort_cups", "seed": 0},
+        "task_id": "deposit-cans/v1/sort_cups/seed-0",
+        "task_contract": "deposit-tasks-v2",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {"variant": "sort_waste", "seed": 0},
+        "task_id": "deposit-cans/v1/sort_waste/seed-0",
+        "task_contract": "deposit-tasks-v2",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {"variant": "empty_tub", "seed": 0},
+        "task_id": "deposit-cans/v1/empty_tub/seed-0",
+        "task_contract": "deposit-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {"variant": "tub_cups", "seed": 0},
+        "task_id": "deposit-cans/v1/tub_cups/seed-0",
+        "task_contract": "deposit-tasks-v2",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {"variant": "reference", "contract": "deposit-tasks-v2", "seed": 0},
+        "task_id": "deposit-cans/v1/reference/deposit-tasks-v2/seed-0",
+        "task_contract": "deposit-tasks-v2",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {"variant": "high_fill", "seed": 0},
+        "task_id": "deposit-cans/v1/high_fill/seed-0",
+        "task_contract": "high-fill-v1",
+        "difficulty": "hardest"
+      }
+    ]
+  }
+}

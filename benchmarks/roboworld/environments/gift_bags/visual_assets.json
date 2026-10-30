@@ -1,0 +1,1108 @@
+{
+ "ClassicConsole_01": {
+  "files": {
+   "ClassicConsole_01_1k.usdc": {
+    "sha256": "629ae8b0bc68d3a714b761f09ccc34ec66bf3f0d9d92bf94a881091961a4f6d3",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/ClassicConsole_01/ClassicConsole_01_1k.usdc"
+   },
+   "textures/ClassicConsole_01_diff_1k.jpg": {
+    "sha256": "cf288157e8d8cfe70eef2d355a5d13076b9a1664ff1f5e6cb07f1970de6a2125",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ClassicConsole_01/ClassicConsole_01_diff_1k.jpg"
+   },
+   "textures/ClassicConsole_01_metallic_1k.exr": {
+    "sha256": "07f053164b507b25f24194f62fcffc636feab8c4447f252f9c0375e8b3ad7985",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/ClassicConsole_01/ClassicConsole_01_metallic_1k.exr"
+   },
+   "textures/ClassicConsole_01_nor_gl_1k.exr": {
+    "sha256": "1e0c5b194824aef3933dba46f6f7cce1a8da071e79acdfd5f654cdf61a3d5ab8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/ClassicConsole_01/ClassicConsole_01_nor_gl_1k.exr"
+   },
+   "textures/ClassicConsole_01_roughness_1k.jpg": {
+    "sha256": "6991eb00927d555207f34cb65ca9907395394971af979bf5f06cc805a077caeb",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ClassicConsole_01/ClassicConsole_01_roughness_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "Sofa_01": {
+  "files": {
+   "Sofa_01_1k.usdc": {
+    "sha256": "d165da153ba7ef6fd87752336f78427a91b82316a94524038138714c32a42f1f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/Sofa_01/Sofa_01_1k.usdc"
+   },
+   "textures/Sofa_01_diff_1k.jpg": {
+    "sha256": "1772047e7887a9ec44878e0720eda0829abfa744dec6ca03b492a31c4dc51cab",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Sofa_01/Sofa_01_diff_1k.jpg"
+   },
+   "textures/Sofa_01_metallic_1k.exr": {
+    "sha256": "804310733753f262ea07a5fa367e4c0b19d76a29d123890d8ab582e83790e777",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/Sofa_01/Sofa_01_metallic_1k.exr"
+   },
+   "textures/Sofa_01_nor_gl_1k.exr": {
+    "sha256": "8383cc49139360aa3c163c2baa70f585fcda7fc7704e71bedbca916c53fa7e17",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/Sofa_01/Sofa_01_nor_gl_1k.exr"
+   },
+   "textures/Sofa_01_roughness_1k.jpg": {
+    "sha256": "d691a01d97c30a5d4b4a1a61ad674078f56bb5d9957d511a279989d45e3aaeba",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Sofa_01/Sofa_01_roughness_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "beige_wall_002": {
+  "files": {
+   "beige_wall_002_diff_1k.jpg": {
+    "sha256": "03d91dba9aa743c19effefa0d21ba76709d4a899662495dea84762fcf452e8b9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/beige_wall_002/beige_wall_002_diff_1k.jpg"
+   },
+   "beige_wall_002_nor_gl_1k.jpg": {
+    "sha256": "d8203ab93b36673ae1f8490e75fb2891965e3b99340dc9141bfcf83c490175c0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/beige_wall_002/beige_wall_002_nor_gl_1k.jpg"
+   },
+   "beige_wall_002_rough_1k.jpg": {
+    "sha256": "d8ab0a230bc5aa89cc2c3b35765d974fe200661a8e8455e3678322ea743dc813",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/beige_wall_002/beige_wall_002_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "black_oak_veneer": {
+  "files": {
+   "black_oak_veneer_diff_1k.jpg": {
+    "sha256": "7893f9bfeda626364f0a803dea6327c9f3a7b2f2fe330f6b4f326f6b06c0c265",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/black_oak_veneer/black_oak_veneer_diff_1k.jpg"
+   },
+   "black_oak_veneer_nor_gl_1k.jpg": {
+    "sha256": "3073677e6adba6ac9e205d2b1eebdb0e2153a119c0a358b30bc5dcbb0ecfd7ec",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/black_oak_veneer/black_oak_veneer_nor_gl_1k.jpg"
+   },
+   "black_oak_veneer_rough_1k.jpg": {
+    "sha256": "c2b17b90ebc600d5d2512437d8506028306ba37c5785ab09031058f7208e2306",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/black_oak_veneer/black_oak_veneer_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "brass_vase_01": {
+  "files": {
+   "brass_vase_01_1k.usdc": {
+    "sha256": "39b0484357b0c6095a04959f54f16dbab7609735a129ee1f5f2a0a72ada2674b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/brass_vase_01/brass_vase_01_1k.usdc"
+   },
+   "textures/brass_vase_01_diff_1k.jpg": {
+    "sha256": "346bb95aeb7aaac89ff368c050e511f2e444d7636d1e135f8433a012423474dd",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_vase_01/brass_vase_01_diff_1k.jpg"
+   },
+   "textures/brass_vase_01_metal_1k.exr": {
+    "sha256": "5e41d35a12161be84ac4daef00eb7814e995f85242e3ea606068a1cf6c3d0dd6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_vase_01/brass_vase_01_metal_1k.exr"
+   },
+   "textures/brass_vase_01_nor_gl_1k.exr": {
+    "sha256": "0c97e9ee63ed6fef5dea397fabb89af2819acefbf5a655e21f6dc3b4e3b82c27",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_vase_01/brass_vase_01_nor_gl_1k.exr"
+   },
+   "textures/brass_vase_01_rough_1k.jpg": {
+    "sha256": "35c9ce3c55a653f3591bdee5701b1003c203673a3630ce9ed516358d353d7e4b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_vase_01/brass_vase_01_rough_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "cardboard_box_01": {
+  "files": {
+   "cardboard_box_01_1k.usdc": {
+    "sha256": "b88bc42d0b426c19bc502c011fb0aa64a238cd886faad939a313db0d3092d10e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/cardboard_box_01/cardboard_box_01_1k.usdc"
+   },
+   "textures/cardboard_box_01_diff_1k.jpg": {
+    "sha256": "122c7ba8c5935e289804a730b480677a4bffdf74a45c91970cba682df92e171c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/cardboard_box_01/cardboard_box_01_diff_1k.jpg"
+   },
+   "textures/cardboard_box_01_nor_gl_1k.exr": {
+    "sha256": "2c2c4f6ebbac965f9c231093fb46a49fad967239431a748c17117c70f8f1f177",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/cardboard_box_01/cardboard_box_01_nor_gl_1k.exr"
+   },
+   "textures/cardboard_box_01_rough_1k.exr": {
+    "sha256": "f1df3947649b4ee71824b5587b46b77570bc7736a7c90d1a697c4590cec86c13",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/cardboard_box_01/cardboard_box_01_rough_1k.exr"
+   }
+  },
+  "kind": "model"
+ },
+ "ceramic_vase_01": {
+  "files": {
+   "ceramic_vase_01_1k.usdc": {
+    "sha256": "f57e629819f59bbe52dcf624e353e9f45e812fdafb60a42d00d4d0a0b6a397d6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/ceramic_vase_01/ceramic_vase_01_1k.usdc"
+   },
+   "textures/ceramic_vase_01_diff_1k.jpg": {
+    "sha256": "5f7d22178b74a59fe92aa0ccc958b897e2fb80df514eb28b97000097c0e71beb",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_01/ceramic_vase_01_diff_1k.jpg"
+   },
+   "textures/ceramic_vase_01_metal_1k.exr": {
+    "sha256": "3dcb9dfd1c17d187b7b73382df3d1dfa7910aae8857a6c2f8869d301bb7f5a66",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/ceramic_vase_01/ceramic_vase_01_metal_1k.exr"
+   },
+   "textures/ceramic_vase_01_nor_gl_1k.exr": {
+    "sha256": "a249b2f7e0e4655ef957fec320db25c1755d3c29f9cc1b8237f4c599c16ab688",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/ceramic_vase_01/ceramic_vase_01_nor_gl_1k.exr"
+   },
+   "textures/ceramic_vase_01_rough_1k.jpg": {
+    "sha256": "2f6e631a389ef2c751e089ae033a5b8dc4d4c370afee3f0b4868cc3b8da49f6b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_01/ceramic_vase_01_rough_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "ceramic_vase_02": {
+  "files": {
+   "ceramic_vase_02_1k.usdc": {
+    "sha256": "ebd3ec1b7cf73d0694954b73e6f0fa7fe7257928171d1b3806ced28de1c994c7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/ceramic_vase_02/ceramic_vase_02_1k.usdc"
+   },
+   "textures/ceramic_vase_02_diff_1k.jpg": {
+    "sha256": "12320e404c744095945b164293e522baadb6a0b393648f5908bfea2903f7fcc0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_02/ceramic_vase_02_diff_1k.jpg"
+   },
+   "textures/ceramic_vase_02_nor_gl_1k.exr": {
+    "sha256": "58b140a2d229d9dc4ad473eba0537d0179c4fb819d1b1de10b85783394298690",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/ceramic_vase_02/ceramic_vase_02_nor_gl_1k.exr"
+   },
+   "textures/ceramic_vase_02_rough_1k.jpg": {
+    "sha256": "137ffbd61551654d94aebfd5f0b18fe9d85ed5c1515d32cca65c9db62fccd01b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_02/ceramic_vase_02_rough_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "concrete_floor_worn_001": {
+  "files": {
+   "concrete_floor_worn_001_diff_1k.jpg": {
+    "sha256": "6e40c0fc908f4d66431836f5abe203f3a4eb064e88824378a91a46a26e2f464c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg"
+   },
+   "concrete_floor_worn_001_nor_gl_1k.jpg": {
+    "sha256": "523bd94a1be5dd2f11c2ae2b7d7c77445cf5bd9e41604db515a7c8364dcba067",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg"
+   },
+   "concrete_floor_worn_001_rough_1k.jpg": {
+    "sha256": "069efe4ca018e0ef61fd8cc9964395ba8272284ae239da68d7f87988e2e9f488",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "decorative_book_set_01": {
+  "files": {
+   "decorative_book_set_01_1k.usdc": {
+    "sha256": "3d15e7075ec71c721c30af011b5be4e9fc1fcc9908aae5c57b4e8f4b58261a50",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/decorative_book_set_01/decorative_book_set_01_1k.usdc"
+   },
+   "textures/book_hardcover_01_cover02_1k.png": {
+    "sha256": "29421ec31340b100d1a3d9b0ccf7496c0a42f4826480b3689a4fe717e66d289a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover02_1k.png"
+   },
+   "textures/book_hardcover_01_cover06_1k.png": {
+    "sha256": "2f3f5440473c565c8f24491bc54d67f754800146d95dcdb0eff8816c57b5ead4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover06_1k.png"
+   },
+   "textures/book_hardcover_01_cover07_1k.png": {
+    "sha256": "0e242fd00b7b0075e5e98ec91ee7b66b0417379528a64f4e0fa6c16e80034510",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover07_1k.png"
+   },
+   "textures/book_hardcover_01_cover08_1k.png": {
+    "sha256": "fce276ec4a4b19d44fc401b63373dc21114b392ccaa1346588e047c5ab122ec4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover08_1k.png"
+   },
+   "textures/book_hardcover_01_cover13_1k.png": {
+    "sha256": "5c2792ee4b9e14d6df7da921ad661a2f49009579b61950a4689c3cf7548fe435",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover13_1k.png"
+   },
+   "textures/book_hardcover_01_cover15_1k.png": {
+    "sha256": "b47ef5713317d8de36cdca18509cde153c00639f9d3bd5425ff319a36587d1ae",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover15_1k.png"
+   },
+   "textures/book_hardcover_01_cover23_1k.png": {
+    "sha256": "d6c2f81ff83f09192e3a7bacfdd0af6208350b3b320e73ed5f1583c8424a9290",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover23_1k.png"
+   },
+   "textures/book_hardcover_01_cover24_1k.png": {
+    "sha256": "0a351380f057ed1aa8f88d951d3ce4d34edf6c40508ce61f26fb75fda621508a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover24_1k.png"
+   },
+   "textures/book_hardcover_01_cover29_1k.png": {
+    "sha256": "59eb0f0dc39e258be5e7b4b753d1fb20439dbe0d0bccc20b98110d462993095f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover29_1k.png"
+   },
+   "textures/book_hardcover_01_cover34_1k.png": {
+    "sha256": "4b7c72d3c221262f10a4e74703f6bccf9421a02b1fa4062e651b8b0555028d11",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover34_1k.png"
+   },
+   "textures/book_hardcover_01_cover35_1k.png": {
+    "sha256": "ec279594e03f50938ea54480126538ed0c4e74058f7d208e51ac74a1ffe7e4ec",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover35_1k.png"
+   },
+   "textures/book_hardcover_01_cover36_1k.png": {
+    "sha256": "9d73fe6838be353f3d8c92d5d956539ad7c5b3fde51aefee352390b38866b26b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover36_1k.png"
+   },
+   "textures/book_hardcover_01_cover37_1k.png": {
+    "sha256": "0045b9a10d9bd11e6056f6637de3721a8140e5c90ad9bb7e212390582ce1bb9d",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover37_1k.png"
+   },
+   "textures/book_hardcover_01_cover41_1k.png": {
+    "sha256": "89dd0350cc8cafdc2f73f15e624e35bac481c546c0b6574f75e987401c32ac36",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover41_1k.png"
+   },
+   "textures/book_hardcover_01_cover42_1k.png": {
+    "sha256": "51e78af790acc13577748a6a7e4cab5c2235c6383544550f3e60f65a61f41534",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover42_1k.png"
+   },
+   "textures/book_hardcover_01_cover47_1k.png": {
+    "sha256": "3a9c3225084e70ac90390e6f0ffb36d3886247ffa75ce57ff2872bf0392dafd7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover47_1k.png"
+   },
+   "textures/book_hardcover_01_cover48_1k.png": {
+    "sha256": "4e59dbc41f1df190095df266fdf23dcd39411d6fad5f36fd33d1e83a42aa1508",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover48_1k.png"
+   },
+   "textures/book_hardcover_01_cover49_1k.png": {
+    "sha256": "49597344dbb9e921ba752b59f68aeda6ebe303253b4b012b1d0aca90606bc9a9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover49_1k.png"
+   },
+   "textures/book_hardcover_01_cover51_1k.png": {
+    "sha256": "7314195e07767fffcbf5fbd75425b53488940cc99966cffc534fde484fb02763",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover51_1k.png"
+   },
+   "textures/book_hardcover_01_cover54_1k.png": {
+    "sha256": "f2f053c4c6fe8c906c9c691098c3a3815744a5919b7da95f6bd4a4269d62f670",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover54_1k.png"
+   },
+   "textures/book_hardcover_01_cover62_1k.png": {
+    "sha256": "1161937df9c968d626c029f44014f8ec138198617878bf7989e2e28538ce4466",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover62_1k.png"
+   },
+   "textures/book_hardcover_01_cover65_1k.png": {
+    "sha256": "afaeb7a9ae2a8c92cc319ee3e28030f5418c22bb55b1ba4911e4aac3b4d1b654",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover65_1k.png"
+   },
+   "textures/book_hardcover_01_cover66_1k.png": {
+    "sha256": "4c9eaaa0f3d0b26d57567b17aa68b405f02f6c4fbe18406326e1f6629667b9ef",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover66_1k.png"
+   },
+   "textures/book_hardcover_01_cover68_1k.png": {
+    "sha256": "1e0c5cea530c3d52a5779728e2cadc9937fce5b6b43e5252ca72f2005400ddda",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover68_1k.png"
+   },
+   "textures/book_hardcover_01_cover69_1k.png": {
+    "sha256": "74f553c696e58f4f79ad1c47080be580b1f6ab6d72dbf3e43d021932a562b67b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover69_1k.png"
+   },
+   "textures/book_hardcover_01_cover75_1k.png": {
+    "sha256": "bbab9c51ed5460bbfd12fcbcb678b5396a88912a0a3d7a472251b721e4ac3d91",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover75_1k.png"
+   },
+   "textures/book_hardcover_01_cover79_1k.png": {
+    "sha256": "6ef432bf4d71864c11221d9b8716af930e715ce62566c75eb38312edad5d3282",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover79_1k.png"
+   },
+   "textures/book_hardcover_01_cover80_1k.png": {
+    "sha256": "7921b2116c1b250545b272fd2ded92614607c4437ab44316b001fbec6e57a223",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover80_1k.png"
+   },
+   "textures/book_hardcover_01_cover83_1k.png": {
+    "sha256": "37ed31e5975c2ffd8c29df55f91a6bf21731c2cf3f5b84bb8467d24fb234d562",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover83_1k.png"
+   },
+   "textures/book_hardcover_01_cover85_1k.png": {
+    "sha256": "fc870a91f1425cb8b3a298e3fed2975d0826fdf9f098abac1e00074e103dcc7c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover85_1k.png"
+   },
+   "textures/book_hardcover_01_cover87_1k.png": {
+    "sha256": "dc8b2f5c35365fe394eb2308144cec21d4fba2c48442b86547f1855e0410bdb9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_cover87_1k.png"
+   },
+   "textures/book_hardcover_01_diff_1k.jpg": {
+    "sha256": "f611a85dea70d52b350dc75375a83e13dbdfb7b1ebb87b1851d60cb6629165f9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/book_hardcover_01_diff_1k.jpg"
+   },
+   "textures/book_hardcover_01_mask01_1k.png": {
+    "sha256": "ee721a59b5c26a0811ba4829409c46e847ad3997904c44c6d48d47023f5d1307",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_mask01_1k.png"
+   },
+   "textures/book_hardcover_01_mask02_1k.png": {
+    "sha256": "2e04655b3e6dad8b64593249e94f5ae86fe556441be167c3424cd59670cfa0e0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_mask02_1k.png"
+   },
+   "textures/book_hardcover_01_mask03_1k.png": {
+    "sha256": "2a5990b6d7218b519d1fd18b0fe9b655b2d8f854b801f2fcc59e9e058bf9d299",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_hardcover_01_mask03_1k.png"
+   },
+   "textures/book_hardcover_01_nor_gl_1k.exr": {
+    "sha256": "7e5d7a2cb07f3c5814a8ace182c394fa406d6dd014559d9e79d98d6504ce2f55",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/decorative_book_set_01/book_hardcover_01_nor_gl_1k.exr"
+   },
+   "textures/book_hardcover_01_roughness_1k.jpg": {
+    "sha256": "9d447ed803c4ee12ab685803b5bf0d7a9d3fbfc4abf0e41964b7b42262277838",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/book_hardcover_01_roughness_1k.jpg"
+   },
+   "textures/book_softcover_01_cover01_1k.png": {
+    "sha256": "f026fd1a168aa1d969eb0ba2a0fe3e574d3ea631656cb470b93c05baa4f66640",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover01_1k.png"
+   },
+   "textures/book_softcover_01_cover04_1k.png": {
+    "sha256": "aefebccb22e643fbb40bdd445f71f24306982750d8808717bf5bbb540b56d4d3",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover04_1k.png"
+   },
+   "textures/book_softcover_01_cover05_1k.png": {
+    "sha256": "5c886b67d0ebf54934237c34af7c2e0c6ccdc18d0c43c1d36d59757062c2a081",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover05_1k.png"
+   },
+   "textures/book_softcover_01_cover09_1k.png": {
+    "sha256": "d3cec1cf74513da7a4fe283d13e3b962dcb507a36d65f58d92569ecf4272e381",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover09_1k.png"
+   },
+   "textures/book_softcover_01_cover11_1k.png": {
+    "sha256": "e71d92cc7622aeda0e81f530d326d9a7ef861a94789d7f58783b02d1f37052c1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover11_1k.png"
+   },
+   "textures/book_softcover_01_cover12_1k.png": {
+    "sha256": "92ab4d3659858a7854995e8bc882cafa4a7157a6bc1b044f1b716374ebaaf5ab",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover12_1k.png"
+   },
+   "textures/book_softcover_01_cover14_1k.png": {
+    "sha256": "530157d33ba43466be37d1488064d97f283542f376cfbd5b4dc7e922af468139",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover14_1k.png"
+   },
+   "textures/book_softcover_01_cover25_1k.png": {
+    "sha256": "624d50a259b8cbc1a436e56f1355399c568e50a58f3cfb098980376ddc5a6fd4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover25_1k.png"
+   },
+   "textures/book_softcover_01_cover27_1k.png": {
+    "sha256": "4e31e8640d37db8b178d17dbac3c69094e1b7a18c7365f4150511681589b6cd8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover27_1k.png"
+   },
+   "textures/book_softcover_01_cover28_1k.png": {
+    "sha256": "6d606b0ede76c4811fa77327365778a1ad5e4362e252abcc106f63bc198a2dc5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover28_1k.png"
+   },
+   "textures/book_softcover_01_cover31_1k.png": {
+    "sha256": "c25c7ae46d6c434bcc4f41280fad4cbba6679dec8de049e1522860c01c5cc253",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover31_1k.png"
+   },
+   "textures/book_softcover_01_cover32_1k.png": {
+    "sha256": "51a777d0596bf994a14a30757d18c21685689aaabb40113e4578aee0cee32098",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover32_1k.png"
+   },
+   "textures/book_softcover_01_cover33_1k.png": {
+    "sha256": "e3c98aad14cda8de86cff8a410c530573206efff085d00858338539b7f0f412d",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover33_1k.png"
+   },
+   "textures/book_softcover_01_cover38_1k.png": {
+    "sha256": "848c0d028d6dd506b7241e62180b11bcb7d7ef7e57c641409b4e82f3d6fbf071",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover38_1k.png"
+   },
+   "textures/book_softcover_01_cover39_1k.png": {
+    "sha256": "e598d82c59dd79fd0abb77f22b011e07c584ad022ffaff92023d18937ce611ba",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover39_1k.png"
+   },
+   "textures/book_softcover_01_cover40_1k.png": {
+    "sha256": "644122e0acfb52a52b95b590fe859cd8646de755392784f2fa3a3f1a7c448130",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover40_1k.png"
+   },
+   "textures/book_softcover_01_cover45_1k.png": {
+    "sha256": "1a680f3555a87387b0ec9230d55e935f43984b3a4580219c0948f8f5f4ecc1a7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover45_1k.png"
+   },
+   "textures/book_softcover_01_cover46_1k.png": {
+    "sha256": "6b09b8e84b8f61941b49af5fde8ebde98e41c1511bcb7a67bcf5861d6bb89788",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover46_1k.png"
+   },
+   "textures/book_softcover_01_cover52_1k.png": {
+    "sha256": "0592f399860a6d23d458a0abbb77dd847d857d5a49b2043cd664eaa2ef882d42",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover52_1k.png"
+   },
+   "textures/book_softcover_01_cover56_1k.png": {
+    "sha256": "b8ed2ace55d1a24fa2060dd0e61f0bb2e9281918cae3d0f564323bbe92d5a913",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover56_1k.png"
+   },
+   "textures/book_softcover_01_cover58_1k.png": {
+    "sha256": "ccf2a913c163d676e333fe82749b51a72ae4ee53142ecb9782f80867e8c617a7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover58_1k.png"
+   },
+   "textures/book_softcover_01_cover59_1k.png": {
+    "sha256": "b48c798274dbb41a7dce4ee2ac49571d9cd687e39581742fe3e5ce43895b5beb",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover59_1k.png"
+   },
+   "textures/book_softcover_01_cover61_1k.png": {
+    "sha256": "0950e6fc93071eba1db8b60774ed6e43d79e7561f9923ec21c380fbe2ea3f180",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover61_1k.png"
+   },
+   "textures/book_softcover_01_cover63_1k.png": {
+    "sha256": "ad4eeea4e9420a76d7c0f454c75f1f02eb67477325cf9bea2ac53a429e71f75c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover63_1k.png"
+   },
+   "textures/book_softcover_01_cover64_1k.png": {
+    "sha256": "f19d3964f436b411caf7c24001bed0c683c9061c66ec95fcd06564eee61f02a3",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover64_1k.png"
+   },
+   "textures/book_softcover_01_cover67_1k.png": {
+    "sha256": "44c763e04a6ef65ff50443b0aba7695b256e348ad04feeae3a38cc1f1d63cb06",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover67_1k.png"
+   },
+   "textures/book_softcover_01_cover70_1k.png": {
+    "sha256": "003928e15c0f687a19ab32ed33a7794342aaf397504e8a7194072dd1fcecdf3c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover70_1k.png"
+   },
+   "textures/book_softcover_01_cover76_1k.png": {
+    "sha256": "9dcc4507d29859d3d042d7e014849e5f190bf589e299649275459a8e4f2135a5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover76_1k.png"
+   },
+   "textures/book_softcover_01_cover77_1k.png": {
+    "sha256": "af46c48bb1653f48c583ab6e5dcdfbd8d58accfe3935ed7411ff85ba54c26cf1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover77_1k.png"
+   },
+   "textures/book_softcover_01_cover78_1k.png": {
+    "sha256": "afa4c56a83606a7476095dda0baaa616a4693685fac130c78818e342f055e044",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover78_1k.png"
+   },
+   "textures/book_softcover_01_cover81_1k.png": {
+    "sha256": "982fc96b43e4c432adb672db24ea154bfe6366ae44cfb3942a9b1395fdaa83cc",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover81_1k.png"
+   },
+   "textures/book_softcover_01_cover82_1k.png": {
+    "sha256": "1e4958d08d5b7437efac853650eb9d34997dd1f48e8503880101111536fea180",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover82_1k.png"
+   },
+   "textures/book_softcover_01_cover86_1k.png": {
+    "sha256": "a510125f5bd8d86e9d2f01ac743969508795305a902f6d00fbc97a423d454997",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover86_1k.png"
+   },
+   "textures/book_softcover_01_cover88_1k.png": {
+    "sha256": "7f2c6867fbe42e6e0821cf517b111ea920dcaabdcbec953ab44776d4e46a4d90",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_cover88_1k.png"
+   },
+   "textures/book_softcover_01_diff_1k.jpg": {
+    "sha256": "ae959dd7c152200e13fc96f2e183ccd6f6a9671983670e8ff90f50be94e05e51",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/book_softcover_01_diff_1k.jpg"
+   },
+   "textures/book_softcover_01_mask01_1k.png": {
+    "sha256": "04bb8d154cec91f13155745d63fab5acf3fc897b2b617a4a3bbf1d012e6e430d",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_mask01_1k.png"
+   },
+   "textures/book_softcover_01_mask02_1k.png": {
+    "sha256": "ec8ebd8c1e3c7503307667c7a5d6bbeac74610f339bfc9f0a57158613fce61f9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_mask02_1k.png"
+   },
+   "textures/book_softcover_01_mask03_1k.png": {
+    "sha256": "52d485a57ed26851cce94f0ee856babc7af7d1d3192aa905ede03ebe28c51f1a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/book_softcover_01_mask03_1k.png"
+   },
+   "textures/book_softcover_01_nor_gl_1k.exr": {
+    "sha256": "d7304e0b52e129c3b9f948b419ca6722fd81616f3e49fa7d83a6f934b697731f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/decorative_book_set_01/book_softcover_01_nor_gl_1k.exr"
+   },
+   "textures/book_softcover_01_roughness_1k.jpg": {
+    "sha256": "1712f3e6880e59ee70d50ff504fbb219d579aa161bc949fc5d6d38f99d32a220",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/book_softcover_01_roughness_1k.jpg"
+   },
+   "textures/catalogue_hardcover_01_cover03_1k.png": {
+    "sha256": "0870330f4cd2c035e4a203240e69d5d4ffeadb2836a8aaffaea1fd4426ea45b4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_cover03_1k.png"
+   },
+   "textures/catalogue_hardcover_01_cover44_1k.png": {
+    "sha256": "27b176069b373534add5cca1ef49fed83a1f0fcc38724c17d70e7e037251e5a7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_cover44_1k.png"
+   },
+   "textures/catalogue_hardcover_01_cover55_1k.png": {
+    "sha256": "763ad7f661330527b76ecdb30d31345fcc24b7b9d0d56b5e20d0a0291af20a44",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_cover55_1k.png"
+   },
+   "textures/catalogue_hardcover_01_cover60_1k.png": {
+    "sha256": "264a2ba33eb2a9f2808e895e86c85b055377cbab5476121966a3aa5e102a63bb",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_cover60_1k.png"
+   },
+   "textures/catalogue_hardcover_01_diff_1k.jpg": {
+    "sha256": "0dfa2d26a128f37545ec4b2d28741b91a22c531b8905242f4bb2a1dd85322458",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/catalogue_hardcover_01_diff_1k.jpg"
+   },
+   "textures/catalogue_hardcover_01_mask01_1k.png": {
+    "sha256": "0d044bd9af493dea42cc4fab5ceb3f6acf15dda647a17ea37b7d4949a18654c1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_mask01_1k.png"
+   },
+   "textures/catalogue_hardcover_01_mask02_1k.png": {
+    "sha256": "ae0591eff463f4df9a004d488f0dd7cdd4a952520f3c6441cc6e96071232979e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_mask02_1k.png"
+   },
+   "textures/catalogue_hardcover_01_mask03_1k.png": {
+    "sha256": "a897dedd43e2c0b674508f34e7472ea7bc98edad9b645e939d528df75adf7f20",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_hardcover_01_mask03_1k.png"
+   },
+   "textures/catalogue_hardcover_01_nor_gl_1k.exr": {
+    "sha256": "ffb8d20b474325952539b9afbab3e18f4bfcfb9dd8cf207e451c63698027621b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/decorative_book_set_01/catalogue_hardcover_01_nor_gl_1k.exr"
+   },
+   "textures/catalogue_hardcover_01_roughness_1k.jpg": {
+    "sha256": "628c19cef98d4318c0c0427333ca83157a7047481751c4efb4d28b2e3ed59c36",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/catalogue_hardcover_01_roughness_1k.jpg"
+   },
+   "textures/catalogue_softcover_01_cover10_1k.png": {
+    "sha256": "40aa55c639ff3745c71fb3447fe2f1fabd81e96f302fc66b80e8691167fcf5c4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_softcover_01_cover10_1k.png"
+   },
+   "textures/catalogue_softcover_01_cover26_1k.png": {
+    "sha256": "c2c90dbc43292fb4b6a396f5193e21d10912d5ff6348454377e2961ce17e487a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_softcover_01_cover26_1k.png"
+   },
+   "textures/catalogue_softcover_01_cover57_1k.png": {
+    "sha256": "f298c0a605d82acafa502cf1adb4abd620bb05a43f3660bec333b0945dec3729",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_softcover_01_cover57_1k.png"
+   },
+   "textures/catalogue_softcover_01_diff_1k.jpg": {
+    "sha256": "97df3d5d205fa195d034d1b6ef0deb1c44a896b07c0321f0ce241bbfd9caacd5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/catalogue_softcover_01_diff_1k.jpg"
+   },
+   "textures/catalogue_softcover_01_mask01_1k.png": {
+    "sha256": "0cafcbf66e8ff236987318e9ccd7f7262180c134acd9f9b4cf182783ad4daa3f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_softcover_01_mask01_1k.png"
+   },
+   "textures/catalogue_softcover_01_mask02_1k.png": {
+    "sha256": "2e7ba8b3d3b69b8e339c41d3f6e92827561201cc076310a55c7e128d6f436c18",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_softcover_01_mask02_1k.png"
+   },
+   "textures/catalogue_softcover_01_mask03_1k.png": {
+    "sha256": "fac3fdfbbbc2ff0537ee38fe88f6784bf5521d9a170f4ed1ebecef2d8bef7ff8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/catalogue_softcover_01_mask03_1k.png"
+   },
+   "textures/catalogue_softcover_01_nor_gl_1k.exr": {
+    "sha256": "ab9c8adb702fa988cfebbe5cf908ddcf188ea81dde87885fabc998561ab56a61",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/decorative_book_set_01/catalogue_softcover_01_nor_gl_1k.exr"
+   },
+   "textures/catalogue_softcover_01_roughness_1k.jpg": {
+    "sha256": "ef854acf859a6a8a2f40198b4db6d0758fcecb93bdb25bb4d387391d04882fca",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/catalogue_softcover_01_roughness_1k.jpg"
+   },
+   "textures/magazine_01_cover16_1k.png": {
+    "sha256": "91ab439107aa36a49c263072b6f4595c0fa562077ecdd373c22337c4c73d9451",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover16_1k.png"
+   },
+   "textures/magazine_01_cover17_1k.png": {
+    "sha256": "ee688a49c7e1a1c7f201806ed910e442408f419ed3dff0c2b5114793e92bdadf",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover17_1k.png"
+   },
+   "textures/magazine_01_cover18_1k.png": {
+    "sha256": "eb728dde6ae80bd4cf77d5bb995068eb69b38409dbd336a5178df12191f439e0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover18_1k.png"
+   },
+   "textures/magazine_01_cover19_1k.png": {
+    "sha256": "002dbc6f7b11f1c08f21dbb1c30c12c6a01673f19d7b065306d6302b99cb9b4a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover19_1k.png"
+   },
+   "textures/magazine_01_cover20_1k.png": {
+    "sha256": "7eaceedd4f9d994c91a43756490ab0572c528a265238d96b3208a6ff1cd00827",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover20_1k.png"
+   },
+   "textures/magazine_01_cover21_1k.png": {
+    "sha256": "01109578780ac7cc7a687d1eea4876f2d695cb71f56fc6dd1d0be6e89596e7d9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover21_1k.png"
+   },
+   "textures/magazine_01_cover22_1k.png": {
+    "sha256": "447a975db7e084f99db8fb6bf905ddaa4792b73f3cb829f0e838dcc1935cd7f7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover22_1k.png"
+   },
+   "textures/magazine_01_cover43_1k.png": {
+    "sha256": "beaa99fa77e6ec2edfe67736bfdad1cf7785f8115861ca4398298984ec6afeb5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover43_1k.png"
+   },
+   "textures/magazine_01_cover50_1k.png": {
+    "sha256": "93befa1e4e0e83eea56e5c35370d3d2fef9c2ece9db9c764fc47155b5a972b9b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover50_1k.png"
+   },
+   "textures/magazine_01_cover53_1k.png": {
+    "sha256": "ec22e98b56f80f98a7cda1f2b776513e51fdcb4ad397a0faf9559a775888ffbe",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover53_1k.png"
+   },
+   "textures/magazine_01_cover71_1k.png": {
+    "sha256": "d8376b1da58339f8d9087aee8184090573e36112a2217deede05cddf732c1f88",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover71_1k.png"
+   },
+   "textures/magazine_01_cover72_1k.png": {
+    "sha256": "4111915daa6d679bd8c5233131c9c53df0f3432c9a5c5a5c0062ea4c8661c80f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover72_1k.png"
+   },
+   "textures/magazine_01_cover73_1k.png": {
+    "sha256": "b8672fcbd7befb93dc4859a402672ff861e59149c7f631bd15a70a862688bec6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover73_1k.png"
+   },
+   "textures/magazine_01_cover74_1k.png": {
+    "sha256": "5bb3648ed0a6692e481f2a8ba608cb4be6fbb9d0bfbb76b3d9d1ed6a6c46d538",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover74_1k.png"
+   },
+   "textures/magazine_01_cover89_1k.png": {
+    "sha256": "22ef1bcf5e23254540cda8cae0be1e968bb7bb421db14e9a48106a5f4c7d3e7e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_cover89_1k.png"
+   },
+   "textures/magazine_01_diff_1k.jpg": {
+    "sha256": "e05b1a32c8e537b374aba8fb7f1ed5d70a653b06ea5bbbf319f8ebf48e5e3169",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/magazine_01_diff_1k.jpg"
+   },
+   "textures/magazine_01_mask01_1k.png": {
+    "sha256": "f529fa668a16e084eaf9a167d88ee94cd696a5155d88883df4b76266edac8624",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_mask01_1k.png"
+   },
+   "textures/magazine_01_mask02_1k.png": {
+    "sha256": "77f59e2a98d46eccfcdd821be44243f1422d6a3ee8f70d7ed5f643ea43bde9a5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_mask02_1k.png"
+   },
+   "textures/magazine_01_mask03_1k.png": {
+    "sha256": "8894045720c507b47153647ae9b815d889063033799cea9fc799d2e63c6b6538",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/decorative_book_set_01/magazine_01_mask03_1k.png"
+   },
+   "textures/magazine_01_nor_gl_1k.exr": {
+    "sha256": "9ec03ec910f4e3a3eac90970a3ffb5ab56eef0703ebbb15ae06c6b6b697291b2",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/decorative_book_set_01/magazine_01_nor_gl_1k.exr"
+   },
+   "textures/magazine_01_roughness_1k.jpg": {
+    "sha256": "7410c5812143c2bcbb37ec3a5445b64872c55dc32fc8a3ec6ab78b48e0fd07a5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/decorative_book_set_01/magazine_01_roughness_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "diagonal_parquet": {
+  "files": {
+   "diagonal_parquet_diff_1k.jpg": {
+    "sha256": "dd19af5da746c15c68192dea8ad8374111cc5dd04bc8d715c70dc50de0f48022",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/diagonal_parquet/diagonal_parquet_diff_1k.jpg"
+   },
+   "diagonal_parquet_nor_gl_1k.jpg": {
+    "sha256": "a6b94b86714547d9dbbc0b040939d541857a200d610144e55ce935635925f193",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/diagonal_parquet/diagonal_parquet_nor_gl_1k.jpg"
+   },
+   "diagonal_parquet_rough_1k.jpg": {
+    "sha256": "94ea3f7a0a08cac23ab010522a86cd80b70ceb494833d49772e8b11811c54fc9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/diagonal_parquet/diagonal_parquet_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "dining_chair_02": {
+  "files": {
+   "dining_chair_02_1k.usdc": {
+    "sha256": "aa091e82070c5679d22403212487675f940397a05ab2191879858457453f59df",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/dining_chair_02/dining_chair_02_1k.usdc"
+   },
+   "textures/dining_chair_02_diff_1k.jpg": {
+    "sha256": "343990f764790da1149485a422dee2bc6797945a6af06a37d02d7a7de041acf5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dining_chair_02/dining_chair_02_diff_1k.jpg"
+   },
+   "textures/dining_chair_02_metal_1k.exr": {
+    "sha256": "6f3bc566d28dbcb58da43739fcc33fe96bc02d65c829e4cb6c1ae4298b9a3719",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/dining_chair_02/dining_chair_02_metal_1k.exr"
+   },
+   "textures/dining_chair_02_nor_gl_1k.exr": {
+    "sha256": "4d4aa16630ddc0c8afa79a7534519bb40632ad0d914a49bbeff503bce3c6925c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/dining_chair_02/dining_chair_02_nor_gl_1k.exr"
+   },
+   "textures/dining_chair_02_rough_1k.jpg": {
+    "sha256": "0a502d3a2bbd0767d3111b95605a99ab2ed63e5ed42e092a511fecd6e9574c78",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dining_chair_02/dining_chair_02_rough_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "floor_tiles_06": {
+  "files": {
+   "floor_tiles_06_diff_1k.jpg": {
+    "sha256": "ac159ca6072e30dd9d5c65e2d6eae7bb55a7dc9f06e6d141e9119390563511c2",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/floor_tiles_06/floor_tiles_06_diff_1k.jpg"
+   },
+   "floor_tiles_06_nor_gl_1k.jpg": {
+    "sha256": "efaff964d5688dd52ea3b876d5dac63ffee76d8d7270e30c11c81095246d5fdd",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/floor_tiles_06/floor_tiles_06_nor_gl_1k.jpg"
+   },
+   "floor_tiles_06_rough_1k.jpg": {
+    "sha256": "9c1996177892f220bcfdbc44675d0cd404482cfa80b1c577c7bcc100637ef8b6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/floor_tiles_06/floor_tiles_06_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "grey_oak_veneer_01": {
+  "files": {
+   "grey_oak_veneer_01_diff_1k.jpg": {
+    "sha256": "e2c51941364cdbdcf86ac161b1f6fee35cc600978147f89a021dbded402f0138",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_oak_veneer_01/grey_oak_veneer_01_diff_1k.jpg"
+   },
+   "grey_oak_veneer_01_nor_gl_1k.jpg": {
+    "sha256": "dda6171acf2aedf66d289e3140e2f372e1c651c95e3e25ea8aa0dfb0fbb9aaa1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_oak_veneer_01/grey_oak_veneer_01_nor_gl_1k.jpg"
+   },
+   "grey_oak_veneer_01_rough_1k.jpg": {
+    "sha256": "fb42768cd471755053e48ff1bdea9550a2b11327c54d80aacd17790c019ba1d5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_oak_veneer_01/grey_oak_veneer_01_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "grey_plaster": {
+  "files": {
+   "grey_plaster_diff_1k.jpg": {
+    "sha256": "dcf34c5f3801cc43189f0edae3c430b602c827956e9d6ce4b89a85e53e952da9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_plaster/grey_plaster_diff_1k.jpg"
+   },
+   "grey_plaster_nor_gl_1k.jpg": {
+    "sha256": "85fe18209cb354b582003892898ee0cd6fe6b853644e01983718fc011140c0c2",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_plaster/grey_plaster_nor_gl_1k.jpg"
+   },
+   "grey_plaster_rough_1k.jpg": {
+    "sha256": "67566b1b5ee25502596916303c246b08d47725b8a697283cfdc1494e6f659aa2",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_plaster/grey_plaster_rough_1k.jpg"
+   }
+  },
+  "kind": "texture"
+ },
+ "hand_truck": {
+  "files": {
+   "hand_truck_1k.usdc": {
+    "sha256": "5442a9de0538482844f415865ffe514300b075f3e25e62bc0c22f422351e728b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/hand_truck/hand_truck_1k.usdc"
+   },
+   "textures/hand_truck_diff_1k.jpg": {
+    "sha256": "a1c528e0c88a03a96b89215eab228083f9dd66a502174936bccc0fe427ce345a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hand_truck/hand_truck_diff_1k.jpg"
+   },
+   "textures/hand_truck_metal_1k.exr": {
+    "sha256": "ffa95da07c33a4dfb812dd2448a1e35d1f999a90599573e5a77ceee2bcc15464",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/hand_truck/hand_truck_metal_1k.exr"
+   },
+   "textures/hand_truck_nor_gl_1k.exr": {
+    "sha256": "b351330f1220258c832eaa07e856bc30f424ed1d1ebd7619214440a26029a08e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/hand_truck/hand_truck_nor_gl_1k.exr"
+   },
+   "textures/hand_truck_rough_1k.exr": {
+    "sha256": "395e8d9dcdba40d0a7ec4672344f7835e138acfaccc03db1b3378008c04a39a6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/hand_truck/hand_truck_rough_1k.exr"
+   }
+  },
+  "kind": "model"
+ },
+ "hanging_picture_frame_02": {
+  "files": {
+   "hanging_picture_frame_02_1k.usdc": {
+    "sha256": "511dba8197360850e65fb283cfa8fd6872b79f8e387ad4086dd714a44e7219a0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/hanging_picture_frame_02/hanging_picture_frame_02_1k.usdc"
+   },
+   "textures/hanging_picture_frame_02_artwork_diff_1k.png": {
+    "sha256": "589212f180caace990e9d406371e603b4c25b670551696a042500279a5e8d782",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/hanging_picture_frame_02/hanging_picture_frame_02_artwork_diff_1k.png"
+   },
+   "textures/hanging_picture_frame_02_artwork_nor_gl_1k.png": {
+    "sha256": "853d02ae6d136e5faa5956a9988ce7c34e8b20e66b285f31ab899a27d800e571",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/hanging_picture_frame_02/hanging_picture_frame_02_artwork_nor_gl_1k.png"
+   },
+   "textures/hanging_picture_frame_02_artwork_roughness_1k.png": {
+    "sha256": "4382a938c82ff99ca062d93240774c2717a00b955dbde229d7ee80c3b87280ec",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/hanging_picture_frame_02/hanging_picture_frame_02_artwork_roughness_1k.png"
+   },
+   "textures/hanging_picture_frame_02_diff_1k.jpg": {
+    "sha256": "575f2b6481b9e02474750ded776a0b490744228cb64d9b346f28bd78b9cf5897",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hanging_picture_frame_02/hanging_picture_frame_02_diff_1k.jpg"
+   },
+   "textures/hanging_picture_frame_02_metallic_1k.exr": {
+    "sha256": "5a4c27936e9c39ea0cb5ee955f4787556468b59eb130f05388598e4b57f3466b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/hanging_picture_frame_02/hanging_picture_frame_02_metallic_1k.exr"
+   },
+   "textures/hanging_picture_frame_02_nor_gl_1k.exr": {
+    "sha256": "239c5ec15451c8baddbb8eae422d1939402b7d6ca89a86936b99006fb9f752b0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/hanging_picture_frame_02/hanging_picture_frame_02_nor_gl_1k.exr"
+   },
+   "textures/hanging_picture_frame_02_roughness_1k.jpg": {
+    "sha256": "1ce6cc638fba2bc5a9ac1d3415781a5bacd4f7082429103149c4b03390b2a34f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hanging_picture_frame_02/hanging_picture_frame_02_roughness_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "metal_trash_can": {
+  "files": {
+   "metal_trash_can_1k.usdc": {
+    "sha256": "82a9fddf3de42c9d9ff51186b9ffbdc2ff3a9faec3ef7a0c8ad6a435ee3b92a2",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/metal_trash_can/metal_trash_can_1k.usdc"
+   },
+   "textures/metal_trash_can_diff_1k.jpg": {
+    "sha256": "920c895a31b1cd2c000123c0592c70c33d46562752987da98070e7e0eebb662f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_trash_can/metal_trash_can_diff_1k.jpg"
+   },
+   "textures/metal_trash_can_metal_1k.exr": {
+    "sha256": "0410cd3233a4da9483514b49fa9b32ff8aec83f9530ad33cb0b33ab8b039445a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/metal_trash_can/metal_trash_can_metal_1k.exr"
+   },
+   "textures/metal_trash_can_nor_gl_1k.exr": {
+    "sha256": "4d95deba7c0298686a84c1d575bf14fcc3c6704b6ce2fd7ab19a07cddcc96e50",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/metal_trash_can/metal_trash_can_nor_gl_1k.exr"
+   },
+   "textures/metal_trash_can_rough_1k.exr": {
+    "sha256": "bb7bfefff419e75ca83afac9f1b88e5c05b08cd42b846c98991e2e7a2ee9ae42",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/metal_trash_can/metal_trash_can_rough_1k.exr"
+   },
+   "textures/metal_trash_can_rust_diff_1k.png": {
+    "sha256": "d6cf6cef352e8a638729f923c4f7680684d5205b749b0b1546c9b3ef1c805694",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/metal_trash_can/metal_trash_can_rust_diff_1k.png"
+   },
+   "textures/metal_trash_can_rust_metal_1k.png": {
+    "sha256": "a82e813a733e793e2f04eeab34429f48553f6c75289cc30d04722525d2cc4988",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/metal_trash_can/metal_trash_can_rust_metal_1k.png"
+   },
+   "textures/metal_trash_can_rust_nor_gl_1k.png": {
+    "sha256": "83664a21dc5732df5dea1980a58d1f836763e005c0bc7b4dc6153075649b2782",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/metal_trash_can/metal_trash_can_rust_nor_gl_1k.png"
+   },
+   "textures/metal_trash_can_rust_rough_1k.png": {
+    "sha256": "c167de3c65cfb30dad9a64bef043ebe4fe485e9cff96e3b60f7c0268288d9a89",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/metal_trash_can/metal_trash_can_rust_rough_1k.png"
+   }
+  },
+  "kind": "model"
+ },
+ "modern_ceiling_lamp_01": {
+  "files": {
+   "modern_ceiling_lamp_01_1k.usdc": {
+    "sha256": "557425d88a7de10a80fd0aaa44d98314aefafa8f8f807767fd757ffed5caa210",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/modern_ceiling_lamp_01/modern_ceiling_lamp_01_1k.usdc"
+   },
+   "textures/modern_ceiling_lamp_01_diff_1k.jpg": {
+    "sha256": "c08bfbf7576a86a4a09d386ae9f0a92965fc652bf82f3a8dba1c796b1aa9e535",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modern_ceiling_lamp_01/modern_ceiling_lamp_01_diff_1k.jpg"
+   },
+   "textures/modern_ceiling_lamp_01_metal_1k.exr": {
+    "sha256": "0a0ae12da0cc701495174409ad34d2edb7db05592c3e6f94eaaccf17a20c8dd4",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/modern_ceiling_lamp_01/modern_ceiling_lamp_01_metal_1k.exr"
+   },
+   "textures/modern_ceiling_lamp_01_nor_gl_1k.exr": {
+    "sha256": "ae0ebbb5c3817dcf3ffadcdb1787434d1b150d4078f063571ecf1c7062124dd7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/modern_ceiling_lamp_01/modern_ceiling_lamp_01_nor_gl_1k.exr"
+   },
+   "textures/modern_ceiling_lamp_01_rough_1k.jpg": {
+    "sha256": "54f6b6e57ff6cd1a32e04c19e1dbd7034e8d72bb3365355ff866e774fe341030",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modern_ceiling_lamp_01/modern_ceiling_lamp_01_rough_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "mounted_fluorescent_lights": {
+  "files": {
+   "mounted_fluorescent_lights_1k.usdc": {
+    "sha256": "a1f1906815a25400f01953fb7d14dd7873e022476a140d978c6222b94d767f71",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/mounted_fluorescent_lights/mounted_fluorescent_lights_1k.usdc"
+   },
+   "textures/mounted_fluorescent_lights_diff_1k.jpg": {
+    "sha256": "8e56f625c04198792d8e9e5551137cbbd399072c26fe27827b37734afd584ea1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/mounted_fluorescent_lights/mounted_fluorescent_lights_diff_1k.jpg"
+   },
+   "textures/mounted_fluorescent_lights_emission_1k.png": {
+    "sha256": "f2453b5750362ed985c506276b18834f70f9e08c77a57d98fe67e8d0ded923c0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/mounted_fluorescent_lights/mounted_fluorescent_lights_emission_1k.png"
+   },
+   "textures/mounted_fluorescent_lights_metal_1k.exr": {
+    "sha256": "d097fd7a9ba8a2ea206f1b4801bb1c9cb4f51df904e6cc72d90f555809351bb7",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/mounted_fluorescent_lights/mounted_fluorescent_lights_metal_1k.exr"
+   },
+   "textures/mounted_fluorescent_lights_nor_gl_1k.exr": {
+    "sha256": "cdbaa848b8a7845cdd62bdd139842a41d04478806adb4e8c56158f7919ea43f6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/mounted_fluorescent_lights/mounted_fluorescent_lights_nor_gl_1k.exr"
+   },
+   "textures/mounted_fluorescent_lights_rough_1k.exr": {
+    "sha256": "cdf09900777df20c58f5a56ea19f00ac40c73514418b6025d216d17029b0f515",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/mounted_fluorescent_lights/mounted_fluorescent_lights_rough_1k.exr"
+   }
+  },
+  "kind": "model"
+ },
+ "plastic_crate_01": {
+  "files": {
+   "plastic_crate_01_1k.usdc": {
+    "sha256": "c08a5bc942720199311d06c350034c02b79e23f761700009805f1b4f2d55c605",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/plastic_crate_01/plastic_crate_01_1k.usdc"
+   },
+   "textures/plastic_crate_01_diff_1k.jpg": {
+    "sha256": "d9109a42e397e39bbd7f42976d93122dbd5ccdef8ff64bce353571e1c1b994f6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/plastic_crate_01/plastic_crate_01_diff_1k.jpg"
+   },
+   "textures/plastic_crate_01_metal_1k.exr": {
+    "sha256": "30f93b88fc7b40fd181ec75b7f3bdd90d7ebf0aecc9f8ec68665f9d6bb39bdae",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/plastic_crate_01/plastic_crate_01_metal_1k.exr"
+   },
+   "textures/plastic_crate_01_nor_gl_1k.exr": {
+    "sha256": "de3b8a41e4308cb0093dc1526b21b089699dc24d75239b0e20a51be3e9bf832c",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/plastic_crate_01/plastic_crate_01_nor_gl_1k.exr"
+   },
+   "textures/plastic_crate_01_rough_1k.exr": {
+    "sha256": "1d69e05d561f02d54911c2ab76c92a02da6fd228d85c037db7a581ff098b2e31",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/plastic_crate_01/plastic_crate_01_rough_1k.exr"
+   }
+  },
+  "kind": "model"
+ },
+ "potted_plant_01": {
+  "files": {
+   "potted_plant_01_1k.usdc": {
+    "sha256": "4393d4f4e086061380609976c6584a35c777bdcbfe0439ba167dfed5a6c97e3b",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/potted_plant_01/potted_plant_01_1k.usdc"
+   },
+   "textures/potted_plant_01_leaves_alpha_1k.png": {
+    "sha256": "380ff44359f128b7cf0e2912b378a0f61f4b0d8e8707dbe043c92465d82e9592",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_leaves_alpha_1k.png"
+   },
+   "textures/potted_plant_01_leaves_diff_1k.png": {
+    "sha256": "83d339ea0c13609fff151afd778d5625bc42eacf5e60454eedabf0b571b0bbaf",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_leaves_diff_1k.png"
+   },
+   "textures/potted_plant_01_leaves_nor_gl_1k.png": {
+    "sha256": "a5b928cdcbade2872edd19d239de6110e047e31113524ba8a931853b4f9a0916",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_leaves_nor_gl_1k.png"
+   },
+   "textures/potted_plant_01_leaves_rough_1k.png": {
+    "sha256": "8b3332d70c9d955a108ef38077121588d30d9866a54c2992fe6a5d1c43e92124",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_leaves_rough_1k.png"
+   },
+   "textures/potted_plant_01_pot_diff_1k.png": {
+    "sha256": "db986d79c9af9d10463ba3c8400bfaa7d2271e0a94cd0607b07e29e7053be3a8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_pot_diff_1k.png"
+   },
+   "textures/potted_plant_01_pot_nor_gl_1k.png": {
+    "sha256": "70fdafbdede97cd1c811007002026ccc5ecbde74db1114ed4f90c75a2c4d78a9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_pot_nor_gl_1k.png"
+   },
+   "textures/potted_plant_01_pot_rough_1k.png": {
+    "sha256": "f4f4232fb21f7aa33caca8ee1fd7acedfc437c46d635b09f636c12b057759e6f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_01/potted_plant_01_pot_rough_1k.png"
+   }
+  },
+  "kind": "model"
+ },
+ "potted_plant_02": {
+  "files": {
+   "potted_plant_02_1k.usdc": {
+    "sha256": "5939efe27dfc8449e1eab3de4225fc71a23e5c3a305e2d5f6080e0c14706c465",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/potted_plant_02/potted_plant_02_1k.usdc"
+   },
+   "textures/potted_plant_02_leaves_alpha_1k.png": {
+    "sha256": "af56887c4a14b1ace924906529ee56d46ad102e0738bcdf53569a57ce1a56bd1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_leaves_alpha_1k.png"
+   },
+   "textures/potted_plant_02_leaves_diff_1k.png": {
+    "sha256": "c664ad56c2117d82ea3b6907d0e6554f1d627da05e0f3e28f71e31bea98c667f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_leaves_diff_1k.png"
+   },
+   "textures/potted_plant_02_leaves_nor_gl_1k.png": {
+    "sha256": "b77d02419d03704b5551fdd797493822dfe083e0661aafd5778e6cd5aa4229f8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_leaves_nor_gl_1k.png"
+   },
+   "textures/potted_plant_02_leaves_rough_1k.png": {
+    "sha256": "41e2714a8647e4f189f0c48708960eec38817f566e10949e4dae66d0084f80b8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_leaves_rough_1k.png"
+   },
+   "textures/potted_plant_02_pot_diff_1k.png": {
+    "sha256": "8988e4ce4d985162e5753b9864eb0971c72532d6f1e9914a513b04570a5b3449",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_pot_diff_1k.png"
+   },
+   "textures/potted_plant_02_pot_nor_gl_1k.png": {
+    "sha256": "ca1e14ed985c58c4a3f64b48d1f9efd51e407e8e99eafa6d92ccab3e8de664b1",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_pot_nor_gl_1k.png"
+   },
+   "textures/potted_plant_02_pot_rough_1k.png": {
+    "sha256": "d848d54ff81db3818cc4df8c75e617362098e3677fc545551d62e386b7345be5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/potted_plant_02/potted_plant_02_pot_rough_1k.png"
+   }
+  },
+  "kind": "model"
+ },
+ "standing_picture_frame_01": {
+  "files": {
+   "standing_picture_frame_01_1k.usdc": {
+    "sha256": "fa74f685e80f9e0a4a5d61b326e4096e9ff9f20bea8e65846834eecefe63d153",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/standing_picture_frame_01/standing_picture_frame_01_1k.usdc"
+   },
+   "textures/standing_picture_frame_01_artwork_diff_1k.png": {
+    "sha256": "a362c83c936cb01ea5c50f8e5660bea03ca0b7da8ab63ee75300520743a40c18",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/standing_picture_frame_01/standing_picture_frame_01_artwork_diff_1k.png"
+   },
+   "textures/standing_picture_frame_01_artwork_nor_gl_1k.png": {
+    "sha256": "574f4935a0d6805b9ae0e10a2d262629bd1022956a3254bb1eae1ebcb171e2a3",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/standing_picture_frame_01/standing_picture_frame_01_artwork_nor_gl_1k.png"
+   },
+   "textures/standing_picture_frame_01_artwork_rough_1k.png": {
+    "sha256": "b0f5654c6cff2ea188d712219d7b839f971c59e99a3b4d9a446ad83ee95e833d",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/standing_picture_frame_01/standing_picture_frame_01_artwork_rough_1k.png"
+   },
+   "textures/standing_picture_frame_01_diff_1k.jpg": {
+    "sha256": "e9d1030940b00ed576cafd704f7fc44226a255ed8d2db5ef3b8fd02d5521a763",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/standing_picture_frame_01/standing_picture_frame_01_diff_1k.jpg"
+   },
+   "textures/standing_picture_frame_01_metal_1k.exr": {
+    "sha256": "f58d49aadabfa335da3466b07f1e5e7864fe6ed4f5b0d3186035f63a916db06f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/standing_picture_frame_01/standing_picture_frame_01_metal_1k.exr"
+   },
+   "textures/standing_picture_frame_01_nor_gl_1k.exr": {
+    "sha256": "a7a3909164cf14b8aca3fed22d66d7a4d63bf14d1a3abe61b16936c77919adcf",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/standing_picture_frame_01/standing_picture_frame_01_nor_gl_1k.exr"
+   },
+   "textures/standing_picture_frame_01_rough_1k.jpg": {
+    "sha256": "9e3da05a5e3dd684f808fe23945505f0623fed9983f986d7517784fc220bd001",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/standing_picture_frame_01/standing_picture_frame_01_rough_1k.jpg"
+   }
+  },
+  "kind": "model"
+ },
+ "steel_frame_shelves_01": {
+  "files": {
+   "steel_frame_shelves_01_1k.usdc": {
+    "sha256": "26b8e9fe489992c42517a5b85c09f5b318d9383d4c50f3ac1bafa94600c25bfe",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/steel_frame_shelves_01/steel_frame_shelves_01_1k.usdc"
+   },
+   "textures/steel_frame_shelves_01_diff_1k.jpg": {
+    "sha256": "85e205b334e15e05bec9b02be1258da6ab949ae908aa57e0bee6b94ba45b4415",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/steel_frame_shelves_01/steel_frame_shelves_01_diff_1k.jpg"
+   },
+   "textures/steel_frame_shelves_01_metal_1k.exr": {
+    "sha256": "4590bf5fb633433eb606c5a6b641f9d76f6915c3589664b646c9488b98568739",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/steel_frame_shelves_01/steel_frame_shelves_01_metal_1k.exr"
+   },
+   "textures/steel_frame_shelves_01_nor_gl_1k.exr": {
+    "sha256": "42dbf27470b9f6dac67c45b2c36383d98b191d6974f6c464bf7a788fc55dd568",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/steel_frame_shelves_01/steel_frame_shelves_01_nor_gl_1k.exr"
+   },
+   "textures/steel_frame_shelves_01_rough_1k.exr": {
+    "sha256": "cf62799df92fa11755c06b67b6b02199996bf6d4476d9b988a3b3c0b5b01676e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/steel_frame_shelves_01/steel_frame_shelves_01_rough_1k.exr"
+   }
+  },
+  "kind": "model"
+ },
+ "wooden_display_shelves_01": {
+  "files": {
+   "textures/wooden_display_shelves_01_diff_1k.jpg": {
+    "sha256": "cb57e90d9588ce81e58ff7300e89956a6a3c45119165b858d921a5a2439cbeaf",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_display_shelves_01/wooden_display_shelves_01_diff_1k.jpg"
+   },
+   "textures/wooden_display_shelves_01_metal_1k.exr": {
+    "sha256": "e70e2824129e9fbe71dd5c062b264e8afffcfb9bf8d7ec2f03155f72c9853696",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_display_shelves_01/wooden_display_shelves_01_metal_1k.exr"
+   },
+   "textures/wooden_display_shelves_01_nor_gl_1k.exr": {
+    "sha256": "c9c6f41e11df586290d5dc634a598ea0fbfaa8dfca1c49a758a713bfa92535c8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/wooden_display_shelves_01/wooden_display_shelves_01_nor_gl_1k.exr"
+   },
+   "textures/wooden_display_shelves_01_rough_1k.jpg": {
+    "sha256": "2341ef9d1037caa8d2e0df2705c46bbf157b65361125e5440c6796cfdd55cbd2",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_display_shelves_01/wooden_display_shelves_01_rough_1k.jpg"
+   },
+   "wooden_display_shelves_01_1k.usdc": {
+    "sha256": "ee13f8d09dde9169eb5b5705f266d32f1787cf759375368916074364a2d92af8",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/wooden_display_shelves_01/wooden_display_shelves_01_1k.usdc"
+   }
+  },
+  "kind": "model"
+ }
+}

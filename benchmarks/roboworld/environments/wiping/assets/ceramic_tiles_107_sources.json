@@ -1,0 +1,32 @@
+{
+  "source": "https://ambientcg.com/view?id=Tiles107",
+  "license": "CC0-1.0",
+  "author": "ambientCG / Lennart Demes",
+  "technique": "Procedural (publisher)",
+  "dimensions_m": [
+    1.0,
+    1.0
+  ],
+  "archive_url": "https://ambientcg.com/get?file=Tiles107_2K-JPG.zip",
+  "archive_sha256": "fa76887bb33af0972154700126d1f86d01eaed518341ce7411616c1d1202ac55",
+  "files": {
+    "Diffuse": {
+      "archive_member": "Tiles107_2K-JPG_Color.jpg",
+      "path": "ceramic_tiles_107_Diffuse.jpg",
+      "sha256": "a74664ca3721976b9407d5b1bba65534f616eb2519ae16d76b4ec5f426530bdb",
+      "bytes": 780156
+    },
+    "nor_gl": {
+      "archive_member": "Tiles107_2K-JPG_NormalGL.jpg",
+      "path": "ceramic_tiles_107_nor_gl.jpg",
+      "sha256": "063e5e1ad15fadcf7453a2b6be8cb80d5d88da8aa79068f894a39f1414fef4db",
+      "bytes": 1561357
+    },
+    "Rough": {
+      "archive_member": "Tiles107_2K-JPG_Roughness.jpg",
+      "path": "ceramic_tiles_107_Rough.jpg",
+      "sha256": "67cc4cc02b9e5dde932e47b0c3ba6e16b9a0e3847b11f76ea0961641816d9e1d",
+      "bytes": 601206
+    }
+  }
+}

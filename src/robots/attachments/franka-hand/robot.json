@@ -1,0 +1,34 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "franka-hand",
+  "revision": 1,
+  "asset": {
+    "format": "authored",
+    "resolver": "franka-hand",
+    "path": "franka-hand"
+  },
+  "root": {
+    "frame": "mount",
+    "mounting": "attachment"
+  },
+  "support": {
+    "mount_profiles": {
+      "franka_native": {
+        "source": "Retained existing physical mounting"
+      }
+    }
+  },
+  "sources": {
+    "baseline_commit": "4166fdf076d756593fc67a9ce4e9eacc9638ea6a"
+  },
+  "contact": {
+    "fingertip_pads": {
+      "shape": "box",
+      "finger_frame_offset_z_m": 0.04525,
+      "source": "fr3_franka_hand.urdf fingertip collision boxes (finger frame z = 45.25 mm)",
+      "finger_speed_m_s": 0.05,
+      "finger_speed_source": "Franka Hand datasheet: 50 mm/s per finger",
+      "note": "used by label-application for label-contact colliders and the force-mode grasp"
+    }
+  }
+}

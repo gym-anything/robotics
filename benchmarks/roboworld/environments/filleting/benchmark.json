@@ -1,0 +1,144 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "filleting",
+  "default_task_id": "filleting/v1/trout/fillet-one-side/seed-0",
+  "description": "Fillet fish and trim meat with two FR3 arms and a real flexible fillet knife held in authored knife-handle inserts: take the knife, head a gutted trout, fillet one side or the whole fish and lay the fillets skin-down, remove belly bones; trim, excise and portion a salmon half side; remove the chain, denude and slice medallions from a pork tenderloin. Cuts, tears and separations come only from the knife-edge law, cohesive interfaces and bone mechanics.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed",
+    "contract"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "task": [
+      "take-knife",
+      "head-off",
+      "fillet-one-side",
+      "fillet-whole-fish",
+      "remove-belly-bones",
+      "trim-belly",
+      "excise-defect",
+      "portion",
+      "remove-chain",
+      "denude",
+      "medallions",
+      "put-away-knife"
+    ],
+    "preset": [
+      "trout",
+      "salmon-side",
+      "pork-tenderloin"
+    ],
+    "contract": [
+      "legacy",
+      "filleting-tasks-v1"
+    ]
+  },
+  "resolver": "filleting.task_set_catalogue:task_resolve",
+  "count": 12,
+  "count_scope": "twelve named tasks (trout: take-knife, put-away-knife, head-off, fillet-one-side, fillet-whole-fish, remove-belly-bones; salmon-side: trim-belly, excise-defect, portion; pork-tenderloin: remove-chain, denude, medallions); seeds vary the workpiece (length +-5 % with mass ~ L^3, rib and pin-bone counts) and its pose. Two designed tasks are not supported by this build and are rejected by the resolver with the reason: pin-bone (the tweezers are not a physical tool yet) and skin (skin cannot separate with under 10 % flesh on a 3.5 mm mesh). put-away-knife is offered on dual-fr3 only.",
+  "splits": [],
+  "split_note": "No train/test split invented.",
+  "evaluator": {
+    "available": true,
+    "source": "filleting/task_set_evaluator.py",
+    "scope": "Physical state only: tissue fragment connectivity and each tet's rest reference label (where every gram came from), thin-bone pieces and what they are bonded to, rigid-bone joints, knife grasp, placement against tray and bowl footprints, per-tick blade-hand contact and compression histories. Evaluators are implemented task by task; a task without one reports so in its evaluation note. No autonomous-solution claim. Bare existing selections keep filleting/task.py; the filleting-tasks-v1 contract uses filleting/task_set_evaluator.py. The whole-fish task keeps its own evaluator."
+  },
+  "qualification": "See filleting/REPORT.pdf for what is qualified by which probe or assisted demonstration, runtime and limitations.",
+  "contract_selection": "Existing tasks default to legacy. Select filleting-tasks-v1 for take-knife, head-off, portion, medallions, excise-defect and remove-chain. put-away-knife defaults to the new contract; fillet-whole-fish keeps its own evaluator.",
+  "task_set": {
+    "tasks": [
+      {
+        "selection": {
+          "preset": "trout",
+          "task": "take-knife",
+          "seed": 0,
+          "contract": "filleting-tasks-v1"
+        },
+        "task_id": "filleting/v1/trout/take-knife/seed-0",
+        "difficulty": "entry",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "trout",
+          "task": "put-away-knife",
+          "seed": 0
+        },
+        "task_id": "filleting/v1/trout/put-away-knife/seed-0",
+        "difficulty": "entry",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "trout",
+          "task": "head-off",
+          "seed": 0,
+          "contract": "filleting-tasks-v1"
+        },
+        "task_id": "filleting/v1/trout/head-off/seed-0",
+        "difficulty": "medium",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "salmon-side",
+          "task": "portion",
+          "seed": 0,
+          "contract": "filleting-tasks-v1"
+        },
+        "task_id": "filleting/v1/salmon-side/portion/seed-0",
+        "difficulty": "medium",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "pork-tenderloin",
+          "task": "medallions",
+          "seed": 0,
+          "contract": "filleting-tasks-v1"
+        },
+        "task_id": "filleting/v1/pork-tenderloin/medallions/seed-0",
+        "difficulty": "medium",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "salmon-side",
+          "task": "excise-defect",
+          "seed": 0,
+          "contract": "filleting-tasks-v1"
+        },
+        "task_id": "filleting/v1/salmon-side/excise-defect/seed-0",
+        "difficulty": "hard",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "pork-tenderloin",
+          "task": "remove-chain",
+          "seed": 0,
+          "contract": "filleting-tasks-v1"
+        },
+        "task_id": "filleting/v1/pork-tenderloin/remove-chain/seed-0",
+        "difficulty": "hard",
+        "task_contract": "filleting-tasks-v1"
+      },
+      {
+        "selection": {
+          "preset": "trout",
+          "task": "fillet-whole-fish",
+          "seed": 0
+        },
+        "task_id": "filleting/v1/trout/fillet-whole-fish/seed-0",
+        "difficulty": "hardest",
+        "task_contract": "fillet-whole-fish's own evaluator (A3)"
+      }
+    ],
+    "score_rule": "1 on success, else 0.95 x continuous physical-state progress; untouched start 0.",
+    "swaps": [],
+    "limitations": "Failed assisted demonstrations do not show that these tasks are impossible; they are open risks. trim-belly has no recorded successful separation either. pin-bone (B1) and skin (B4) stay refused.",
+    "qualification": "Tested with constructed states and stubs only; the filleting-tasks-v1 evaluator has not yet been run with the simulator."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "d405",
+  "revision": 1,
+  "asset": {
+    "format": "authored",
+    "resolver": "d405",
+    "path": "d405"
+  },
+  "root": {
+    "frame": "mount",
+    "mounting": "attachment"
+  },
+  "support": {
+    "mount_profiles": {
+      "deposit_wrist": {
+        "source": "Retained existing physical mounting"
+      },
+      "franka_wrist": {
+        "source": "Retained existing physical mounting"
+      }
+    }
+  },
+  "sources": {
+    "baseline_commit": "4166fdf076d756593fc67a9ce4e9eacc9638ea6a",
+    "mass": "60g camera envelope manufacturer specification; 10g bracket estimate retained from baseline"
+  },
+  "frames": {
+    "optical": {
+      "parent": "mount",
+      "position_m": [
+        0.112,
+        -0.012,
+        0.153
+      ]
+    }
+  },
+  "sensors": {
+    "rgb": {
+      "model": "ideal_pinhole",
+      "horizontal_fov_deg": 87,
+      "native_resolution_px": [
+        1280,
+        720
+      ],
+      "noise": "not modeled",
+      "depth": "not provided",
+      "hardware_source": "https://www.realsenseai.com/products/stereo-depth-camera-d405/"
+    }
+  }
+}

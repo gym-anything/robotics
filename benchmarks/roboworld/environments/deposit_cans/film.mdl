@@ -1,0 +1,16 @@
+mdl 1.7;
+import ::OmniSurface::OmniSurfaceBase::*;
+// Optical estimate for a thin clear LDPE film; geometry is the physical mesh.
+export material film() = OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 0.0,
+    metalness: 0.0,
+    specular_reflection_weight: 1.0,
+    // Clear liner, not frosted display glass. Unmeasured optical estimate;
+    // actual wrinkles come from the deforming physical vertices.
+    specular_reflection_roughness: 0.045,
+    specular_reflection_ior: 1.49,
+    enable_specular_transmission: true,
+    specular_transmission_weight: 1.0,
+    specular_transmission_color: color(0.97,0.985,0.98),
+    thin_walled: true
+);

@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "finish-mobile-fr3-single",
+  "instances": {
+    "robot": {
+      "model": "mobile-fr3-single@1",
+      "mount": "floor_start",
+      "controller_profile": "classroom"
+    }
+  },
+  "attachments": {}
+}

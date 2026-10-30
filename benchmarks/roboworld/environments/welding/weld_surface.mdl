@@ -1,0 +1,40 @@
+mdl 1.7;
+import ::OmniSurface::OmniSurfaceBase::*;
+import ::OmniSurface::OmniShared::*;
+import ::scene::*;
+import ::math::*;
+
+// Render-only appearance of the joint band (welding/render.py band_surface). No physics reads these values.
+// Primvars written per vertex by the backend from the thermal solver's cells:
+//   displayColor  base colour (linear RGB): mill scale, the ground strip with the temper colours of the peak
+//                 temperature reached, or weld metal with its silicate islands (render.py surface_look)
+//   roughness, metalness  per vertex (surface_look); weldfrac (1 on weld metal) is the fallback blend
+//   glow          emitted radiance (linear RGB x luminance, cd/m2): emissivity x blackbody luminance at the cell's
+//                 temperature in the blackbody's chromaticity (CIE 1931); zero below 400 C
+export material weld_surface(
+    color fallback = color(0.048, 0.051, 0.058),
+    float roughness_scale = 0.64,          // hot-rolled mill scale: a dull oxide
+    float metalness_scale = 0.25,
+    float roughness_weld = 0.42,           // as-welded bead: bright metal with a thin oxide and fine ripples [estimate]
+    float metalness_weld = 0.85
+) = let {
+    color base = scene::data_lookup_color("displayColor", fallback);
+    float w = math::clamp(scene::data_lookup_float("weldfrac", 0.0), 0.0, 1.0);
+    // per-vertex roughness and metalness written by render.py surface_look (mill scale, ground strip, bead, silicate
+    // islands); the weldfrac blend is the fallback for meshes without them
+    float roughness = scene::data_lookup_float("roughness", math::lerp(roughness_scale, roughness_weld, w));
+    float metalness = scene::data_lookup_float("metalness", math::lerp(metalness_scale, metalness_weld, w));
+    float3 g = scene::data_lookup_float3("glow", float3(0.0, 0.0, 0.0));
+    float lum = 0.2126*g.x + 0.7152*g.y + 0.0722*g.z;
+    float inv = lum > 1.0e-6 ? 1.0/lum : 0.0;
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: base,
+    metalness: metalness,
+    specular_reflection_weight: 1.0,
+    specular_reflection_roughness: roughness,
+    emission_weight: lum > 1.0e-6 ? 1.0 : 0.0,
+    emission_mode: ::OmniSurface::OmniShared::emission_nt,
+    emission_intensity: lum,
+    emission_color: color(g*inv)
+);

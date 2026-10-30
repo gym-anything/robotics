@@ -1,0 +1,199 @@
+{
+ "probe": "E16b: 0.05 s commands back to back and after 5 s and 15 s pauses (policy key, policy cameras)",
+ "robot": "dual-fr3",
+ "physics_hash": "455e1568e40552d1",
+ "launch_s": 162.63773469999433,
+ "idle_release_s_default": 10.0,
+ "load_start": {
+  "loadavg": [
+   2.21484375,
+   3.45361328125,
+   3.962890625
+  ],
+  "cpu_quota": 16.0,
+  "gpu_util_pct": 0,
+  "gpu_mem_mib": 1
+ },
+ "load_end": {
+  "loadavg": [
+   2.25830078125,
+   2.69140625,
+   3.49462890625
+  ],
+  "cpu_quota": 16.0,
+  "gpu_util_pct": 0,
+  "gpu_mem_mib": 682
+ },
+ "rows": [
+  {
+   "step": "first observation (render worker cold start)",
+   "wall_s": 0.913177349139005,
+   "host": {
+    "loadavg": [
+     2.56396484375,
+     3.00341796875,
+     3.69873046875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4733
+   },
+   "cameras": [
+    "needle",
+    "operator",
+    "overhead"
+   ]
+  },
+  {
+   "step": "0.05 s command after a 0 s pause #0",
+   "pause_s": 0.0,
+   "wall_s": 6.789002913981676,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.59912109375,
+     3.0029296875,
+     3.69482421875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 39,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 0 s pause #1",
+   "pause_s": 0.0,
+   "wall_s": 6.704611354973167,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.55078125,
+     2.98583984375,
+     3.685546875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 53,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 0 s pause #2",
+   "pause_s": 0.0,
+   "wall_s": 6.712629311718047,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.46533203125,
+     2.953125,
+     3.6669921875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 5 s pause #0",
+   "pause_s": 5.0,
+   "wall_s": 6.67152845300734,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.3193359375,
+     2.90478515625,
+     3.64306640625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 5 s pause #1",
+   "pause_s": 5.0,
+   "wall_s": 6.674536082427949,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.27685546875,
+     2.87548828125,
+     3.625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 5 s pause #2",
+   "pause_s": 5.0,
+   "wall_s": 6.715018026996404,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.294921875,
+     2.84912109375,
+     3.6044921875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 100,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 15 s pause #0",
+   "pause_s": 15.0,
+   "wall_s": 6.742898364085704,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.00634765625,
+     2.74560546875,
+     3.55322265625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 94,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 15 s pause #1",
+   "pause_s": 15.0,
+   "wall_s": 6.678289769683033,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.02587890625,
+     2.6865234375,
+     3.51123046875
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 87,
+    "gpu_mem_mib": 4733
+   }
+  },
+  {
+   "step": "0.05 s command after a 15 s pause #2",
+   "pause_s": 15.0,
+   "wall_s": 6.825354200787842,
+   "sim_s": 0.05,
+   "host": {
+    "loadavg": [
+     2.25830078125,
+     2.69140625,
+     3.49462890625
+    ],
+    "cpu_quota": 16.0,
+    "gpu_util_pct": 75,
+    "gpu_mem_mib": 4733
+   }
+  }
+ ],
+ "median_wall_s": {
+  "0": 6.712629311718047,
+  "5": 6.674536082427949,
+  "15": 6.742898364085704
+ },
+ "pause_beyond_release_adds_s": 0.030269052367657423,
+ "pause_inside_release_adds_s": -0.03809322929009795
+}

@@ -1,0 +1,3210 @@
+{
+ "probe": "E16 runtime through gar run + HTTP (policy key; every command returns an observation with the camera set's images; fillet-2f on ur10e-fr3, arc on along the seam)",
+ "limit": 200.0,
+ "minimum_command_s": {
+  "one camera": 0.1,
+  "three cameras": 0.1,
+  "no cameras": 0.05
+ },
+ "pause_s": 15.0,
+ "sets": {
+  "one camera": {
+   "cameras": [
+    "bench"
+   ],
+   "minimum_command_s": 0.1,
+   "gpu_before": "2497 MiB, 32607 MiB, 81 %",
+   "started_utc": "2026-10-11T15:08:34Z",
+   "launch_s": 37.17758702300489,
+   "render_worker_idle_release_s": 600.0,
+   "final_state": {
+    "tick": 7547,
+    "history": {
+     "arc_s": 2.876999999999794,
+     "wire_touch": false,
+     "max_current_a": 287.63041719376326,
+     "gun_contact_ticks": 0,
+     "strikes": 1,
+     "faults": []
+    },
+    "robot": {
+     "reflexes": [],
+     "refused_targets": 0,
+     "stopped_arms": []
+    }
+   },
+   "gpu_after": "5967 MiB, 32607 MiB, 100 %",
+   "rows": [
+    {
+     "step": "observation only 0",
+     "kind": "observation",
+     "wall_s": 1.0879152351990342,
+     "sim_s": 0.0,
+     "n_commands": 1,
+     "wall_per_sim": null,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 0.0
+     }
+    },
+    {
+     "step": "observation only 1",
+     "kind": "observation",
+     "wall_s": 1.008567654993385,
+     "sim_s": 0.0,
+     "n_commands": 1,
+     "wall_per_sim": null,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 0.0
+     }
+    },
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "kind": "tool_io_alone",
+     "wall_s": 2.7632751632481813,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 2763.2751632481813,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 0 (arc off)",
+     "kind": "approach",
+     "wall_s": 32.05889561865479,
+     "sim_s": 2.0,
+     "n_commands": 1,
+     "wall_per_sim": 16.029447809327394,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 1 (arc off)",
+     "kind": "approach",
+     "wall_s": 17.983265744056553,
+     "sim_s": 1.0,
+     "n_commands": 1,
+     "wall_per_sim": 17.983265744056553,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 2 (arc off)",
+     "kind": "approach",
+     "wall_s": 17.52926281373948,
+     "sim_s": 1.0,
+     "n_commands": 1,
+     "wall_per_sim": 17.52926281373948,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "arc on + strike (0.3 s)",
+     "kind": "strike",
+     "wall_s": 10.684115803334862,
+     "sim_s": 0.3,
+     "n_commands": 1,
+     "wall_per_sim": 35.61371934444954,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 276.56221564694727,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 500 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 48.421961977146566,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 96.84392395429313,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 257.11877718323484,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 257.11877718323484
+    },
+    {
+     "step": "travel 500 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 58.79722755495459,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 117.59445510990918,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.84895098133046,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.84895098133046
+    },
+    {
+     "step": "travel 200 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 24.94068539980799,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 124.70342699903995,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 269.479164980965,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 269.479164980965
+    },
+    {
+     "step": "travel 200 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 23.85378289781511,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 119.26891448907554,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.1840476366065,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 265.1840476366065
+    },
+    {
+     "step": "travel 200 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 24.496472995262593,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 122.48236497631297,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.3654437768445,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.3654437768445
+    },
+    {
+     "step": "travel 100 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 15.93438434926793,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 159.3438434926793,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.39572816992245,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.39572816992245
+    },
+    {
+     "step": "travel 100 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 19.123476806096733,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 191.23476806096733,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.041538134454,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.041538134454
+    },
+    {
+     "step": "travel 100 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 21.678017451427877,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 216.78017451427877,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.2164969844726,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.2164969844726
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 13.121758216060698,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 262.43516432121396,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.0587020900209,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.0587020900209
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 13.265656034927815,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 265.3131206985563,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.89314514320165,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.89314514320165
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 12.693650516681373,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 253.87301033362746,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8304985590072,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.8304985590072
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 7.410736017860472,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 370.5368008930236,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.1996113149306,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 265.1996113149306
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 7.495258430019021,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 374.76292150095105,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.83410385345616,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.83410385345616
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 7.4394260491244495,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 371.9713024562225,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.5053066711807,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.5053066711807
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 5.866020729765296,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 586.6020729765296,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.6616265956718,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.6616265956718
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 5.693292350042611,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 569.3292350042611,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.7535227233618,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.7535227233618
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 5.8535845866426826,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 585.3584586642683,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8638287968705,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.8638287968705
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 4.583511222153902,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 4583.511222153902,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8736664119696,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 3.9791835150681436,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 3979.1835150681436,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8833044684825,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 3.934481093659997,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 3934.481093659997,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8927470193502,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 100 ms #0 (arc on)",
+     "kind": "batch",
+     "wall_s": 21.97039508027956,
+     "sim_s": 0.101,
+     "n_commands": 2,
+     "wall_per_sim": 217.52866416118374,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.96557239081255,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 100 ms #1 (arc on)",
+     "kind": "batch",
+     "wall_s": 22.183640548028052,
+     "sim_s": 0.101,
+     "n_commands": 2,
+     "wall_per_sim": 219.6400054260203,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.19195067031217,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 100 ms #2 (arc on)",
+     "kind": "batch",
+     "wall_s": 22.1109883999452,
+     "sim_s": 0.101,
+     "n_commands": 2,
+     "wall_per_sim": 218.9206772271802,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.2738432829656,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 100 ms after a 15 s pause #0 (arc on)",
+     "kind": "paused",
+     "wall_s": 21.16897835722193,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 211.6897835722193,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.3227821332962,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 100 ms after a 15 s pause #1 (arc on)",
+     "kind": "paused",
+     "wall_s": 19.131966487970203,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 191.31966487970203,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.41872681594776,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "kind": "paused",
+     "wall_s": 11.313712493982166,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 226.27424987964332,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.521836093024,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "kind": "paused",
+     "wall_s": 10.576229662168771,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 211.52459324337542,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.40187864498336,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "arc off, 0.5 s",
+     "kind": "arc_off",
+     "wall_s": 39.676844651345164,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 79.35368930269033,
+     "images": [
+      "bench"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    }
+   ],
+   "load": {
+    "samples": 221,
+    "every_s": 3.0,
+    "used_mib": {
+     "min": 2497,
+     "median": 10477.0,
+     "max": 11123
+    },
+    "util_pct": {
+     "min": 81,
+     "median": 100.0,
+     "max": 100
+    },
+    "other_processes": {
+     "min": 3,
+     "median": 8.0,
+     "max": 9
+    },
+    "other_mib": {
+     "min": 1824,
+     "median": 5024.0,
+     "max": 7539
+    },
+    "other_render_workers": {
+     "min": 0,
+     "median": 0.0,
+     "max": 1
+    },
+    "note": "the shared GPU while this set ran; 'other' excludes this session's server and render worker"
+   },
+   "session_gpu_mb": {
+    "server_max": 884,
+    "render_worker_max": 4472,
+    "note": "nvidia-smi per process: this session's server (the physics) and its Isaac render worker"
+   },
+   "fit_single_travel": {
+    "fixed_s": 6.726914565800376,
+    "slope_wall_per_sim": 94.26534801135391,
+    "crossing_200x_ms": 63.62071883986264,
+    "note": "wall = fixed + slope x simulated over the single arc-on travel commands"
+   },
+   "travel_wall_per_sim": {
+    "500 ms": {
+     "median": 107.21918953210115,
+     "max": 117.59445510990918,
+     "n": 2,
+     "gated": true
+    },
+    "200 ms": {
+     "median": 122.48236497631297,
+     "max": 124.70342699903995,
+     "n": 3,
+     "gated": true
+    },
+    "100 ms": {
+     "median": 191.23476806096733,
+     "max": 216.78017451427877,
+     "n": 3,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 262.43516432121396,
+     "max": 265.3131206985563,
+     "n": 3,
+     "gated": false
+    },
+    "20 ms": {
+     "median": 371.9713024562225,
+     "max": 374.76292150095105,
+     "n": 3,
+     "gated": false
+    },
+    "10 ms": {
+     "median": 585.3584586642683,
+     "max": 586.6020729765296,
+     "n": 3,
+     "gated": false
+    }
+   },
+   "paused_wall_per_sim": {
+    "100 ms": {
+     "median": 201.50472422596067,
+     "max": 211.6897835722193,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 218.89942156150937,
+     "max": 226.27424987964332,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": false
+    }
+   },
+   "gated_worst": {
+    "step": "batch: tool_io 1 tick + travel 100 ms #1 (arc on)",
+    "wall_per_sim": 219.6400054260203
+   },
+   "below_minimum": [
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "wall_s": 2.7632751632481813,
+     "wall_per_sim": 2763.2751632481813,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "wall_s": 13.121758216060698,
+     "wall_per_sim": 262.43516432121396,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "wall_s": 13.265656034927815,
+     "wall_per_sim": 265.3131206985563,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "wall_s": 12.693650516681373,
+     "wall_per_sim": 253.87301033362746,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "wall_s": 7.410736017860472,
+     "wall_per_sim": 370.5368008930236,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "wall_s": 7.495258430019021,
+     "wall_per_sim": 374.76292150095105,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "wall_s": 7.4394260491244495,
+     "wall_per_sim": 371.9713024562225,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "wall_s": 5.866020729765296,
+     "wall_per_sim": 586.6020729765296,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "wall_s": 5.693292350042611,
+     "wall_per_sim": 569.3292350042611,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "wall_s": 5.8535845866426826,
+     "wall_per_sim": 585.3584586642683,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "wall_s": 4.583511222153902,
+     "wall_per_sim": 4583.511222153902,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "wall_s": 3.9791835150681436,
+     "wall_per_sim": 3979.1835150681436,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "wall_s": 3.934481093659997,
+     "wall_per_sim": 3934.481093659997,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "wall_s": 11.313712493982166,
+     "wall_per_sim": 226.27424987964332,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "wall_s": 10.576229662168771,
+     "wall_per_sim": 211.52459324337542,
+     "over_limit": true
+    }
+   ],
+   "observation_only_s": {
+    "median": 1.0482414450962096,
+    "max": 1.0879152351990342
+   },
+   "passed": false
+  },
+  "three cameras": {
+   "cameras": [
+    "bench",
+    "side",
+    "weld_camera"
+   ],
+   "minimum_command_s": 0.1,
+   "gpu_before": "5967 MiB, 32607 MiB, 100 %",
+   "started_utc": "2026-10-11T15:19:54Z",
+   "launch_s": 48.81740476703271,
+   "render_worker_idle_release_s": 600.0,
+   "final_state": {
+    "tick": 7547,
+    "history": {
+     "arc_s": 2.876999999999794,
+     "wire_touch": false,
+     "max_current_a": 287.63041719376326,
+     "gun_contact_ticks": 0,
+     "strikes": 1,
+     "faults": []
+    },
+    "robot": {
+     "reflexes": [],
+     "refused_targets": 0,
+     "stopped_arms": []
+    }
+   },
+   "gpu_after": "5967 MiB, 32607 MiB, 100 %",
+   "rows": [
+    {
+     "step": "observation only 0",
+     "kind": "observation",
+     "wall_s": 5.543606478255242,
+     "sim_s": 0.0,
+     "n_commands": 1,
+     "wall_per_sim": null,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 0.0
+     }
+    },
+    {
+     "step": "observation only 1",
+     "kind": "observation",
+     "wall_s": 5.448062654118985,
+     "sim_s": 0.0,
+     "n_commands": 1,
+     "wall_per_sim": null,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 0.0
+     }
+    },
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "kind": "tool_io_alone",
+     "wall_s": 7.6287910849787295,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 7628.7910849787295,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 0 (arc off)",
+     "kind": "approach",
+     "wall_s": 57.07586791459471,
+     "sim_s": 2.0,
+     "n_commands": 1,
+     "wall_per_sim": 28.537933957297355,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 1 (arc off)",
+     "kind": "approach",
+     "wall_s": 32.09771770890802,
+     "sim_s": 1.0,
+     "n_commands": 1,
+     "wall_per_sim": 32.09771770890802,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 2 (arc off)",
+     "kind": "approach",
+     "wall_s": 26.338263150770217,
+     "sim_s": 1.0,
+     "n_commands": 1,
+     "wall_per_sim": 26.338263150770217,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "arc on + strike (0.3 s)",
+     "kind": "strike",
+     "wall_s": 15.942167228087783,
+     "sim_s": 0.3,
+     "n_commands": 1,
+     "wall_per_sim": 53.140557426959276,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 276.56221564694727,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 500 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 59.42656031483784,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 118.85312062967569,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 257.11877718323484,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 257.11877718323484
+    },
+    {
+     "step": "travel 500 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 80.56129138777032,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 161.12258277554065,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.84895098133046,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.84895098133046
+    },
+    {
+     "step": "travel 200 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 38.2529765451327,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 191.26488272566348,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 269.479164980965,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 269.479164980965
+    },
+    {
+     "step": "travel 200 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 38.098888487089425,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 190.49444243544713,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.1840476366065,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 265.1840476366065
+    },
+    {
+     "step": "travel 200 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 39.45177666610107,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 197.25888333050534,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.3654437768445,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.3654437768445
+    },
+    {
+     "step": "travel 100 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 26.597042826004326,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 265.97042826004326,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.39572816992245,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.39572816992245
+    },
+    {
+     "step": "travel 100 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 25.888265600893646,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 258.88265600893646,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.041538134454,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.041538134454
+    },
+    {
+     "step": "travel 100 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 26.276950838044286,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 262.76950838044286,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.2164969844726,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.2164969844726
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 17.823567571118474,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 356.4713514223695,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.0587020900209,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.0587020900209
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 18.05804453836754,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 361.1608907673508,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.89314514320165,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.89314514320165
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 18.18480716785416,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 363.6961433570832,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8304985590072,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.8304985590072
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 12.931193332187831,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 646.5596666093916,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.1996113149306,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 265.1996113149306
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 13.232738435268402,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 661.6369217634201,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.83410385345616,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.83410385345616
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 13.134465106762946,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 656.7232553381473,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.5053066711807,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.5053066711807
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 11.194942872039974,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 1119.4942872039974,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.6616265956718,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.6616265956718
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 11.21065384009853,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 1121.065384009853,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.7535227233618,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.7535227233618
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 11.457910827361047,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 1145.7910827361047,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8638287968705,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.8638287968705
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 10.143327880185097,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 10143.327880185097,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8736664119696,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 9.509580691810697,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 9509.580691810697,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8833044684825,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 9.587325100321323,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 9587.325100321323,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8927470193502,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 100 ms #0 (arc on)",
+     "kind": "batch",
+     "wall_s": 27.43978246115148,
+     "sim_s": 0.101,
+     "n_commands": 2,
+     "wall_per_sim": 271.6810144668463,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.96557239081255,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 100 ms #1 (arc on)",
+     "kind": "batch",
+     "wall_s": 27.47836136072874,
+     "sim_s": 0.101,
+     "n_commands": 2,
+     "wall_per_sim": 272.0629837695915,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.19195067031217,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 100 ms #2 (arc on)",
+     "kind": "batch",
+     "wall_s": 27.468931240960956,
+     "sim_s": 0.101,
+     "n_commands": 2,
+     "wall_per_sim": 271.96961624713816,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.2738432829656,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 100 ms after a 15 s pause #0 (arc on)",
+     "kind": "paused",
+     "wall_s": 26.94356861198321,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 269.4356861198321,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.3227821332962,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 100 ms after a 15 s pause #1 (arc on)",
+     "kind": "paused",
+     "wall_s": 24.89270214131102,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 248.9270214131102,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.41872681594776,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "kind": "paused",
+     "wall_s": 17.048192602116615,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 340.9638520423323,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.521836093024,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "kind": "paused",
+     "wall_s": 17.290200456045568,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 345.80400912091136,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.40187864498336,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "arc off, 0.5 s",
+     "kind": "arc_off",
+     "wall_s": 45.548658907879144,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 91.09731781575829,
+     "images": [
+      "bench",
+      "side",
+      "weld_camera"
+     ],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    }
+   ],
+   "load": {
+    "samples": 314,
+    "every_s": 3.0,
+    "used_mib": {
+     "min": 5581,
+     "median": 10342.0,
+     "max": 10911
+    },
+    "util_pct": {
+     "min": 96,
+     "median": 100.0,
+     "max": 100
+    },
+    "other_processes": {
+     "min": 5,
+     "median": 8.0,
+     "max": 10
+    },
+    "other_mib": {
+     "min": 3200,
+     "median": 5024.0,
+     "max": 10170
+    },
+    "other_render_workers": {
+     "min": 0,
+     "median": 0.0,
+     "max": 1
+    },
+    "note": "the shared GPU while this set ran; 'other' excludes this session's server and render worker"
+   },
+   "session_gpu_mb": {
+    "server_max": 884,
+    "render_worker_max": 4472,
+    "note": "nvidia-smi per process: this session's server (the physics) and its Isaac render worker"
+   },
+   "fit_single_travel": {
+    "fixed_s": 12.065789104932596,
+    "slope_wall_per_sim": 119.93629045470948,
+    "crossing_200x_ms": 150.70234908497724,
+    "note": "wall = fixed + slope x simulated over the single arc-on travel commands"
+   },
+   "travel_wall_per_sim": {
+    "500 ms": {
+     "median": 139.98785170260817,
+     "max": 161.12258277554065,
+     "n": 2,
+     "gated": true
+    },
+    "200 ms": {
+     "median": 191.26488272566348,
+     "max": 197.25888333050534,
+     "n": 3,
+     "gated": true
+    },
+    "100 ms": {
+     "median": 262.76950838044286,
+     "max": 265.97042826004326,
+     "n": 3,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 361.1608907673508,
+     "max": 363.6961433570832,
+     "n": 3,
+     "gated": false
+    },
+    "20 ms": {
+     "median": 656.7232553381473,
+     "max": 661.6369217634201,
+     "n": 3,
+     "gated": false
+    },
+    "10 ms": {
+     "median": 1121.065384009853,
+     "max": 1145.7910827361047,
+     "n": 3,
+     "gated": false
+    }
+   },
+   "paused_wall_per_sim": {
+    "100 ms": {
+     "median": 259.18135376647115,
+     "max": 269.4356861198321,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 343.3839305816218,
+     "max": 345.80400912091136,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": false
+    }
+   },
+   "gated_worst": {
+    "step": "batch: tool_io 1 tick + travel 100 ms #1 (arc on)",
+    "wall_per_sim": 272.0629837695915
+   },
+   "below_minimum": [
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "wall_s": 7.6287910849787295,
+     "wall_per_sim": 7628.7910849787295,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "wall_s": 17.823567571118474,
+     "wall_per_sim": 356.4713514223695,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "wall_s": 18.05804453836754,
+     "wall_per_sim": 361.1608907673508,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "wall_s": 18.18480716785416,
+     "wall_per_sim": 363.6961433570832,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "wall_s": 12.931193332187831,
+     "wall_per_sim": 646.5596666093916,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "wall_s": 13.232738435268402,
+     "wall_per_sim": 661.6369217634201,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "wall_s": 13.134465106762946,
+     "wall_per_sim": 656.7232553381473,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "wall_s": 11.194942872039974,
+     "wall_per_sim": 1119.4942872039974,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "wall_s": 11.21065384009853,
+     "wall_per_sim": 1121.065384009853,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "wall_s": 11.457910827361047,
+     "wall_per_sim": 1145.7910827361047,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "wall_s": 10.143327880185097,
+     "wall_per_sim": 10143.327880185097,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "wall_s": 9.509580691810697,
+     "wall_per_sim": 9509.580691810697,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "wall_s": 9.587325100321323,
+     "wall_per_sim": 9587.325100321323,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "wall_s": 17.048192602116615,
+     "wall_per_sim": 340.9638520423323,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "wall_s": 17.290200456045568,
+     "wall_per_sim": 345.80400912091136,
+     "over_limit": true
+    }
+   ],
+   "observation_only_s": {
+    "median": 5.4958345661871135,
+    "max": 5.543606478255242
+   },
+   "passed": false
+  },
+  "no cameras": {
+   "cameras": [],
+   "minimum_command_s": 0.05,
+   "gpu_before": "5967 MiB, 32607 MiB, 100 %",
+   "started_utc": "2026-10-11T15:36:01Z",
+   "launch_s": 19.295528302900493,
+   "render_worker_idle_release_s": null,
+   "final_state": {
+    "tick": 7197,
+    "history": {
+     "arc_s": 2.5269999999998327,
+     "wire_touch": false,
+     "max_current_a": 287.63041719376326,
+     "gun_contact_ticks": 0,
+     "strikes": 1,
+     "faults": []
+    },
+    "robot": {
+     "reflexes": [],
+     "refused_targets": 0,
+     "stopped_arms": []
+    }
+   },
+   "gpu_after": "4128 MiB, 32607 MiB, 100 %",
+   "rows": [
+    {
+     "step": "observation only 0",
+     "kind": "observation",
+     "wall_s": 0.0015354999341070652,
+     "sim_s": 0.0,
+     "n_commands": 1,
+     "wall_per_sim": null,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 0.0
+     }
+    },
+    {
+     "step": "observation only 1",
+     "kind": "observation",
+     "wall_s": 0.001429322175681591,
+     "sim_s": 0.0,
+     "n_commands": 1,
+     "wall_per_sim": null,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 0.0
+     }
+    },
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "kind": "tool_io_alone",
+     "wall_s": 0.2817903351970017,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 281.7903351970017,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 0 (arc off)",
+     "kind": "approach",
+     "wall_s": 51.535434500314295,
+     "sim_s": 2.0,
+     "n_commands": 1,
+     "wall_per_sim": 25.767717250157148,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 1 (arc off)",
+     "kind": "approach",
+     "wall_s": 25.540711158886552,
+     "sim_s": 1.0,
+     "n_commands": 1,
+     "wall_per_sim": 25.540711158886552,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "approach 2 (arc off)",
+     "kind": "approach",
+     "wall_s": 26.148911016993225,
+     "sim_s": 1.0,
+     "n_commands": 1,
+     "wall_per_sim": 26.148911016993225,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "arc on + strike (0.3 s)",
+     "kind": "strike",
+     "wall_s": 13.827534407842904,
+     "sim_s": 0.3,
+     "n_commands": 1,
+     "wall_per_sim": 46.09178135947635,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 276.56221564694727,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 500 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 61.15114717371762,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 122.30229434743524,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 257.11877718323484,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 257.11877718323484
+    },
+    {
+     "step": "travel 500 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 71.37913138093427,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 142.75826276186854,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.84895098133046,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.84895098133046
+    },
+    {
+     "step": "travel 200 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 28.580818036105484,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 142.90409018052742,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 269.479164980965,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 269.479164980965
+    },
+    {
+     "step": "travel 200 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 28.52929132198915,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 142.64645660994574,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.1840476366065,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 265.1840476366065
+    },
+    {
+     "step": "travel 200 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 30.011090511921793,
+     "sim_s": 0.2,
+     "n_commands": 1,
+     "wall_per_sim": 150.05545255960897,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.3654437768445,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.3654437768445
+    },
+    {
+     "step": "travel 100 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 16.68441738979891,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 166.8441738979891,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.39572816992245,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.39572816992245
+    },
+    {
+     "step": "travel 100 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 16.496978071983904,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 164.96978071983904,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.041538134454,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.041538134454
+    },
+    {
+     "step": "travel 100 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 16.812847710680217,
+     "sim_s": 0.1,
+     "n_commands": 1,
+     "wall_per_sim": 168.12847710680217,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.2164969844726,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.2164969844726
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 8.663250259589404,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 173.26500519178808,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.0587020900209,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 260.0587020900209
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 8.855163307860494,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 177.10326615720987,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.89314514320165,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.89314514320165
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 8.834782839752734,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 176.69565679505467,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8304985590072,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.8304985590072
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 4.197476370260119,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 209.87381851300597,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 265.1996113149306,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 265.1996113149306
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 4.324678871780634,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 216.2339435890317,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.83410385345616,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.83410385345616
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 3.5145919579081237,
+     "sim_s": 0.02,
+     "n_commands": 1,
+     "wall_per_sim": 175.7295978954062,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.5053066711807,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.5053066711807
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "kind": "travel",
+     "wall_s": 1.7248024218715727,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 172.48024218715727,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.6616265956718,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.6616265956718
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "kind": "travel",
+     "wall_s": 1.7607263191603124,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 176.07263191603124,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.7535227233618,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.7535227233618
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "kind": "travel",
+     "wall_s": 1.7025659629143775,
+     "sim_s": 0.01,
+     "n_commands": 1,
+     "wall_per_sim": 170.25659629143775,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8638287968705,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     },
+     "current_a": 259.8638287968705
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 0.8231919752433896,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 823.1919752433896,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8736664119696,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 0.18604770302772522,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 186.04770302772522,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8833044684825,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "kind": "tool_io_alone",
+     "wall_s": 0.15547513775527477,
+     "sim_s": 0.001,
+     "n_commands": 1,
+     "wall_per_sim": 155.47513775527477,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.8927470193502,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 50 ms #0 (arc on)",
+     "kind": "batch",
+     "wall_s": 7.956687041558325,
+     "sim_s": 0.051000000000000004,
+     "n_commands": 2,
+     "wall_per_sim": 156.0134714031044,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.63569965328173,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 50 ms #1 (arc on)",
+     "kind": "batch",
+     "wall_s": 7.716438423842192,
+     "sim_s": 0.051000000000000004,
+     "n_commands": 2,
+     "wall_per_sim": 151.30271419298413,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.9817538596186,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "batch: tool_io 1 tick + travel 50 ms #2 (arc on)",
+     "kind": "batch",
+     "wall_s": 8.362052937969565,
+     "sim_s": 0.051000000000000004,
+     "n_commands": 2,
+     "wall_per_sim": 163.96182231312872,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.68039069542806,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "kind": "paused",
+     "wall_s": 7.443605990614742,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 148.87211981229484,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 259.76452076855435,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "kind": "paused",
+     "wall_s": 7.443484069313854,
+     "sim_s": 0.05,
+     "n_commands": 1,
+     "wall_per_sim": 148.86968138627708,
+     "images": [],
+     "tool": {
+      "arc_on": 1.0,
+      "current_a": 260.0608741034274,
+      "voltage_v": 29.0,
+      "wire_feed_m_min": 12.7,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    },
+    {
+     "step": "arc off, 0.5 s",
+     "kind": "arc_off",
+     "wall_s": 29.055138890165836,
+     "sim_s": 0.5,
+     "n_commands": 1,
+     "wall_per_sim": 58.11027778033167,
+     "images": [],
+     "tool": {
+      "arc_on": 0.0,
+      "current_a": 0.0,
+      "voltage_v": 0.0,
+      "wire_feed_m_min": 0.0,
+      "touch": 0.0,
+      "fault": 0.0,
+      "gas_on": 1.0
+     }
+    }
+   ],
+   "load": {
+    "samples": 179,
+    "every_s": 3.0,
+    "used_mib": {
+     "min": 4128,
+     "median": 5935.0,
+     "max": 5967
+    },
+    "util_pct": {
+     "min": 100,
+     "median": 100.0,
+     "max": 100
+    },
+    "other_processes": {
+     "min": 5,
+     "median": 8.0,
+     "max": 9
+    },
+    "other_mib": {
+     "min": 3200,
+     "median": 5024.0,
+     "max": 5908
+    },
+    "other_render_workers": {
+     "min": 0,
+     "median": 0.0,
+     "max": 0
+    },
+    "note": "the shared GPU while this set ran; 'other' excludes this session's server and render worker"
+   },
+   "session_gpu_mb": {
+    "server_max": 884,
+    "render_worker_max": 0,
+    "note": "nvidia-smi per process: this session's server (the physics) and its Isaac render worker"
+   },
+   "fit_single_travel": {
+    "fixed_s": 1.989073303798411,
+    "slope_wall_per_sim": 130.56519333815703,
+    "crossing_200x_ms": 28.64663127076123,
+    "note": "wall = fixed + slope x simulated over the single arc-on travel commands"
+   },
+   "travel_wall_per_sim": {
+    "500 ms": {
+     "median": 132.5302785546519,
+     "max": 142.75826276186854,
+     "n": 2,
+     "gated": true
+    },
+    "200 ms": {
+     "median": 142.90409018052742,
+     "max": 150.05545255960897,
+     "n": 3,
+     "gated": true
+    },
+    "100 ms": {
+     "median": 166.8441738979891,
+     "max": 168.12847710680217,
+     "n": 3,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 176.69565679505467,
+     "max": 177.10326615720987,
+     "n": 3,
+     "gated": true
+    },
+    "20 ms": {
+     "median": 209.87381851300597,
+     "max": 216.2339435890317,
+     "n": 3,
+     "gated": false
+    },
+    "10 ms": {
+     "median": 172.48024218715727,
+     "max": 176.07263191603124,
+     "n": 3,
+     "gated": false
+    }
+   },
+   "paused_wall_per_sim": {
+    "50 ms": {
+     "median": 148.87090059928596,
+     "max": 148.87211981229484,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": true
+    }
+   },
+   "gated_worst": {
+    "step": "travel 50 ms #1 (arc on)",
+    "wall_per_sim": 177.10326615720987
+   },
+   "below_minimum": [
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "wall_s": 0.2817903351970017,
+     "wall_per_sim": 281.7903351970017,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "wall_s": 4.197476370260119,
+     "wall_per_sim": 209.87381851300597,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "wall_s": 4.324678871780634,
+     "wall_per_sim": 216.2339435890317,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "wall_s": 3.5145919579081237,
+     "wall_per_sim": 175.7295978954062,
+     "over_limit": false
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "wall_s": 1.7248024218715727,
+     "wall_per_sim": 172.48024218715727,
+     "over_limit": false
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "wall_s": 1.7607263191603124,
+     "wall_per_sim": 176.07263191603124,
+     "over_limit": false
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "wall_s": 1.7025659629143775,
+     "wall_per_sim": 170.25659629143775,
+     "over_limit": false
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "wall_s": 0.8231919752433896,
+     "wall_per_sim": 823.1919752433896,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "wall_s": 0.18604770302772522,
+     "wall_per_sim": 186.04770302772522,
+     "over_limit": false
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "wall_s": 0.15547513775527477,
+     "wall_per_sim": 155.47513775527477,
+     "over_limit": false
+    }
+   ],
+   "observation_only_s": {
+    "median": 0.0014824110548943281,
+    "max": 0.0015354999341070652
+   },
+   "passed": true
+  }
+ },
+ "physics_hash": "352f717222eb3566",
+ "passed": false,
+ "launch_s": 37.17758702300489,
+ "arc_on_wall_per_sim": 107.21918953210115,
+ "arc_off_wall_per_sim": 16.892856044112705,
+ "current_mean_a": 258.48386408228265,
+ "summary": {
+  "one camera": {
+   "minimum_command_ms": 100.0,
+   "fixed_cost_per_request_s": 6.726914565800376,
+   "slope_wall_per_sim": 94.26534801135391,
+   "crossing_200x_ms": 63.62071883986264,
+   "gated_worst": {
+    "step": "batch: tool_io 1 tick + travel 100 ms #1 (arc on)",
+    "wall_per_sim": 219.6400054260203
+   },
+   "observation_only_s": {
+    "median": 1.0482414450962096,
+    "max": 1.0879152351990342
+   },
+   "below_minimum": [
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "wall_s": 2.7632751632481813,
+     "wall_per_sim": 2763.2751632481813,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "wall_s": 13.121758216060698,
+     "wall_per_sim": 262.43516432121396,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "wall_s": 13.265656034927815,
+     "wall_per_sim": 265.3131206985563,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "wall_s": 12.693650516681373,
+     "wall_per_sim": 253.87301033362746,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "wall_s": 7.410736017860472,
+     "wall_per_sim": 370.5368008930236,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "wall_s": 7.495258430019021,
+     "wall_per_sim": 374.76292150095105,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "wall_s": 7.4394260491244495,
+     "wall_per_sim": 371.9713024562225,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "wall_s": 5.866020729765296,
+     "wall_per_sim": 586.6020729765296,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "wall_s": 5.693292350042611,
+     "wall_per_sim": 569.3292350042611,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "wall_s": 5.8535845866426826,
+     "wall_per_sim": 585.3584586642683,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "wall_s": 4.583511222153902,
+     "wall_per_sim": 4583.511222153902,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "wall_s": 3.9791835150681436,
+     "wall_per_sim": 3979.1835150681436,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "wall_s": 3.934481093659997,
+     "wall_per_sim": 3934.481093659997,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "wall_s": 11.313712493982166,
+     "wall_per_sim": 226.27424987964332,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "wall_s": 10.576229662168771,
+     "wall_per_sim": 211.52459324337542,
+     "over_limit": true
+    }
+   ],
+   "paused": {
+    "100 ms": {
+     "median": 201.50472422596067,
+     "max": 211.6897835722193,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 218.89942156150937,
+     "max": 226.27424987964332,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": false
+    }
+   },
+   "load": {
+    "samples": 221,
+    "every_s": 3.0,
+    "used_mib": {
+     "min": 2497,
+     "median": 10477.0,
+     "max": 11123
+    },
+    "util_pct": {
+     "min": 81,
+     "median": 100.0,
+     "max": 100
+    },
+    "other_processes": {
+     "min": 3,
+     "median": 8.0,
+     "max": 9
+    },
+    "other_mib": {
+     "min": 1824,
+     "median": 5024.0,
+     "max": 7539
+    },
+    "other_render_workers": {
+     "min": 0,
+     "median": 0.0,
+     "max": 1
+    },
+    "note": "the shared GPU while this set ran; 'other' excludes this session's server and render worker"
+   },
+   "session_gpu_mb": {
+    "server_max": 884,
+    "render_worker_max": 4472,
+    "note": "nvidia-smi per process: this session's server (the physics) and its Isaac render worker"
+   },
+   "passed": false
+  },
+  "three cameras": {
+   "minimum_command_ms": 100.0,
+   "fixed_cost_per_request_s": 12.065789104932596,
+   "slope_wall_per_sim": 119.93629045470948,
+   "crossing_200x_ms": 150.70234908497724,
+   "gated_worst": {
+    "step": "batch: tool_io 1 tick + travel 100 ms #1 (arc on)",
+    "wall_per_sim": 272.0629837695915
+   },
+   "observation_only_s": {
+    "median": 5.4958345661871135,
+    "max": 5.543606478255242
+   },
+   "below_minimum": [
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "wall_s": 7.6287910849787295,
+     "wall_per_sim": 7628.7910849787295,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #0 (arc on)",
+     "wall_s": 17.823567571118474,
+     "wall_per_sim": 356.4713514223695,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #1 (arc on)",
+     "wall_s": 18.05804453836754,
+     "wall_per_sim": 361.1608907673508,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms #2 (arc on)",
+     "wall_s": 18.18480716785416,
+     "wall_per_sim": 363.6961433570832,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "wall_s": 12.931193332187831,
+     "wall_per_sim": 646.5596666093916,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "wall_s": 13.232738435268402,
+     "wall_per_sim": 661.6369217634201,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "wall_s": 13.134465106762946,
+     "wall_per_sim": 656.7232553381473,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "wall_s": 11.194942872039974,
+     "wall_per_sim": 1119.4942872039974,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "wall_s": 11.21065384009853,
+     "wall_per_sim": 1121.065384009853,
+     "over_limit": true
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "wall_s": 11.457910827361047,
+     "wall_per_sim": 1145.7910827361047,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "wall_s": 10.143327880185097,
+     "wall_per_sim": 10143.327880185097,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "wall_s": 9.509580691810697,
+     "wall_per_sim": 9509.580691810697,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "wall_s": 9.587325100321323,
+     "wall_per_sim": 9587.325100321323,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #0 (arc on)",
+     "wall_s": 17.048192602116615,
+     "wall_per_sim": 340.9638520423323,
+     "over_limit": true
+    },
+    {
+     "step": "travel 50 ms after a 15 s pause #1 (arc on)",
+     "wall_s": 17.290200456045568,
+     "wall_per_sim": 345.80400912091136,
+     "over_limit": true
+    }
+   ],
+   "paused": {
+    "100 ms": {
+     "median": 259.18135376647115,
+     "max": 269.4356861198321,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": true
+    },
+    "50 ms": {
+     "median": 343.3839305816218,
+     "max": 345.80400912091136,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": false
+    }
+   },
+   "load": {
+    "samples": 314,
+    "every_s": 3.0,
+    "used_mib": {
+     "min": 5581,
+     "median": 10342.0,
+     "max": 10911
+    },
+    "util_pct": {
+     "min": 96,
+     "median": 100.0,
+     "max": 100
+    },
+    "other_processes": {
+     "min": 5,
+     "median": 8.0,
+     "max": 10
+    },
+    "other_mib": {
+     "min": 3200,
+     "median": 5024.0,
+     "max": 10170
+    },
+    "other_render_workers": {
+     "min": 0,
+     "median": 0.0,
+     "max": 1
+    },
+    "note": "the shared GPU while this set ran; 'other' excludes this session's server and render worker"
+   },
+   "session_gpu_mb": {
+    "server_max": 884,
+    "render_worker_max": 4472,
+    "note": "nvidia-smi per process: this session's server (the physics) and its Isaac render worker"
+   },
+   "passed": false
+  },
+  "no cameras": {
+   "minimum_command_ms": 50.0,
+   "fixed_cost_per_request_s": 1.989073303798411,
+   "slope_wall_per_sim": 130.56519333815703,
+   "crossing_200x_ms": 28.64663127076123,
+   "gated_worst": {
+    "step": "travel 50 ms #1 (arc on)",
+    "wall_per_sim": 177.10326615720987
+   },
+   "observation_only_s": {
+    "median": 0.0014824110548943281,
+    "max": 0.0015354999341070652
+   },
+   "below_minimum": [
+    {
+     "step": "schedule (tool_io, 1 tick, arc off)",
+     "wall_s": 0.2817903351970017,
+     "wall_per_sim": 281.7903351970017,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #0 (arc on)",
+     "wall_s": 4.197476370260119,
+     "wall_per_sim": 209.87381851300597,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #1 (arc on)",
+     "wall_s": 4.324678871780634,
+     "wall_per_sim": 216.2339435890317,
+     "over_limit": true
+    },
+    {
+     "step": "travel 20 ms #2 (arc on)",
+     "wall_s": 3.5145919579081237,
+     "wall_per_sim": 175.7295978954062,
+     "over_limit": false
+    },
+    {
+     "step": "travel 10 ms #0 (arc on)",
+     "wall_s": 1.7248024218715727,
+     "wall_per_sim": 172.48024218715727,
+     "over_limit": false
+    },
+    {
+     "step": "travel 10 ms #1 (arc on)",
+     "wall_s": 1.7607263191603124,
+     "wall_per_sim": 176.07263191603124,
+     "over_limit": false
+    },
+    {
+     "step": "travel 10 ms #2 (arc on)",
+     "wall_s": 1.7025659629143775,
+     "wall_per_sim": 170.25659629143775,
+     "over_limit": false
+    },
+    {
+     "step": "tool_io 1 tick alone #0 (arc on)",
+     "wall_s": 0.8231919752433896,
+     "wall_per_sim": 823.1919752433896,
+     "over_limit": true
+    },
+    {
+     "step": "tool_io 1 tick alone #1 (arc on)",
+     "wall_s": 0.18604770302772522,
+     "wall_per_sim": 186.04770302772522,
+     "over_limit": false
+    },
+    {
+     "step": "tool_io 1 tick alone #2 (arc on)",
+     "wall_s": 0.15547513775527477,
+     "wall_per_sim": 155.47513775527477,
+     "over_limit": false
+    }
+   ],
+   "paused": {
+    "50 ms": {
+     "median": 148.87090059928596,
+     "max": 148.87211981229484,
+     "n": 2,
+     "pause_s": 15.0,
+     "gated": true
+    }
+   },
+   "load": {
+    "samples": 179,
+    "every_s": 3.0,
+    "used_mib": {
+     "min": 4128,
+     "median": 5935.0,
+     "max": 5967
+    },
+    "util_pct": {
+     "min": 100,
+     "median": 100.0,
+     "max": 100
+    },
+    "other_processes": {
+     "min": 5,
+     "median": 8.0,
+     "max": 9
+    },
+    "other_mib": {
+     "min": 3200,
+     "median": 5024.0,
+     "max": 5908
+    },
+    "other_render_workers": {
+     "min": 0,
+     "median": 0.0,
+     "max": 0
+    },
+    "note": "the shared GPU while this set ran; 'other' excludes this session's server and render worker"
+   },
+   "session_gpu_mb": {
+    "server_max": 884,
+    "render_worker_max": 0,
+    "note": "nvidia-smi per process: this session's server (the physics) and its Isaac render worker"
+   },
+   "passed": true
+  }
+ }
+}

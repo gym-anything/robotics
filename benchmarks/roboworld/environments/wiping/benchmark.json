@@ -1,0 +1,14 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "wipe-work-surfaces",
+  "default_task_id": "wipe-work-surfaces/v1/reference/seed-0",
+  "description": "Reset a commercial prep bench: clean beneath its movable tray, collect crumbs, wipe mixed food/oil/water, protect clean staging, dispose of dirty cloths and release the tools.",
+  "selectors": ["variant", "seed"],
+  "resolver": "wiping.variants:task_resolve",
+  "count": 3,
+  "count_scope": "named material-composition presets; seeds vary patch and crumb placement, not independently qualified tasks",
+  "splits": [],
+  "split_note": "No train/test split invented.",
+  "evaluator": {"available": true, "source": "wiping/task.py", "scope": "Native mass and object state; no visual-coverage score, sanitization or autonomous-solution claim. The sticky-food preset uses task revision 2 (BenchResetProgress, own instruction, score 1.0 only on success); reference and oil-heavy keep revision 1 (Progress)."},
+  "qualification": "Previous release withdrawn after failed sustained-rest, held-wipe and visual review. Requalification is in progress; see wiping/REOPENED.md. Historical component passes do not qualify the current environment."
+}

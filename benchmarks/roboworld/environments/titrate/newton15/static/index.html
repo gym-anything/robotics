@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Titration · Operator laboratory</title><link rel="stylesheet" href="/styles.css">
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script></head>
+<body><header><div><span class="eyebrow">GYM ANYTHING / NEWTON 1.5</span><h1>Titration laboratory</h1></div>
+<div id="clock">Disconnected · physics paused</div></header>
+<section class="connect"><label>Owner API key <input id="key" type="password" autocomplete="off" placeholder="Privileged bearer token"></label>
+<button id="connect">Connect</button><span id="connection">Credentials remain in this tab’s memory.</span></section>
+<main><section class="stage"><nav><button id="previewTab" aria-pressed="true">3D operator preview</button><button id="rgbTab" aria-pressed="false">Actual RGB</button>
+<button id="cutaway" aria-pressed="false">Room cutaway</button><button id="homeView">Reset view</button></nav><div id="viewport"></div><div id="rgbPanel" hidden><img id="rgb" alt="Actual current laboratory RGB observation"><p id="rgbStamp">No camera image requested.</p></div>
+<footer id="viewNote">Drag to orbit · right-drag to pan · wheel to zoom. Preview is geometry only; liquid and refraction are in Actual RGB.</footer></section>
+<aside><section><h2>Robot joints</h2><p>Targets move real actuators. No object teleporting.</p><div id="joints"></div>
+<label>Physics ticks per command <input id="ticks" type="number" min="1" step="1" value="100"></label><p id="duration"></p>
+<button id="apply" class="primary" disabled>Apply joint targets</button>
+<div class="row"><button id="open" disabled>Open gripper</button><button id="close" disabled>Close gripper</button></div></section>
+<section><h2>Simulation clock</h2><p>No physics advances while idle. Camera movement never steps the simulation.</p>
+<button id="advance" disabled>Advance ticks · hold targets</button><button id="refresh" disabled>Refresh state only</button></section>
+<section><h2>Checkpoints</h2><label>Checkpoint label <input id="label" placeholder="before_dispense" maxlength="64"></label>
+<button id="save" disabled>Save state</button><label>Saved state <select id="checkpoints"><option value="">No checkpoints loaded</option></select></label>
+<button id="restore" disabled>Restore selected</button><button id="reset" class="danger" disabled>Reset episode</button></section></aside></main>
+<div id="status" role="status" aria-live="polite">Connect to the running environment to begin.</div>
+<script type="module" src="/app.js"></script></body></html>

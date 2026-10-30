@@ -1,0 +1,24 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "welding-ur10e-fr3",
+  "description": "Robotic GMAW cell: UR10e torch arm (right, MIG gun mounted by the welding environment) and FR3 + Franka Hand handling arm (left)",
+  "instances": {
+    "left": {
+      "model": "fr3@1",
+      "mount": "left_arm_mount",
+      "controller_profile": "welding"
+    },
+    "right": {
+      "model": "ur10e@1",
+      "mount": "right_arm_mount",
+      "controller_profile": "welding"
+    }
+  },
+  "attachments": {
+    "left_hand": {
+      "model": "franka-hand@1",
+      "parent": "left/flange",
+      "mount_profile": "franka_native"
+    }
+  }
+}

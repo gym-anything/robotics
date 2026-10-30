@@ -1,0 +1,153 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "wine-pouring",
+  "default_task_id": "wine-pouring/v1/service/pour-glass/seed-0",
+  "description": "Pour wine (and water) at a robotic wine bar with physically simulated liquid: a GPU DFSPH liquid (2 mm particles, red/white/rose wine and water with their densities and viscosities; surface tension as a cohesion force normalised to each liquid's surface tension (measured for water, estimated for wine), wetting as wall adhesion at its contact angle, and contact-line friction that stops spills on the bar) two-way coupled to real glassware (Saverglass LEONOR 75 cl bottle, Zwiesel PURE Bordeaux glass, ISO 3591 tasting glass, UK lined glass, carafes, dump bucket) that two FR3 arms with Franka Hands grasp, tilt and carry. Volumes, spills and drips are counted from the liquid itself.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed",
+    "contract"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "preset": [
+      "lined",
+      "service",
+      "tasting"
+    ],
+    "task": [
+      "pour-glass",
+      "taste-pour",
+      "split-bottle",
+      "water-tumbler",
+      "carry-glass",
+      "refill-glass",
+      "tasting-flight",
+      "decant-carafe",
+      "dump-and-pour",
+      "lined-measure"
+    ],
+    "contract": [
+      "wine-checks-v1",
+      "wine-tasks-v1",
+      "split-progress-v1"
+    ]
+  },
+  "resolver": "wine_pouring.variants:task_resolve",
+  "count": 10,
+  "count_scope": "ten named tasks (service: pour-glass, taste-pour, split-bottle, water-tumbler, carry-glass, refill-glass; tasting: tasting-flight, decant-carafe, dump-and-pour; lined: lined-measure); seeds vary delivery spot, bottle fill, wine, leftovers and placement",
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "split_note": "Frozen by SHA-256 of (task, seed) over seeds 0..999 of every task (80/10/10); seeds 1000..9999 resolve with split null.",
+  "evaluator": {
+    "available": true,
+    "source": "wine_pouring/task_contracts.py",
+    "scope": "Liquid inventory per container and liquid (particle classification against each container's exact interior), spilled and drip-film volume, glassware upright and on its spot, bottle back on its coaster, arms still and released, liquid settled. Score: the fraction of checks met, except split-bottle (reward contract split-progress-v1): 1 on success, else 0.9 x progress, the served share of the bottle times the fraction of poured wine that reached the glasses; its final verdict is read once the scene is at rest (a restored settle branch; a failed verdict never credits more progress than the state at the request), and its no-touch rule counts any bottle-glass contact on every tick. No autonomous-solution claim. Explicit contract wine-tasks-v1 gives the other seven selected tasks 1 on success, else 0.9 x continuous state progress, zero at reset; it uses a restored settle branch, counts coaster waste as spill and requires the old sample in the dump bucket. Bare selections keep the original scoring. Every evaluation reports reward.contract.",
+    "legacy_source": "wine_pouring/task.py"
+  },
+  "qualification": "Component-qualified with assisted evidence: liquid at rest, pour onset and flow against bottle geometry, bottle grasp and pour by scripted joint targets, glass carry and spill, drip film, dump; no policy solves a task.",
+  "task_set": {
+    "robot": "dual-fr3",
+    "score_rule": "1 on success, otherwise 0.9 x continuous progress; world fault gives zero progress.",
+    "tasks": [
+      {
+        "selection": {
+          "preset": "service",
+          "task": "carry-glass",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/service/carry-glass/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "service",
+          "task": "taste-pour",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/service/taste-pour/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "service",
+          "task": "pour-glass",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/service/pour-glass/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "service",
+          "task": "refill-glass",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/service/refill-glass/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "service",
+          "task": "water-tumbler",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/service/water-tumbler/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "tasting",
+          "task": "dump-and-pour",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/tasting/dump-and-pour/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "lined",
+          "task": "lined-measure",
+          "seed": 0,
+          "contract": "wine-tasks-v1"
+        },
+        "task_id": "wine-pouring/v1/lined/lined-measure/seed-0",
+        "task_contract": "wine-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "service",
+          "task": "split-bottle",
+          "seed": 0,
+          "contract": "split-progress-v1"
+        },
+        "task_id": "wine-pouring/v1/service/split-bottle/seed-0",
+        "task_contract": "split-progress-v1",
+        "difficulty": "hardest"
+      }
+    ],
+    "swaps": [],
+    "exclusions": {
+      "tasting-flight": "Repeats the taste-pour skill; its robot run predates the current liquid physics.",
+      "decant-carafe": "Neither assisted decant met the spill tolerance (22.8 and 57.2 mL spilled)."
+    },
+    "qualification": "Existing layouts and props. The contract wine-tasks-v1 has not been run with the simulator or rendered. Carafe two-hand handling and a collision-free robot dump are not shown; the assisted evidence is component evidence, not a success rate for this contract."
+  }
+}

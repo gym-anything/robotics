@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "filleting-fr3",
+  "instances": {
+    "left": {"model": "fr3@1", "mount": "left_arm_mount", "controller_profile": "filleting"},
+    "right": {"model": "fr3@1", "mount": "right_arm_mount", "controller_profile": "filleting"}
+  },
+  "attachments": {
+    "left_hand": {"model": "franka-hand@1", "parent": "left/flange", "mount_profile": "franka_native"},
+    "right_hand": {"model": "franka-hand@1", "parent": "right/flange", "mount_profile": "franka_native"}
+  }
+}

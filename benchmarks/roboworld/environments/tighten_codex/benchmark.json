@@ -1,0 +1,122 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "tighten-codex",
+  "default_task_id": "tighten-codex/v1/mixed/seed-0",
+  "description": "Seat prestarted M3 sensor and M4 extrusion fasteners with preset torque drivers at a sensor service bench.",
+  "selectors": [
+    "task",
+    "seed",
+    "contract"
+  ],
+  "resolver": "tighten_codex.task:resolve",
+  "count": 8,
+  "count_scope": "Eight work orders; seeds do not multiply the count. A selection of one of the first six tasks without a contract keeps its original instruction, id and evaluator. The task set selects contract tighten-tasks-v1 explicitly for sensor, aim, frame, support and access. mixed keeps its own evaluator (tighten-mixed-v1). front-m4 and find-loose use tighten-tasks-v1. find-loose seeds choose one of three loose screws deterministically.",
+  "splits": [],
+  "split_note": "No train/test split is defined.",
+  "evaluator": {
+    "available": true,
+    "source": "tighten_codex/env.py",
+    "scope": "Each required screw: its preset driver's clutch released while the bit was in that socket, then at least 80% of the equation load at that release torque retained for 0.25 s after the bit left, with helical advance; M3 solved bit moment (2.1 ms average) at or below SICK's 0.4 N m; geometric photoelectric ray; task-specific rail position. mixed differs: own-preset-driver clicks voided by 10 hands-off readings below the floor or by back-rotation past the click angle, 2.1 ms hands-off retention, rail level (slot position and yaw count only through detection), the reference flag at its home and detected there with most of the spot on it, nothing robot-held touching the assembly, and 0.95 x per-screw partial credit unless successful, with the flag return graded and the aim judged at the flag's home (TightenEnv.MIXED_SCOPE). Privileged metrics remain outside policy observations. Eight-task contract tighten-tasks-v1: hands-off retention and own-driver clicks as mixed; task-specific rail, home flag and prior-clamp preservation. Score 1 on success else 0.95 x continuous load progress above the settled start with geometry and collateral-load grades; no bonus for untouched preload. Every evaluation reports task_contract."
+  },
+  "qualification": "Defined task catalogue. It does not imply that every variation passed physical qualification. The seven tasks other than mixed have not been run with the simulator: their construction presets, renders and 10 s hands-off rest are not checked, and robot bit insertion is not demonstrated.",
+  "selector_choices": {
+    "task": [
+      "sensor",
+      "aim",
+      "frame",
+      "mixed",
+      "support",
+      "access",
+      "front-m4",
+      "find-loose"
+    ],
+    "contract": [
+      "tighten-legacy-v1",
+      "tighten-tasks-v1",
+      "tighten-mixed-v1"
+    ]
+  },
+  "task_set": {
+    "tasks": [
+      {
+        "selection": {
+          "task": "front-m4",
+          "seed": 0
+        },
+        "task_id": "tighten-codex/v1/front-m4/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "task": "sensor",
+          "seed": 0,
+          "contract": "tighten-tasks-v1"
+        },
+        "task_id": "tighten-codex/v1/sensor/tighten-tasks-v1/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "task": "find-loose",
+          "seed": 0
+        },
+        "task_id": "tighten-codex/v1/find-loose/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "task": "frame",
+          "seed": 0,
+          "contract": "tighten-tasks-v1"
+        },
+        "task_id": "tighten-codex/v1/frame/tighten-tasks-v1/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "task": "access",
+          "seed": 0,
+          "contract": "tighten-tasks-v1"
+        },
+        "task_id": "tighten-codex/v1/access/tighten-tasks-v1/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "task": "support",
+          "seed": 0,
+          "contract": "tighten-tasks-v1"
+        },
+        "task_id": "tighten-codex/v1/support/tighten-tasks-v1/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "task": "aim",
+          "seed": 0,
+          "contract": "tighten-tasks-v1"
+        },
+        "task_id": "tighten-codex/v1/aim/tighten-tasks-v1/seed-0",
+        "task_contract": "tighten-tasks-v1",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "task": "mixed",
+          "seed": 0
+        },
+        "task_id": "tighten-codex/v1/mixed/seed-0",
+        "task_contract": "tighten-mixed-v1",
+        "difficulty": "hardest"
+      }
+    ],
+    "failed_attempt_factor": 0.95,
+    "qualification": "Checked by stubbed tests only; not yet run with the simulator or rendered."
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "mobile-fr3-single",
+  "revision": 1,
+  "asset": {
+    "format": "urdf",
+    "resolver": "gar_cache",
+    "path": "urdf/mobile_fr3_single.urdf",
+    "lock": "assets.lock.json"
+  },
+  "root": {
+    "frame": "base_link",
+    "mounting": "floating"
+  },
+  "groups": {
+    "base_steer": {
+      "joints": [
+        "tmrv0_2_joint_0",
+        "tmrv0_2_joint_2"
+      ],
+      "role": "base"
+    },
+    "base_drive": {
+      "joints": [
+        "tmrv0_2_joint_1",
+        "tmrv0_2_joint_3"
+      ],
+      "role": "base"
+    },
+    "base_passive": {
+      "joints": [
+        "caster_front_left_steering_joint",
+        "caster_front_left_joint",
+        "caster_rear_right_steering_joint",
+        "caster_rear_right_joint",
+        "rocker_arm_joint"
+      ],
+      "role": "passive"
+    },
+    "spine": {
+      "joints": [
+        "franka_spine_vertical_joint"
+      ],
+      "role": "lift"
+    },
+    "right_arm": {
+      "joints": [
+        "right_fr3_joint1",
+        "right_fr3_joint2",
+        "right_fr3_joint3",
+        "right_fr3_joint4",
+        "right_fr3_joint5",
+        "right_fr3_joint6",
+        "right_fr3_joint7"
+      ],
+      "role": "arm"
+    },
+    "right_gripper": {
+      "joints": [
+        "right_fr3_finger_joint1",
+        "right_fr3_finger_joint2"
+      ],
+      "role": "gripper"
+    }
+  },
+  "frames": {
+    "base": {
+      "parent": "base_link"
+    },
+    "spine_carriage": {
+      "parent": "franka_spine_mounting_point"
+    },
+    "head_camera": {
+      "parent": "head_camera_mounting_point"
+    },
+    "right_wrist": {
+      "parent": "right_fr3_link7"
+    },
+    "right_flange": {
+      "parent": "right_fr3_link8"
+    },
+    "right_tcp": {
+      "parent": "right_fr3_hand_tcp"
+    }
+  },
+  "actuation": {
+    "profiles": {
+      "classroom": {
+        "joints": {
+          "right_fr3_joint1": {
+            "kp": 3000.0,
+            "kd": 100.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "right_fr3_joint2": {
+            "kp": 3000.0,
+            "kd": 100.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "right_fr3_joint3": {
+            "kp": 3000.0,
+            "kd": 100.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "right_fr3_joint4": {
+            "kp": 2500.0,
+            "kd": 90.0,
+            "effort_limit": 87.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.62
+          },
+          "right_fr3_joint5": {
+            "kp": 2500.0,
+            "kd": 60.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "right_fr3_joint6": {
+            "kp": 2000.0,
+            "kd": 50.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 4.18
+          },
+          "right_fr3_joint7": {
+            "kp": 2000.0,
+            "kd": 40.0,
+            "effort_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 5.26
+          },
+          "right_fr3_finger_joint1": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 70.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.05
+          },
+          "right_fr3_finger_joint2": {
+            "kp": 3500.0,
+            "kd": 40.0,
+            "effort_limit": 70.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 0.05
+          },
+          "tmrv0_2_joint_0": {
+            "kp": 400.0,
+            "kd": 12.0,
+            "effort_limit": 30.0,
+            "velocity_limit": 3.141592653589793
+          },
+          "tmrv0_2_joint_2": {
+            "kp": 400.0,
+            "kd": 12.0,
+            "effort_limit": 30.0,
+            "velocity_limit": 3.141592653589793
+          },
+          "tmrv0_2_joint_1": {
+            "kp": 300.0,
+            "kd": 25.0,
+            "effort_limit": 28.4,
+            "velocity_limit": 40.0
+          },
+          "tmrv0_2_joint_3": {
+            "kp": 300.0,
+            "kd": 25.0,
+            "effort_limit": 28.4,
+            "velocity_limit": 40.0
+          },
+          "caster_front_left_steering_joint": {
+            "kp": 0.0,
+            "kd": 0.003,
+            "effort_limit": 0.05
+          },
+          "caster_front_left_joint": {
+            "kp": 0.0,
+            "kd": 0.003,
+            "effort_limit": 0.05
+          },
+          "caster_rear_right_steering_joint": {
+            "kp": 0.0,
+            "kd": 0.003,
+            "effort_limit": 0.05
+          },
+          "caster_rear_right_joint": {
+            "kp": 0.0,
+            "kd": 0.003,
+            "effort_limit": 0.05
+          },
+          "rocker_arm_joint": {
+            "kp": 0.0,
+            "kd": 0.003,
+            "effort_limit": 0.05,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "franka_spine_vertical_joint": {
+            "kp": 1000000.0,
+            "kd": 15000.0,
+            "effort_limit": 670.2,
+            "limit_kp": 100000.0,
+            "limit_kd": 100.0,
+            "velocity_limit": 0.3
+          }
+        },
+        "initial_pose": "stowed",
+        "gravity_compensation": false,
+        "actuator_gravity_compensation": false,
+        "finger_material": {
+          "mu": 0.8
+        },
+        "zero_rolling_torsional": true,
+        "default_gap": null,
+        "all_shape_gap": null,
+        "transform_stage": "compose",
+        "default_tool": null,
+        "notes": "Arm servo stiffness: libfranka's default joint impedance (sources.classroom_arm_gains); finger servo gains as the catalog FR3 barcode_scanning profile. Arm-link gravity compensation is applied by the environment to the FR3 bodies only, through the joint actuators (classroom_arrangement/scene.py) (the FR3 controller compensates its own links; the TMR, Spine and payloads are not compensated). Base: steering position servos, drive wheels track the base controller's integrated wheel reference (classroom_arrangement/base.py); casters and rocker passive with the URDF damping. Spine: stiff position servo standing in for the ball screw."
+      }
+    }
+  },
+  "poses": {
+    "stowed": {
+      "right_fr3_joint1": -0.643,
+      "right_fr3_joint2": -1.775,
+      "right_fr3_joint3": 0.645,
+      "right_fr3_joint4": -0.19,
+      "right_fr3_joint5": -2.806,
+      "right_fr3_joint6": 3.984,
+      "right_fr3_joint7": 0.029,
+      "right_fr3_finger_joint1": 0.04,
+      "right_fr3_finger_joint2": 0.04,
+      "tmrv0_2_joint_0": 0.0,
+      "tmrv0_2_joint_2": 0.0,
+      "tmrv0_2_joint_1": 0.0,
+      "tmrv0_2_joint_3": 0.0,
+      "caster_front_left_steering_joint": 0.0,
+      "caster_front_left_joint": 0.0,
+      "caster_rear_right_steering_joint": 0.0,
+      "caster_rear_right_joint": 0.0,
+      "rocker_arm_joint": 0.0,
+      "franka_spine_vertical_joint": 0.0
+    }
+  },
+  "support": {
+    "backend": "newton",
+    "version": "1.5.0"
+  },
+  "sources": {
+    "description": "Franka Robotics franka_description 7aeeddc (mobile_fr3_duo_v0_2), edited by classroom_arrangement/robot_asset.py; Mobile FR3 Duo manual R04245; ebm-papst ArgoDrive AD-100.12 datasheet; Franka FR3 datasheet",
+    "configuration": "Mobile FR3 Duo with the left arm removed (authored reduced configuration, not a Franka product)",
+    "stowed_pose": "authored: arms folded against the Spine (the search's constraints: 20 mm clearance to every robot part, hands >= 0.30 m apart, above 0.77 m, a collision-free straight joint-space path to the FR3 ready pose), found by a search over the FR3 limits with MuJoCo's midphase off. As built, the Duo mount puts the stowed shoulders (link1-link3) ~0.31-0.35 m either side of the centre line, wider than the 583 mm TMR, and the Spine mount and shoulders up to ~0.6 m ahead of base_link, ~0.2 m ahead of the TMR's front; not a Franka-published pose",
+    "classroom_arm_gains": "FR3 joint stiffness = libfranka setDefaultBehavior setJointImpedance {3000,3000,3000,2500,2500,2000,2000} N m/rad (examples_common.cpp); damping authored for zeta 0.7-1 on the proximal joints. Arm-link gravity is compensated by the environment (MuJoCo gravcomp through the joint actuators)"
+  }
+}

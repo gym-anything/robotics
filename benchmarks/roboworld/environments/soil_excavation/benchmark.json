@@ -1,0 +1,162 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "soil-excavation",
+ "default_task_id": "soil-excavation/v1/bed/penetrate-marked/seed-0",
+ "description": "Dig soil in a front yard with a Franka Mobile FR3 Duo standing on the broom-finished concrete walkway (holonomic TMR base, Spine lift, two FR3 arms with Franka Hands): insert a stainless digging spade at a paint mark, lift a spit onto a tarp, dig and backfill a planting hole for a #1 container shrub, cut a 150 mm-cover cable trench through turf along a line while moving the base, dig a 60 cm post hole with a clamshell post-hole digger, backfill and tamp a braced 4x4 post, break a compacted path with a hand mattock, drill bulb holes with a drill-mounted planting auger whose trigger the gripper squeezes, and hand-dig to expose and re-bury an irrigation lateral without striking it. The ground is a two-way coupled granular continuum (Newton 1.5 implicit MPM on the GPU, 2 cm voxels: mulch, topsoil, turf root mat, clay-loam subsoil, compacted yard soil, hardpan, bedding sand) with embedded stones; soil moves only through the contacts of tools, inclusions and the robot.",
+ "selectors": [
+  "task",
+  "seed",
+  "moisture",
+  "topsoil",
+  "stones",
+  "contract"
+ ],
+ "cli_task_selector": "task",
+ "selector_choices": {
+  "task": [
+   "penetrate-marked",
+   "spit-to-tarp",
+   "planting-hole",
+   "plant-and-backfill",
+   "cable-trench",
+   "post-hole",
+   "set-post",
+   "break-hardpan",
+   "auger-holes",
+   "backfill-pipe",
+   "expose-line"
+  ],
+  "moisture": [
+   "dry",
+   "moist",
+   "wet"
+  ],
+  "contract": [
+   "v1",
+   "soil-tasks-v1",
+   "soil-set-post-v1"
+  ]
+ },
+ "resolver": "soil_excavation.catalogue:task_resolve",
+ "count": 11,
+ "count_scope": "eleven named tasks in six presets of one yard: bed (penetrate-marked, spit-to-tarp, planting-hole, plant-and-backfill), trench (cable-trench), post (post-hole, set-post), hardpan (break-hardpan), bulbs (auger-holes), irrigation (backfill-pipe, expose-line); seeds vary the mark position, stones and layer interfaces; moisture, topsoil depth and stone count are selectors",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "split_note": "Frozen by hash of (task, seed) over seeds 0..999 of every task (soil_excavation/variations.json); seeds 1000..9999 resolve with split null.",
+ "evaluator": {
+  "available": true,
+  "source": "soil_excavation/task_set.py (explicit contract); soil_excavation/task.py (legacy and set-post)",
+  "scope": "World state only: the soil surface from the particles (1 cm column tops), masses by region (tarp, walkway, spill), loosening from each particle's plastic volume ratio, packing per voxel (air pockets, density), tool poses and both-hand grasps from MuJoCo contacts, the root ball's flare and tilt, the braced post's lateral load test on a state copy, pipe strikes and protective stops. No autonomous-solution claim."
+ },
+ "qualification": "Not fully qualified. Component evidence: prescribed-spade separation/transport (3.06 kg deposited), retained geometric platen densification and physical trigger actuation. These do not qualify all eleven tasks. Loaded HTTP insertion reaches 121 mm, below the 150 mm task criterion. Grid/contact force convergence, compaction/support, several component mechanisms, humanoid support and broader runtime profiles remain incomplete. The 7.2 s default loaded HTTP/RGB/history run measures 124.2-136.0x per command and 162.7x including startup/ancillary requests/shutdown; this is not a blanket operating guarantee.",
+ "task_set": {
+  "status": "The revised contract is not yet run with the simulator or rendered.",
+  "score_rule": "1 on success; otherwise min(progress, 0.99), the same cap as set-post (set-post has no multiplier). Revised progress is net of its settled start. set-post is unchanged.",
+  "default_contracts": {
+   "penetrate-marked": "v1",
+   "spit-to-tarp": "v1",
+   "planting-hole": "v1",
+   "plant-and-backfill": "v1",
+   "cable-trench": "v1",
+   "post-hole": "v1",
+   "set-post": "soil-set-post-v1",
+   "break-hardpan": "v1",
+   "auger-holes": "v1",
+   "backfill-pipe": "v1",
+   "expose-line": "v1"
+  },
+  "swaps": [],
+  "tasks": [
+   {
+    "selection": {
+     "task": "penetrate-marked",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/bed/penetrate-marked/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "entry"
+   },
+   {
+    "selection": {
+     "task": "spit-to-tarp",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/bed/spit-to-tarp/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "entry"
+   },
+   {
+    "selection": {
+     "task": "planting-hole",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/bed/planting-hole/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "medium"
+   },
+   {
+    "selection": {
+     "task": "break-hardpan",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/hardpan/break-hardpan/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "medium"
+   },
+   {
+    "selection": {
+     "task": "expose-line",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/irrigation/expose-line/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "medium"
+   },
+   {
+    "selection": {
+     "task": "cable-trench",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/trench/cable-trench/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "hard"
+   },
+   {
+    "selection": {
+     "task": "auger-holes",
+     "seed": 0,
+     "contract": "soil-tasks-v1"
+    },
+    "task_id": "soil-excavation/v1/bulbs/auger-holes/soil-tasks-v1/seed-0",
+    "task_contract": "soil-tasks-v1",
+    "existing": true,
+    "difficulty": "hard"
+   },
+   {
+    "selection": {
+     "task": "set-post",
+     "seed": 0
+    },
+    "task_id": "soil-excavation/v1/post/set-post/seed-0",
+    "task_contract": "soil-set-post-v1",
+    "existing": true,
+    "difficulty": "hardest"
+   }
+  ]
+ }
+}

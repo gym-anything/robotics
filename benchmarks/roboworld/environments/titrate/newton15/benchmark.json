@@ -1,0 +1,104 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "titration",
+  "default_task_id": null,
+  "description": "Eight laboratory jobs, including the original titration and its 1,100 layout/charge variations.",
+  "selectors": [
+    "variation_id",
+    "constraints",
+    "task"
+  ],
+  "resolver": "titrate.newton15.benchmark:resolve",
+  "count": 8800,
+  "count_scope": "8 tasks x 1,100 native layout/charge variations; the default task is titration",
+  "splits": [],
+  "split_note": "No train/test split exists in this baseline; none invented.",
+  "evaluator": {
+    "available": true,
+    "source": "titrate/newton15/task.py (titration); titrate/newton15/task_evaluators.py (the seven other tasks)",
+    "scope": "Environment-owned task success; not physical qualification."
+  },
+  "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
+  "selector_choices": {
+    "task": [
+      "titration",
+      "start-stirring",
+      "centre-flask",
+      "prime-burette",
+      "run-in",
+      "drain-burette",
+      "decant-acid",
+      "finish-titration"
+    ]
+  },
+  "task_set": {
+    "tasks": [
+      {
+        "task_id": "titration/start-stirring/titration-n15-0000",
+        "selection": {
+          "task": "start-stirring",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/start-stirring"
+      },
+      {
+        "task_id": "titration/centre-flask/titration-n15-0000",
+        "selection": {
+          "task": "centre-flask",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/centre-flask"
+      },
+      {
+        "task_id": "titration/prime-burette/titration-n15-0000",
+        "selection": {
+          "task": "prime-burette",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/prime-burette"
+      },
+      {
+        "task_id": "titration/run-in/titration-n15-0000",
+        "selection": {
+          "task": "run-in",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/run-in"
+      },
+      {
+        "task_id": "titration/drain-burette/titration-n15-0000",
+        "selection": {
+          "task": "drain-burette",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/drain-burette"
+      },
+      {
+        "task_id": "titration/decant-acid/titration-n15-0000",
+        "selection": {
+          "task": "decant-acid",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/decant-acid"
+      },
+      {
+        "task_id": "titration/finish-titration/titration-n15-0000",
+        "selection": {
+          "task": "finish-titration",
+          "variation_id": 0
+        },
+        "task_contract": "titration-tasks-v1/finish-titration"
+      },
+      {
+        "task_id": "titration/titration-n15-0000",
+        "selection": {
+          "task": "titration",
+          "variation_id": 0
+        },
+        "task_contract": "titration-progress-v1"
+      }
+    ],
+    "score_rule": "1 on success, otherwise 0.9 x continuous progress; None if species conservation fails; untouched start 0",
+    "qualification": "Checked by stubbed tests only; the seven tasks other than titration have not been run with the simulator or rendered."
+  }
+}

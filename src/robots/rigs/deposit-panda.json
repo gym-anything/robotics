@@ -1,0 +1,38 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "deposit-panda",
+  "instances": {
+    "left": {
+      "model": "panda@1",
+      "mount": "left_arm_mount",
+      "controller_profile": "deposit_cans"
+    },
+    "right": {
+      "model": "panda@1",
+      "mount": "right_arm_mount",
+      "controller_profile": "deposit_cans"
+    }
+  },
+  "attachments": {
+    "left_hand": {
+      "model": "wsg50@1",
+      "parent": "left/flange",
+      "mount_profile": "panda_wsg_adapter"
+    },
+    "right_hand": {
+      "model": "wsg50@1",
+      "parent": "right/flange",
+      "mount_profile": "panda_wsg_adapter"
+    },
+    "left_camera": {
+      "model": "d405@1",
+      "parent": "left/wrist",
+      "mount_profile": "deposit_wrist"
+    },
+    "right_camera": {
+      "model": "d405@1",
+      "parent": "right/wrist",
+      "mount_profile": "deposit_wrist"
+    }
+  }
+}

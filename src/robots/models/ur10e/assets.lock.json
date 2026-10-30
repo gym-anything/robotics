@@ -1,0 +1,70 @@
+{
+  "source": "Universal Robots ROS 2 description (github.com/UniversalRobots/Universal_Robots_ROS2_Description) commit 6662e15f32c23c12ece57d0050aee9a716e4fc41: meshes/ur10e and LICENSE from the commit archive; urdf/ur10e.urdf = xacro expansion of urdf/ur.urdf.xacro ur_type:=ur10e name:=ur10e (source/ur10e.xacro.urdf) with the world link and base_joint removed and package:// mesh URIs made relative (install.py)",
+  "license": "BSD-3-Clause (LICENSE); UR10e meshes are not among the description's restricted models",
+  "files": {
+    "LICENSE": {
+      "sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8",
+      "bytes": 1459
+    },
+    "meshes/ur10e/collision/base.stl": {
+      "sha256": "8a214f3f650e703fa081bd4bd8b1caeb0667598bec22d8b0e572efb97d06e957",
+      "bytes": 22984
+    },
+    "meshes/ur10e/collision/forearm.stl": {
+      "sha256": "7005ed835336ec03ce6a299a356c774bfe2ba989051e37b2a66406173dcb3c96",
+      "bytes": 67284
+    },
+    "meshes/ur10e/collision/shoulder.stl": {
+      "sha256": "3f7c5f7ee742cf2d57130829be9f20b25625b3513d676ac5e20ca46ae84fd528",
+      "bytes": 85284
+    },
+    "meshes/ur10e/collision/upperarm.stl": {
+      "sha256": "663a935951c802b1c16ad7478e7ce754b2d48efb828bbe5d3915fb6bb51cd7db",
+      "bytes": 93784
+    },
+    "meshes/ur10e/collision/wrist1.stl": {
+      "sha256": "1408c3a0a29385fefe30ed44fceca56d2254f51ea93c75c404976816992324cc",
+      "bytes": 66984
+    },
+    "meshes/ur10e/collision/wrist2.stl": {
+      "sha256": "4b9e74eab991af3dc9d38c3dfaad2c5bc69591fadc855f7966627ba4d0956579",
+      "bytes": 89184
+    },
+    "meshes/ur10e/collision/wrist3.stl": {
+      "sha256": "7038904dd03dfea56212191ac61d26746b379dbddfd517b905e13c01e1c12e6a",
+      "bytes": 6984
+    },
+    "meshes/ur10e/visual/base.dae": {
+      "sha256": "28226d95af8c1579a49fe69b62a00d9133a2a05258dad550bb9b583c80dc938f",
+      "bytes": 370618
+    },
+    "meshes/ur10e/visual/forearm.dae": {
+      "sha256": "24d909834c380cceb0490181dae40bcdfcfa4a7fb0c6807d6e58794cdfadcf6e",
+      "bytes": 1375880
+    },
+    "meshes/ur10e/visual/shoulder.dae": {
+      "sha256": "1c38a6afedfb8f064117da87b60c2dcb9ccd107f957e4c5e0a198f4c2bb63d36",
+      "bytes": 2344671
+    },
+    "meshes/ur10e/visual/upperarm.dae": {
+      "sha256": "f9d2380d14127440f4a50ed79ab4e7562f86289cd6131016c3d49a3e7483e6ed",
+      "bytes": 3168984
+    },
+    "meshes/ur10e/visual/wrist1.dae": {
+      "sha256": "643717d042920313dd9daa81511bd9afa66a877625967e6dd8d359ec851b4237",
+      "bytes": 1241549
+    },
+    "meshes/ur10e/visual/wrist2.dae": {
+      "sha256": "b820e8c8a4488563c7a21fe73bf2fa4038ec9f882dcf9db12e2d1df928253793",
+      "bytes": 1428002
+    },
+    "meshes/ur10e/visual/wrist3.dae": {
+      "sha256": "52ace7588f131dc43b49ba88d1c83c1f871e6d00659ea84b1f437e2a7f1ab7fe",
+      "bytes": 71927
+    },
+    "urdf/ur10e.urdf": {
+      "sha256": "23be613876493163f3cff89e774925fb8a28f3a86dd8167878faa55f5dc81f39",
+      "bytes": 11376
+    }
+  }
+}

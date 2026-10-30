@@ -1,0 +1,27 @@
+[package]
+title = "Wiping recorded-state renderer"
+version = "1.0.0"
+description = "RTX/Replicator only; Newton owns physics outside this process"
+
+[dependencies]
+"omni.usd" = {}
+"omni.hydra.rtx" = {}
+"omni.replicator.core" = {}
+"omni.kit.viewport.window" = {}
+"omni.kit.loop-isaac" = {}
+"isaacsim.core.utils" = {}
+"isaacsim.core.version" = {}
+
+[settings.app]
+name = "Wiping render-only"
+settings.persistent = false
+settings.fabricDefaultStageFrameHistoryCount = 3
+vulkan = true
+enableDeveloperWarnings = true
+
+[settings.app.exts.folders]
+'++' = [
+    "${exe-path}/../exts",
+    "${exe-path}/../extscache",
+    "${exe-path}/../extsDeprecated",
+]

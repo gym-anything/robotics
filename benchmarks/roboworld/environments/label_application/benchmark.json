@@ -1,0 +1,115 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "label-application",
+  "default_task_id": "label-application/v1/parcel/carrier-top/seed-0",
+  "description": "Apply a freshly printed label to a parcel, specimen tube, canister or matching part, finish applying a label already in position, or smooth down the lifted parts of a label already stuck down.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed"
+  ],
+  "resolver": "label_application.variants:task_resolve",
+  "count": 10,
+  "count_scope": "ten task ids, nine distinct jobs: tube-label is tube-wrap's job seed for seed (same bench, tube turn, label stock and readers, and tube-wrap's checks except that the barcode-crease check reads the largest crease carried in the episode, where tube-wrap's reads the crease left at the end; tube-label also checks that the label lies over the manufacturer's label, at most 2 mm onto the bare viewing strip, and that the patient's name is at the cap end, both stated in its instruction; other accession digits and wording, set at the point of collection), so count that job once in any difficulty profile (parcel: carrier-top, gs1-case-side, cover-old-label, press-down, smooth-corner, finish-securing; specimen: tube-wrap, tube-label; part: part-id-hdpe, part-id-match); seeds vary the layout per task (label_application/variants.py SEEDS: carton pose, old-label position, laid-label position, which parts of a stuck-down label are lifted, tube roll, canister position, plate set and target, barcode payloads); part-id-steel is retired (replaced by part-id-match); smooth-corner, finish-securing and tube-label form the task ladder; every task is scored by a progress reward contract (tube-label by the take-and-apply rule)",
+  "splits": [],
+  "split_note": "No train/test split invented.",
+  "evaluator": {
+    "available": true,
+    "source": "label_application/task.py",
+    "scope": "Simulator bond/contact/trapped-air/permanent-set/stress state, label pose on the item, robot contacts and item rest, plus a zxing-cpp decode of rendered reader views at declared poses fixed by the item (fixed 1280 x 720, 24 spp; a renderer that cannot run is no verdict, not a failure). Score: every task reports a continuous progress reward beside success (1 on success, else 0.9 x progress; task.py REWARD_CONTRACTS). The mean of the checks is still reported as reward.mean_of_checks. No autonomous-solution claim."
+  },
+  "qualification": "Label physics component-qualified by assisted fixtures (peel bench, dispensing, bubbles, tube wrap) and scripted robot demonstrations.",
+  "task_set": {
+    "why": "Eight existing tasks spanning local repair, whole-label pressing, multi-region repair, printer-to-item application, curved and vertical surfaces, and matching a printed identity. Two entry, three medium, two hard, one hardest. All ten catalogue ids and preset defaults retain their meaning.",
+    "score_rule": "1 if success else 0.9 x continuous progress; 0 at the untouched start. Existing reward contracts are unchanged and reported as reward.contract in every evaluation.",
+    "seed_note": "These are the eight exact seed-0 selections on the default dual-fr3. Seeds 0..9999 remain selectable layout variations, not separately qualified tasks.",
+    "swaps": [],
+    "excluded": {
+      "tube-wrap": "Same physical job as tube-label, which is in the set; remains registered.",
+      "cover-old-label": "Omitted for diversity: carrier-top covers its application chain, tube-label and part-id-match add registration and target identification. Remains registered."
+    },
+    "qualification": "Catalogue selection only; the set adds no simulator run or render check of its own. finish-securing is kept on assisted component evidence, including side-strip repair; no complete robot route for side strips is demonstrated. The existing physics defects and evidence gaps apply (REPORT.pdf section 15).",
+    "tasks": [
+      {
+        "selection": {
+          "preset": "parcel",
+          "task": "smooth-corner",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/parcel/smooth-corner/seed-0",
+        "reward_contract": "progress-v1",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "parcel",
+          "task": "press-down",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/parcel/press-down/seed-0",
+        "reward_contract": "progress-v2",
+        "difficulty": "entry"
+      },
+      {
+        "selection": {
+          "preset": "parcel",
+          "task": "finish-securing",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/parcel/finish-securing/seed-0",
+        "reward_contract": "progress-v1",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "parcel",
+          "task": "carrier-top",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/parcel/carrier-top/seed-0",
+        "reward_contract": "progress-v2",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "part",
+          "task": "part-id-hdpe",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/part/part-id-hdpe/seed-0",
+        "reward_contract": "progress-v2",
+        "difficulty": "medium"
+      },
+      {
+        "selection": {
+          "preset": "parcel",
+          "task": "gs1-case-side",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/parcel/gs1-case-side/seed-0",
+        "reward_contract": "progress-v2",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "part",
+          "task": "part-id-match",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/part/part-id-match/seed-0",
+        "reward_contract": "progress-v2",
+        "difficulty": "hard"
+      },
+      {
+        "selection": {
+          "preset": "specimen",
+          "task": "tube-label",
+          "seed": 0
+        },
+        "task_id": "label-application/v1/specimen/tube-label/seed-0",
+        "reward_contract": "progress-v3",
+        "difficulty": "hardest"
+      }
+    ]
+  }
+}

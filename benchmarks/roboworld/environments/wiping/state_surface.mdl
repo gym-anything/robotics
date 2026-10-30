@@ -1,0 +1,83 @@
+mdl 1.7;
+import ::OmniPBR::*;
+import ::OmniSurface::OmniSurfaceBase::*;
+import ::scene::*;
+import ::base::*;
+import ::math::*;
+import ::state::*;
+
+// A state-driven effective coating, not a timed cleaning animation.
+// Variable metallic/roughness must reach RTX, not fall back to a white decal.
+export material state_surface(
+    color surface_color = color(1.0,0.0,1.0),
+    float roughness = 0.3,
+    float metallic = 0.0,
+    bool use_state = true,
+    uniform bool brushed_finish = false,
+    uniform bool layered_coat = false,
+    uniform bool residue_detail = false
+) = let {
+    float r = use_state ? scene::data_lookup_float("roughness",roughness) : roughness;
+    float m = use_state ? scene::data_lookup_float("metallic",metallic) : metallic;
+    // Optical finish only: bounded variation of a metal substrate's roughness.
+    // World coordinates align the bare steel with its separate thin-film mesh.
+    // No noise is added to soil mass, removal, color or task evaluation.
+    float grain = math::luminance(base::perlin_noise_texture(
+        uvw: base::transform_coordinate(
+            transform: base::rotation_translation_scale(scaling: float3(18.0,850.0,0.2)),
+            coordinate: base::coordinate_source(coordinate_system: base::texture_coordinate_world)),
+        color1: color(0.0), color2: color(1.0), size: 1.0,
+        noise_levels: 2).tint);
+    float finish = brushed_finish ? m*(0.065 + 0.05*(2.0*grain-1.0)) : 0.0;
+    color c = use_state ? scene::data_lookup_color("displayColor",surface_color) : surface_color;
+    float cw = layered_coat && use_state ? scene::data_lookup_float("coat_weight",0.0) : 0.0;
+    // Sub-resolution optical structure only. The coverage is derived from
+    // recorded food mass; zero food cannot acquire dirt from this shader.
+    // Object coordinates keep detail attached to a moving rigid surface.
+    float fc = residue_detail && use_state ? scene::data_lookup_float("food_coverage",0.0) : 0.0;
+    base::texture_coordinate_info residue_uv = base::transform_coordinate(
+        transform: base::rotation_translation_scale(scaling: float3(110.0)),
+        coordinate: base::coordinate_source(coordinate_system: base::texture_coordinate_object));
+    float mottling = math::luminance(base::perlin_noise_texture(
+        uvw: residue_uv, color1: color(0.0), color2: color(1.0),
+        size: 1.0, noise_levels: 3).tint);
+    // Heterogeneous absorption within the coarse physical film. Positive
+    // coverage remains positive; no threshold removes low-density residue.
+    float optical_depth = -math::log(math::max(1.0-fc,0.00001));
+    float detailed_fc = 1.0-math::exp(-optical_depth*math::exp(3.0*(mottling-0.5)));
+    float fc2 = residue_detail ? detailed_fc : fc;
+    color pigment = color(0.27,0.045,0.009);
+    color substrate = math::clamp((c-pigment*fc)/math::max(1.0-fc,0.00001),color(0.0),color(1.0));
+    color detailed_c = substrate*(1.0-fc2)+pigment*(0.90+0.20*mottling)*fc2;
+    color final_c = residue_detail && fc>0.0 ? detailed_c : c;
+    float final_m = residue_detail && fc>0.0 ? m*(1.0-fc2)/math::max(1.0-fc,0.00001) : m;
+    float3 grain_normal = base::perlin_noise_bump_texture(
+        uvw: residue_uv, size: 0.25, noise_levels: 2, factor: 0.012);
+    float3 final_normal = math::normalize(state::normal()*(1.0-fc2)+grain_normal*fc2);
+} in (brushed_finish || layered_coat) ? OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    // Directional microfacet reflection is the missing part of a brushed
+    // finish; roughness noise alone only made uniform steel slightly rougher.
+    // Estimated optical finish, not claimed product calibration. Soil opacity
+    // already suppresses m, so a fully covered patch is not brushed metal.
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: final_c,
+    metalness: math::clamp(final_m,0.0,1.0),
+    specular_reflection_weight: 1.0,
+    specular_reflection_color: color(1.0),
+    specular_reflection_roughness: math::clamp(r+finish,0.02,1.0),
+    specular_reflection_anisotropy: brushed_finish ? 0.55*m : 0.0,
+    specular_reflection_ior: 1.47,
+    coat_weight: math::clamp(cw,0.0,0.95),
+    coat_color: color(1.0),
+    coat_roughness: 0.08,
+    // This template requires a uniform IOR.1.40 is an explicit mixed-residue
+    // optical estimate, not a per-cell emulsion model or measured product value.
+    coat_ior: 1.40,
+    coat_affect_color: 0.0,
+    coat_affect_roughness: 0.0,
+    geometry_normal: final_normal
+) : OmniPBR::OmniPBR(
+    diffuse_color_constant: c,
+    reflection_roughness_constant: math::clamp(r+finish,0.02,1.0),
+    metallic_constant: m
+);

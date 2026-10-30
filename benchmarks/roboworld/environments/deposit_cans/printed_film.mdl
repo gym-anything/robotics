@@ -1,0 +1,23 @@
+mdl 1.7;
+import ::OmniSurface::OmniSurfaceBase::*;
+import ::tex::*;
+import ::state::*;
+// Authored blue printing on the same thin physical film, not a solid box.
+export material printed_film(uniform texture_2d print_texture = texture_2d()) = let {
+    float3 uv = state::texture_coordinate(0);
+    float4 ink = tex::lookup_float4(print_texture, float2(uv.x, uv.y),
+        tex::wrap_repeat, tex::wrap_clamp);
+    float coverage = ink.w;
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: coverage,
+    diffuse_reflection_color: color(0.018, 0.085, 0.34),
+    metalness: 0.0,
+    specular_reflection_weight: 1.0,
+    // Optical estimates, not changed contact friction or film thickness.
+    specular_reflection_roughness: 0.09 + 0.18 * coverage,
+    specular_reflection_ior: 1.49,
+    enable_specular_transmission: true,
+    specular_transmission_weight: 1.0 - coverage,
+    specular_transmission_color: color(0.97, 0.985, 0.98),
+    thin_walled: true
+);

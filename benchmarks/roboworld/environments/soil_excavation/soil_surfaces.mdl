@@ -1,0 +1,62 @@
+mdl 1.7;
+import ::OmniSurface::OmniSurfaceBase::*;
+import ::scene::*;
+import ::state::*;
+import ::math::*;
+import ::tex::*;
+import ::base::*;
+import ::anno::*;
+
+// Render-only appearance of the soil surface reconstructed from the MPM particles (soil_excavation/render.py).
+// No physics reads these values. Per-vertex primvars written by the client every frame:
+//   displayColor  linear RGB of the soil at that vertex: the particles' material colours (topsoil humus brown, clay-loam
+//                 subsoil yellow-brown, sand, gravel, hardpan), moisture darkening, per-particle clod variation, paint
+//   turf, mulch   0..1 share of turf / bark-mulch particles at that vertex: the same CC0 textures as the static lawn and
+//                 bed around the block are blended in (world-space st), so the block top matches the ground around it
+//                 and a turf clod on the tarp still shows grass
+//   st            world x, y in metres (texture tiling is applied here)
+export material soil(
+    uniform texture_2d soil_normal = texture_2d(),
+    uniform texture_2d soil_diffuse = texture_2d(),
+    uniform texture_2d grass_diffuse = texture_2d(),
+    uniform texture_2d grass_normal = texture_2d(),
+    uniform texture_2d mulch_diffuse = texture_2d(),
+    uniform texture_2d mulch_normal = texture_2d(),
+    color grass_tint = color(1.0),
+    color mulch_tint = color(1.0),
+    float soil_tile = 0.6,
+    float grass_tile = 1.0,
+    float mulch_tile = 1.0,
+    float detail = 0.35,
+    float roughness = 0.88
+) = let {
+    color base = scene::data_lookup_color("displayColor", color(0.12, 0.08, 0.05));
+    float turf = math::saturate(scene::data_lookup_float("turf", 0.0));
+    float mulch = math::saturate(scene::data_lookup_float("mulch", 0.0));
+    float3 uvw = state::texture_coordinate(0);
+    float2 us = float2(uvw.x/soil_tile, uvw.y/soil_tile);
+    float2 ug = float2(uvw.x/grass_tile, uvw.y/grass_tile);
+    float2 um = float2(uvw.x/mulch_tile, uvw.y/mulch_tile);
+    color sd = tex::lookup_color(soil_diffuse, us, tex::wrap_repeat, tex::wrap_repeat);
+    float lum = math::average(float3(sd));
+    color soil_c = base*(1.0 - detail + detail*2.4*lum);
+    color gc = tex::lookup_color(grass_diffuse, ug, tex::wrap_repeat, tex::wrap_repeat)*grass_tint;
+    color mc = tex::lookup_color(mulch_diffuse, um, tex::wrap_repeat, tex::wrap_repeat)*mulch_tint;
+    color c1 = math::lerp(soil_c, mc, mulch);
+    color c = math::lerp(c1, gc, turf);
+    float3 n_soil = base::tangent_space_normal_texture(texture: soil_normal, factor: 1.0,
+        uvw: base::texture_coordinate_info(position: float3(us.x, us.y, 0.0)));
+    float3 n_grass = base::tangent_space_normal_texture(texture: grass_normal, factor: 1.0,
+        uvw: base::texture_coordinate_info(position: float3(ug.x, ug.y, 0.0)));
+    float3 n_mulch = base::tangent_space_normal_texture(texture: mulch_normal, factor: 1.0,
+        uvw: base::texture_coordinate_info(position: float3(um.x, um.y, 0.0)));
+    float3 n1 = math::normalize(math::lerp(n_soil, n_mulch, mulch));
+    float3 n = math::normalize(math::lerp(n1, n_grass, turf));
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: c,
+    specular_reflection_weight: 0.25,
+    specular_reflection_roughness: roughness,
+    specular_reflection_ior: 1.45,
+    geometry_normal: n
+);

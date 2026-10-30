@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "football-g1",
+  "instances": {
+    "robot": {
+      "model": "g1@1",
+      "mount": "robot_floor_pose",
+      "controller_profile": "football"
+    }
+  },
+  "attachments": {}
+}

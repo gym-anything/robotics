@@ -1,0 +1,626 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "drive_kit",
+  "revision": 1,
+  "description": "Vehicle-testing driving-robot kit retrofitted to a vehicle's own controls (steering robot on the wheel, pedal actuators, lever actuators, selector, hand-brake, ignition-key and button actuators, a cab camera and an IMU on its frame). Every actuator is modelled at its output: an arm turning about the axis of the control it works, its end effector (fork, foot, jaws, plunger tip) acting on that control only by contact; the products' published force or torque and speed limits apply at that output point. The kit's frame and mounts are bolted to the vehicle before the run (fixed joints to the host body, as a real kit's frame is clamped or bolted in); no end effector is attached to a control. Built by the environment that hosts it (forklift: forklift/operator.py, kit fit; Newton builder robots/models/drive_kit/newton.py).",
+  "asset": {
+    "format": "authored",
+    "resolver": "drive_kit",
+    "path": "robots/models/drive_kit"
+  },
+  "root": {
+    "frame": "frame",
+    "mounting": "fixed"
+  },
+  "groups": {
+    "steering": {
+      "joints": [
+        "steer"
+      ],
+      "role": "steering_robot"
+    },
+    "pedals": {
+      "joints": [
+        "accelerator",
+        "brake",
+        "inching"
+      ],
+      "role": "pedal_robots"
+    },
+    "levers": {
+      "joints": [
+        "lift",
+        "tilt",
+        "shift"
+      ],
+      "role": "lever_robots"
+    },
+    "selector": {
+      "joints": [
+        "direction"
+      ],
+      "role": "selector_robot"
+    },
+    "hand_brake": {
+      "joints": [
+        "park"
+      ],
+      "role": "lever_robot"
+    },
+    "ignition": {
+      "joints": [
+        "key"
+      ],
+      "role": "key_robot"
+    },
+    "buttons": {
+      "joints": [
+        "horn"
+      ],
+      "role": "button_robot"
+    }
+  },
+  "frames": {
+    "head_camera": {
+      "parent": "camera_mast"
+    },
+    "imu": {
+      "parent": "frame"
+    }
+  },
+  "actuation": {
+    "profiles": {
+      "forklift": {
+        "initial_pose": "installed",
+        "note": "Limits are given at each actuator's output (output 'rotary': N m and rad/s about the arm's axis; output 'linear': N and m/s at the end effector's contact point, which the host's kit fit turns into joint units with the contact point's radius from the axis). Envelope: the largest motoring force at a speed, linear between the published points; above the last published speed it falls to zero over cutoff_fraction of that speed (authored). Braking (force against the motion) is limited by peak. Gains (kp, kd, kp_max, kd_max) are in joint units (N m/rad, N m s/rad) for the forklift installation, authored: position servos sized to the controls' springs and the arms' inertia at the 0.5 ms step.",
+        "joints": {
+          "steer": {
+            "product": "AB Dynamics SR 15 Orbit steering robot (hollow, installed behind the rim; torque reaction to the vehicle)",
+            "output": "rotary",
+            "envelope": [
+              [
+                0.0,
+                20.0
+              ],
+              [
+                3.4907,
+                20.0
+              ],
+              [
+                8.7266,
+                15.0
+              ],
+              [
+                17.4533,
+                10.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 20.0,
+            "friction": 4.0,
+            "armature": 0.076,
+            "mass_kg": 5.0,
+            "kp": 60.0,
+            "kd": 4.0,
+            "kp_max": 400.0,
+            "kd_max": 20.0,
+            "basis": "read: max torque (short duration) 20 N m, rated torque 15 N m at 500 deg/s, max velocity 1000 deg/s, motor mass 5 kg, motor friction 4.0 N m, motor assembly inertia 0.076 kg m2 (AB Dynamics steering robots product specification, SR 15 Orbit column); search: 20 N m at 200 deg/s and 1000 deg/s at up to 10 N m (abdynamics.com SR15 page, search result); holding times at rated and maximum torque are limited by the motor's thermal capacity (not modelled)"
+          },
+          "accelerator": {
+            "product": "AB Dynamics Accelerator Robot (AR 1; compact rotary actuator)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                150.0
+              ],
+              [
+                0.3,
+                150.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 150.0,
+            "stroke_m": 0.13,
+            "armature": 0.005,
+            "mass_kg": 3.0,
+            "kp": 1500.0,
+            "kd": 6.0,
+            "kp_max": 4000.0,
+            "kd_max": 30.0,
+            "basis": "read: maximum force 150 N, maximum speed 300 mm/s, maximum pedal stroke 130 mm (AB Dynamics pedal robots product specification, Accelerator Robots); mass and reflected inertia: estimate (not published)"
+          },
+          "brake": {
+            "product": "AB Dynamics RBR 600 brake robot (the CBAR 600's actuator)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                750.0
+              ],
+              [
+                1.0,
+                750.0
+              ],
+              [
+                1.3,
+                500.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 750.0,
+            "armature": 0.01,
+            "mass_kg": 6.0,
+            "kp": 4000.0,
+            "kd": 20.0,
+            "kp_max": 10000.0,
+            "kd_max": 80.0,
+            "basis": "read: maximum brake apply force 750 N, apply rate at max force 1000 mm/s, maximum apply rate 1300 mm/s, apply force at max apply rate 500 N (abdynamics.com CBAR 600 page); 'The RBR 600 uses the same actuator as a CBAR 600' and 'Compared to separate brake and throttle actuators, the CBAR is more compact' (pedal robots product specification); mass and reflected inertia: estimate"
+          },
+          "inching": {
+            "product": "pedal actuator of the 4activeDR brake-actuator class (ADAS/NCAP configuration), in the place of AB Dynamics' Clutch Robot",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                350.0
+              ],
+              [
+                0.4,
+                350.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 350.0,
+            "stroke_m": 0.15,
+            "armature": 0.008,
+            "mass_kg": 5.0,
+            "kp": 1500.0,
+            "kd": 8.0,
+            "kp_max": 6000.0,
+            "kd_max": 50.0,
+            "basis": "read: brake actuator, ADAS/NCAP configuration: stroke 150 mm max., force 350 N max., velocity 0.4 m/s max. (4activeDR brochure 240403); AB Dynamics' Clutch Robot 'is available with the CBAR 600 or the CBAR 1000' with no figures published in the specification read; mass and reflected inertia: estimate"
+          },
+          "lift": {
+            "product": "lever robot of the automatic gearshift class (GSA9001S figures)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                300.0
+              ],
+              [
+                1.0,
+                300.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 300.0,
+            "armature": 0.004,
+            "mass_kg": 1.5,
+            "kp": 500.0,
+            "kd": 4.0,
+            "kp_max": 2000.0,
+            "kd_max": 20.0,
+            "basis": "search: GSA9001S automatic gearshift control, max. shifting force 300 N (700 N), max. shifting speed 1 m/s (1.5 m/s) (testingexpo-europe.com exhibitor brochure, search result); read: AB Dynamics' gearshift robot uses 'a pair of actuators, each with a rotary lever which is linked to the gearknob' with 'quick-release couplings' (abdynamics.com blog); mass and reflected inertia: estimate"
+          },
+          "tilt": {
+            "product": "lever robot of the automatic gearshift class (GSA9001S figures)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                300.0
+              ],
+              [
+                1.0,
+                300.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 300.0,
+            "armature": 0.004,
+            "mass_kg": 1.5,
+            "kp": 500.0,
+            "kd": 4.0,
+            "kp_max": 2000.0,
+            "kd_max": 20.0,
+            "basis": "as lift"
+          },
+          "shift": {
+            "product": "lever robot of the automatic gearshift class (GSA9001S figures)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                300.0
+              ],
+              [
+                1.0,
+                300.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 300.0,
+            "armature": 0.004,
+            "mass_kg": 1.5,
+            "kp": 500.0,
+            "kd": 4.0,
+            "kp_max": 2000.0,
+            "kd_max": 20.0,
+            "basis": "as lift"
+          },
+          "direction": {
+            "product": "selector robot of the automatic gearshift class (GSA9001S figures; the direction stalk is the truck's gear selector)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                300.0
+              ],
+              [
+                1.0,
+                300.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 300.0,
+            "armature": 0.001,
+            "mass_kg": 1.0,
+            "kp": 100.0,
+            "kd": 0.6,
+            "kp_max": 600.0,
+            "kd_max": 6.0,
+            "basis": "as lift"
+          },
+          "park": {
+            "product": "hand-brake lever robot of the automatic gearshift class (GSA9001S figures; no hand-brake actuator product found)",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                300.0
+              ],
+              [
+                1.0,
+                300.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 300.0,
+            "armature": 0.01,
+            "mass_kg": 2.0,
+            "kp": 1500.0,
+            "kd": 12.0,
+            "kp_max": 5000.0,
+            "kd_max": 60.0,
+            "basis": "as lift; open: no published hand-brake actuator was found (searches of AB Dynamics, Staehle and 4activeSystems product pages)"
+          },
+          "key": {
+            "product": "ignition-key robot (class: Staehle SCX-SA 'Actuator for the ignition key in vehicles'; 4activeDR 'keyboys for starting / stopping engine'): a rotor coaxial with the key gripping it with two spring-loaded jaws",
+            "output": "rotary",
+            "envelope": [
+              [
+                0.0,
+                1.0
+              ],
+              [
+                3.0,
+                1.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 1.0,
+            "armature": 0.0002,
+            "mass_kg": 0.5,
+            "kp": 5.0,
+            "kd": 0.04,
+            "kp_max": 20.0,
+            "kd_max": 0.4,
+            "basis": "read: the product classes exist (Staehle catalogue; 4activeDR brochure) without published figures; torque 1.0 N m, speed 3 rad/s, jaw preload 30 N, inertia and mass: estimate (open)"
+          },
+          "horn": {
+            "product": "button robot (class: Staehle SPX-SA 'Actuator for the actuation of the Engine Start/Stop button in vehicles'): a rocker on a bridge over the steering wheel's hub, its tip on the column axis",
+            "output": "linear",
+            "envelope": [
+              [
+                0.0,
+                30.0
+              ],
+              [
+                0.1,
+                30.0
+              ]
+            ],
+            "cutoff_fraction": 0.1,
+            "peak": 30.0,
+            "armature": 0.0005,
+            "mass_kg": 0.3,
+            "kp": 300.0,
+            "kd": 0.8,
+            "kp_max": 1000.0,
+            "kd_max": 3.0,
+            "basis": "read: the product class exists (Staehle catalogue) without published figures; force 30 N, speed 0.1 m/s, inertia and mass: estimate (open)"
+          }
+        }
+      }
+    }
+  },
+  "poses": {
+    "installed": {
+      "steer": 0.0,
+      "accelerator": 0.0,
+      "brake": 0.0,
+      "inching": 0.0,
+      "lift": 0.0,
+      "tilt": 0.0,
+      "shift": 0.0,
+      "direction": 0.0,
+      "park": 0.0,
+      "key": 0.0,
+      "horn": 0.0
+    }
+  },
+  "sensors": {
+    "head_camera": {
+      "model": "ideal_pinhole",
+      "horizontal_fov_deg": 69.4,
+      "native_resolution_px": [
+        848,
+        480
+      ],
+      "note": "a D435i-class colour camera on the kit's mast at an operator's eye point (the H1-2 operator's head-camera stream: same resolution and field of view); placement authored"
+    },
+    "imu": {
+      "model": "ideal",
+      "outputs": [
+        "rpy_rad",
+        "gyro_rad_s"
+      ],
+      "note": "the kit frame's orientation and rate (AB Dynamics systems take motion-pack data, read)"
+    },
+    "joints": {
+      "outputs": [
+        "position",
+        "velocity",
+        "torque"
+      ],
+      "note": "each actuator's own angle, rate and output torque (steering robots carry steering angle and torque transducers, read)"
+    }
+  },
+  "sources": {
+    "ab_dynamics_steering": "https://www.abdynamics.com/app/uploads/2024/04/AB-Dynamics-Steering-Robots-Range-Product-Specification-ROW-1.pdf (read 2026-10-14: SR 15 Orbit max torque 20 N m, rated 15 N m at 500 deg/s, max velocity 1000 deg/s, motor mass 5 kg, motor friction 4.0 N m, inertia 0.076 kg m2; 'Typical installation time less than 30 minutes'; 'System angle accuracy ... depending on installation of the torque reaction system')",
+    "ab_dynamics_cbar600": "https://abdynamics.com/track-testing/driving-robots/cbar600/ (read 2026-10-14: maximum brake apply force 750 N, apply rate at max force 1000 mm/s, maximum apply rate 1300 mm/s, apply force at max apply rate 500 N, maximum throttle force 200 N, maximum throttle speed 650 mm/s, maximum throttle stroke 125 mm, 'floor mounted actuator design')",
+    "ab_dynamics_pedal_robots": "https://www.abdynamics.com/resources/files/AB-Dynamics-Pedal-Robots-Product-Specification-ROW.pdf (read 2026-10-14: Accelerator Robots maximum force 150 N, maximum speed 300 mm/s, maximum pedal stroke 130 mm; the RBR 600 uses the CBAR 600's actuator; the Clutch Robot is available with the CBAR 600 or 1000, no figures)",
+    "ab_dynamics_gearshift": "https://www.abdynamics.com/de/?p=11484 (read 2026-10-14: 'a pair of actuators, each with a rotary lever which is linked to the gearknob', 'quick-release couplings', 'the clamp which attaches to the vehicle's gearstick'; no force or speed figures)",
+    "gsa9001s": "https://testingexpo-europe.com/exhibitor-brochures/getriebeschaltautomat-gsa9001s-automatic-gearshift-control-gsa9001s (search result 2026-10-14, page not opened: max. shifting force 300 N (700 N), max. shifting speed 1 m/s (1.5 m/s))",
+    "4activedr": "https://www.4activesystems.at/wp-content/uploads/2024/04/240403_4activeDR.pdf (read 2026-10-14: steering 10 N m at 720 deg/s nominal, 30 N m max., 750 deg/s; brake actuator ADAS/NCAP: stroke 150 mm, force 350 N, velocity 0.4 m/s; throttle actuator 15 N m nom., 30 N m max., 330 deg/s; 'torque support on driver's side', 'clamping attachment, no drills', 'keyboys for starting / stopping engine', 'truck kit option available')",
+    "staehle": "https://6tl.etesters.com/catalog/A9C67677-1422-08DF-AA5F-E84E024D75CF/stahle-robot-systems/ (read 2026-10-14: SCX-SA 'Actuator for the ignition key in vehicles', SPX-SA 'Actuator for the actuation of the Engine Start/Stop button in vehicles', SAM-AC 'universal push-pull and turn actuator'; no figures)"
+  },
+  "support": {
+    "backend": "newton",
+    "version": "1.5.0",
+    "builder": "robots/models/drive_kit/newton.py (bodies, joints, end effectors, visuals) driven by a host environment's kit fit (forklift/operator.py)"
+  },
+  "mechanisms": {
+    "note": "The kit's construction, generic to the kit (the host's installation, where each part is bolted, is the host's: forklift params.DRIVE_KIT_MOUNTS). Labels as the forklift ledger's: authored (a design choice of this kit model), estimate (stated reason), open (no basis), numerical (a solver or search setting, not a physical value).",
+    "pedal_foot": {
+      "gap_m": 0.003,
+      "half_thickness_m": 0.006,
+      "max_half_width_m": 0.025,
+      "max_half_length_m": 0.03,
+      "pad_cover_fraction": 0.4,
+      "organ_press_point_m": 0.03,
+      "label": "authored: a flat foot 12 mm thick, at most 50 x 60 mm and 40 % of the pad's width and length each way, 3 mm off the pad at rest; on an organ pedal the press point is 30 mm up the plate from its centre (the operator's accel_pad point)"
+    },
+    "fork": {
+      "clearance_m": 0.001,
+      "tine_half_thickness_m": 0.004,
+      "tine_min_half_m": 0.004,
+      "cover_fraction": 0.8,
+      "lever_cover_fraction": 0.85,
+      "stalk_tip_region_m": 0.025,
+      "handle_region_m": 0.04,
+      "label": "authored: tines 8 mm thick with 1 mm clearance each side, covering 80 % (levers 85 %) of the knob's, stalk tip's or handle's extent; the stalk's tip is its outer 25 mm, a hand lever's handle its outer 40 mm"
+    },
+    "key_jaws": {
+      "preload_N": 30.0,
+      "pad_half_m": [
+        0.004,
+        0.006,
+        0.002
+      ],
+      "inset_m": 0.005,
+      "build_clearance_m": 0.0005,
+      "travel_m": [
+        -0.002,
+        0.004
+      ],
+      "mass_kg": 0.02,
+      "inertia_kg_m2": 1e-06,
+      "label": "estimate (open): two rubber-faced jaws 8 x 12 mm, 5 mm in from the key head's end, closed on it by 30 N springs each (the class exists, no published figures); a jaw's grip on the 11.7 mm head carries 2 x mu x 30 N x 11.7 mm, 0.70 N m at mu 1, against the key's 0.24 N m at START"
+    },
+    "horn": {
+      "tip_radius_m": 0.005,
+      "gap_m": 0.002,
+      "rocker_height_m": 0.085,
+      "rocker_reach_m": 0.22,
+      "range_rad": 0.15,
+      "rocker_mass_kg": 0.05,
+      "bridge_mass_kg": 0.25,
+      "bridge_inertia_kg_m2": 0.001,
+      "label": "authored: a rounded tip 2 mm above the horn button on the column axis, its rocker pivoted 85 mm above the button and 220 mm off the axis (clear of the spinner knob's sweep, 42 mm above the rim); masses estimate"
+    },
+    "arms": {
+      "mass_kg": 0.25,
+      "overtravel_rad": 0.12,
+      "retract_rad": 0.05,
+      "steer_range_rad": 18.0,
+      "key_overtravel_rad": 0.15,
+      "steer_rotor_mass_kg": 1.0,
+      "key_rotor_mass_kg": 0.1,
+      "rotor_gyration_m": 0.03,
+      "min_inertia_kg_m2": 1e-06,
+      "label": "estimate: each arm, fork or foot moves 0.25 kg (the steering robot's rotor 1 kg of its 5 kg, the key robot's 0.1 kg); authored: each arm's stroke reaches 0.12 rad past its control's travel and 0.05 rad back from rest, the steering rotor +-18 rad (2.9 turns; the wheel's lock-to-lock is 4.8 turns)"
+    },
+    "bodies": {
+      "frame_mass_kg": 10.0,
+      "frame_inertia_kg_m2": 0.3,
+      "pedal_unit_inertia_kg_m2": 0.2,
+      "lever_bank_inertia_kg_m2": 0.05,
+      "camera_mass_kg": 1.0,
+      "camera_inertia_kg_m2": 0.01,
+      "stator_inertia_kg_m2": [
+        0.05,
+        0.05,
+        0.08
+      ],
+      "key_mount_inertia_kg_m2": 0.001,
+      "label": "estimate: floor frame and brackets 10 kg; camera, clamp and mast 1 kg; the pedal and lever actuators' housings carry the rest of each product's mass (actuation profile mass_kg) on the pedal unit and the lever bank"
+    },
+    "contact": {
+      "gap_m": 0.002,
+      "label": "engine-inert: the colliders' Newton gap (MuJoCo margin 0 for multi-CCD, as the humanoid's shapes)"
+    },
+    "search": {
+      "gap_step_rad": 0.0001,
+      "gap_max_rad": 0.4,
+      "dense_steps": 12,
+      "label": "numerical: the search for the arm angle at which a pedal foot meets its pad (0.1 mrad steps on a 12-step grid over the pad collider's faces); the force limit's contact radius re-read every 20 steps (10 ms: the end effectors turn with their controls, so the radius changes only as the contact patch shifts)",
+      "contact_radius_every_ticks": 20
+    },
+    "drawing": {
+      "bar_m": 0.007,
+      "thin_bar_m": 0.005,
+      "frame_box_m": [
+        0.07,
+        0.3,
+        0.025
+      ],
+      "frame_rail_m": [
+        0.015,
+        0.25,
+        0.012
+      ],
+      "frame_rail_at_m": [
+        0.04,
+        0.0,
+        0.1
+      ],
+      "pedal_box_m": [
+        0.06,
+        0.2,
+        0.045
+      ],
+      "lever_box_m": [
+        0.06,
+        0.04,
+        0.05
+      ],
+      "camera_box_m": [
+        0.013,
+        0.045,
+        0.013
+      ],
+      "camera_box_at_m": [
+        -0.03,
+        0.0,
+        0.0
+      ],
+      "mast_bar_m": 0.01,
+      "mast_top_back_m": 0.08,
+      "stator_ring_m": [
+        0.11,
+        0.15,
+        0.01
+      ],
+      "stator_ring_at_m": 0.03,
+      "rotor_ring_m": [
+        0.105,
+        0.15,
+        0.012
+      ],
+      "rotor_ring_at_m": 0.045,
+      "rotor_post_radius_m": 0.13,
+      "reaction_arm_m": [
+        0.18,
+        -0.25,
+        -0.35
+      ],
+      "reaction_arm_bar_m": 0.012,
+      "reaction_arm_offset_m": 0.15,
+      "arm_offset_m": 0.035,
+      "fork_arm_back_m": 0.03,
+      "stalk_arm_up_m": 0.05,
+      "park_arm_offset_m": 0.05,
+      "key_sleeve_m": [
+        0.006,
+        0.011,
+        0.006
+      ],
+      "key_mount_m": [
+        0.022,
+        0.012
+      ],
+      "key_mount_at_m": [
+        -0.045,
+        -0.012
+      ],
+      "key_post_end_m": -0.033,
+      "horn_bridge_m": [
+        0.2,
+        -0.1
+      ],
+      "horn_bridge_at_m": 0.02,
+      "horn_rise_m": 0.04,
+      "label": "authored: the sizes and offsets of the drawn housings, arms and mounts (render only; no collider, no mass)",
+      "logo_disc_m": [
+        0.03,
+        0.004
+      ],
+      "finishes": {
+        "alu": {
+          "rgb": [
+            0.7,
+            0.71,
+            0.73
+          ],
+          "rough": 0.35,
+          "metal": 1.0,
+          "for": "frames, brackets, clamps, forks, pedal feet and the steering robot's ring behind the rim: clear-anodised aluminium (the silver mounting plates, clamps and perforated pedal feet of the CBAR in the AB Dynamics pedal robots sheet; the aluminium floor frame and the aluminium ring behind the rim of the 4activeDR truck kit in its brochure; the SR 15 Orbit's own ring is carbon black with silver clamps)"
+        },
+        "black": {
+          "rgb": [
+            0.035,
+            0.035,
+            0.04
+          ],
+          "rough": 0.45,
+          "metal": 0.3,
+          "for": "actuator housings, push-rod tubes, arms and the camera: black anodised (the CBAR's housing and push-rod tubes in the AB Dynamics pedal robots sheet)"
+        },
+        "blue": {
+          "rgb": [
+            0.0,
+            0.42,
+            0.78
+          ],
+          "rough": 0.4,
+          "metal": 0.2,
+          "for": "the maker's blue (the AB Dynamics logo disc on the pedal robot's housing and the SR 15's motor can, both sheets)"
+        },
+        "steel": {
+          "rgb": [
+            0.55,
+            0.56,
+            0.58
+          ],
+          "rough": 0.3,
+          "metal": 1.0,
+          "for": "bright steel rods and rod ends (the pedal robot's push rods) and the seat ballast's steel plates"
+        },
+        "label": "read (looked at the product photographs of the cited sheets, 2026-10-16: AB Dynamics pedal robots and steering robots product specifications, 4activeDR brochure); colour values authored to match them"
+      }
+    }
+  }
+}

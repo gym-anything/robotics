@@ -1,0 +1,151 @@
+{
+  "environment_version": "0.1.0-dev",
+  "materials": {
+    "cotton_towel_prior": {
+      "bend_damping_nm_s": 1e-06,
+      "bias_bend_nm": 1e-05,
+      "calibration_status": "prior-only / not physically calibrated",
+      "cloth_kinetic_friction": 0.44,
+      "cloth_static_friction": 0.55,
+      "compression_pressure_scale_pa": 4000.0,
+      "cross_coupling_ratio": 0.08,
+      "finger_kinetic_friction": 0.75,
+      "finger_static_friction": 0.9,
+      "membrane_damping_n_s_m": 0.05,
+      "minimum_compressed_thickness_m": 0.00035,
+      "name": "cotton_towel_prior",
+      "shear_n_m": 400.0,
+      "table_kinetic_friction": 0.4,
+      "table_static_friction": 0.5,
+      "warp_bend_nm": 2e-05,
+      "warp_membrane_n_m": 8000.0,
+      "warp_tension_stiffening_n_m": 200000.0,
+      "weft_bend_nm": 1.5e-05,
+      "weft_membrane_n_m": 6000.0,
+      "weft_tension_stiffening_n_m": 150000.0
+    }
+  },
+  "parameters": {
+    "bias_bending_stiffness": {
+      "note": "Fit moment-curvature response with mesh-independent conversion.",
+      "source": "Newton Style3D cloth example scale",
+      "status": "numerical-prior",
+      "unit": "N m",
+      "value": 1e-05
+    },
+    "bias_shear_stiffness": {
+      "note": "Fit from bias/shear coupons; do not infer from tensile modulus.",
+      "source": "anisotropic shell initialization",
+      "status": "numerical-prior",
+      "unit": "N/m",
+      "value": 400.0
+    },
+    "gravity": {
+      "note": "",
+      "source": "CGPM conventional standard gravity",
+      "status": "conventional-standard",
+      "unit": "m/s^2",
+      "value": 9.80665
+    },
+    "towel_areal_density": {
+      "note": "Measure according to the recorded ASTM D3776/D3776M procedure.",
+      "source": "plausible woven-cotton initialization",
+      "status": "engineering-prior",
+      "unit": "kg/m^2",
+      "value": 0.3
+    },
+    "towel_length": {
+      "note": "Replace with conditioned specimen measurement.",
+      "source": "canonical software coupon",
+      "status": "engineering-prior",
+      "unit": "m",
+      "value": 0.6
+    },
+    "towel_unloaded_thickness": {
+      "note": "Measure thickness over pressure; one unloaded number is insufficient.",
+      "source": "plausible plain-woven towel initialization",
+      "status": "engineering-prior",
+      "unit": "m",
+      "value": 0.0008
+    },
+    "towel_width": {
+      "note": "Replace with conditioned specimen measurement.",
+      "source": "canonical software coupon",
+      "status": "engineering-prior",
+      "unit": "m",
+      "value": 0.4
+    },
+    "warp_bending_stiffness": {
+      "note": "Fit moment-curvature response with mesh-independent conversion.",
+      "source": "Newton Style3D cloth example scale",
+      "status": "numerical-prior",
+      "unit": "N m",
+      "value": 2e-05
+    },
+    "warp_membrane_stiffness": {
+      "note": "Fit the full nonlinear curve from warp cyclic coupons.",
+      "source": "Newton Style3D example scale and cloth-literature model form",
+      "status": "numerical-prior",
+      "unit": "N/m",
+      "value": 8000.0
+    },
+    "weft_bending_stiffness": {
+      "note": "Fit moment-curvature response with mesh-independent conversion.",
+      "source": "Newton Style3D cloth example scale",
+      "status": "numerical-prior",
+      "unit": "N m",
+      "value": 1.5e-05
+    },
+    "weft_membrane_stiffness": {
+      "note": "Fit the full nonlinear curve from weft cyclic coupons.",
+      "source": "Newton Style3D example scale and cloth-literature model form",
+      "status": "numerical-prior",
+      "unit": "N/m",
+      "value": 6000.0
+    }
+  },
+  "physics_profiles": {
+    "fast": {
+      "calibration_status": "numerical profile; convergence not yet established",
+      "cloth_nx": 24,
+      "cloth_ny": 16,
+      "contact_margin_m": 0.0015,
+      "enable_full_surface_contact": true,
+      "frame_hz": 60,
+      "name": "fast",
+      "solver_iterations": 6,
+      "substeps": 4
+    },
+    "interactive": {
+      "calibration_status": "numerical profile; convergence not yet established",
+      "cloth_nx": 48,
+      "cloth_ny": 32,
+      "contact_margin_m": 0.001,
+      "enable_full_surface_contact": true,
+      "frame_hz": 60,
+      "name": "interactive",
+      "solver_iterations": 10,
+      "substeps": 8
+    },
+    "validation": {
+      "calibration_status": "numerical profile; convergence not yet established",
+      "cloth_nx": 72,
+      "cloth_ny": 48,
+      "contact_margin_m": 0.0006,
+      "enable_full_surface_contact": true,
+      "frame_hz": 60,
+      "name": "validation",
+      "solver_iterations": 20,
+      "substeps": 16
+    }
+  },
+  "schema_version": "laundry-specs/1.0",
+  "towel": {
+    "areal_density_kg_m2": 0.3,
+    "calibration_status": "prior-only / not physically calibrated",
+    "length_m": 0.6,
+    "specimen_id": "PRIOR-COTTON-TOWEL-000",
+    "unloaded_thickness_m": 0.0008,
+    "width_m": 0.4
+  }
+}

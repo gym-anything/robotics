@@ -1,0 +1,125 @@
+{
+ "schema": "gar.task-catalog.v1",
+ "environment_id": "forklift",
+ "default_task_id": "forklift/v1/warehouse/start-and-park/seed-0",
+ "description": "Operate a 2.5 t LPG counterbalance forklift through its own controls - steering wheel and spinner knob, inching, brake and accelerator pedals, direction lever, lift/tilt/side-shift levers, key, parking brake and horn. Two operators are offered: a Unitree H1-2 with Inspire hands seated in the truck (no weld; the default, --robot h1-2), and a vehicle-testing driving-robot kit bolted to the controls (--robot drive-kit: steering robot, pedal and lever actuators, key and horn robots and a cab camera, each actuator working its control by contact only, within its product's published force and speed). Nothing is attached to a control. The truck is the NVIDIA Forklift C re-rigged with Hyster H2.5A masses: super-elastic tyres (SUPREM relaxation model), a torque-converter powershift drivetrain fitted to the sheet, an orbitrol hydrostatic steering unit, staged triplex mast hydraulics, an oscillating steer axle; loads on GMA pallets, racks, a powered conveyor, a dock with levelers and air-sprung trailers held by their spring brakes and wheel chocks, with or without a vehicle restraint (with the spring brakes set the chocks carry no force in this model, so load-trailer-chocked is load-trailer at a door with no restraint, not a harder trailer), and a yard ramp. Newton 1.5 / CPU MuJoCo at 0.5 ms; Unitree low-level motor channels (the kit's actuators use the same channel scheme).",
+ "selectors": [
+  "task",
+  "seed",
+  "contract"
+ ],
+ "resolver": "forklift.variants:task_resolve",
+ "count": 14,
+ "count_scope": "fourteen named tasks in three presets: warehouse (start-and-park, aisle-cruise, drive-to-pallet, carry-to-floor-bay, carry-loose-stack, put-away-rack, feed-conveyor), dock (load-trailer, load-trailer-chocked, load-bales, unload-trailer) and yard (ramp-up-loaded, ramp-down-loaded, yard-route); seeds vary each work order's target (the staging lane S1-S4, the floor bay among ten, the rack location on any of the four rack faces, bays 1-7, both beam levels and both pallet positions, the dock door 1-4 and the trailer side, the unload pallet and its lane, the bale trailer at door 3 or 4, where start-and-park begins, the cruise's direction along the main aisle, where the coil for the press comes from, the nose position in the yard trailer and the yard drop zone), the truck's start pose, load mass and height, the trailer's bed height (44-52 in) and the floor condition (wet patches).",
+ "splits": [
+  "train",
+  "validation",
+  "test"
+ ],
+ "split_note": "By seed range: 0-799 train, 800-899 validation, 900-999 test; the resolver accepts seeds 0..999 only (forklift/data/variations.json freezes every seed's start digest).",
+ "evaluator": {
+  "available": true,
+  "source": "forklift/evaluator.py",
+  "scope": "Each task judged from physical state and per-tick latches only: placements against zone geometry (bay lines, rack beams and overhang, conveyor rails and end-stop photo-eye, trailer walls and pallets ahead, the parking bay's lines), loads set down (resting, forks withdrawn and lowered), strikes on structures by force and impulse (a load set on rack beams only below a set-down speed and force), wheel lift and roll, dropped loads, travel speed inside the building and in the yard, intersections slowed and horned, roll-back on the ramp, trailer creep, the operator staying seated, and the OSHA parking procedure (forks lowered and tilted to the floor, neutral, brake set, engine and key off). A task's score is the fraction of its criteria met, except load-bales, scored by a progress reward: 1 on success, 0 for a faulted world, else 0.9 x progress x workmanship (forklift/evaluator.py BALE_REWARD). No autonomous-solution claim. The explicit forklift-tasks-v1 contract selects continuous progress for seven existing tasks via forklift/task_progress.py; score 1 on success, otherwise 0.9 x progress x workmanship (0 on a world fault or entering on red). Bare selections retain their existing scoring. Every GAR evaluation reports task_contract."
+ },
+ "qualification": "Component experiments with assisted evidence: every start state at rest, axle loads against the H2.5A sheet, drivetrain fit and held-out acceleration, steering unit, mast staging, lowering and relief, braking, loads under braking, stability on a tilt table and in turns, dock trailer support, the seated H1-2 at rest, in a ride and in a hard stop, the H1-2 working the controls with its own motors and in assisted fixtures, the driving-robot kit working every control by contact within its published limits and driving start-and-park, legal-action stress, and every task driven through the unmodified evaluator by an assisted autopilot. No autonomous-solution claim.",
+ "selector_choices": {
+  "contract": [
+   "v1",
+   "forklift-tasks-v1",
+   "load-bales-reward-v1"
+  ]
+ },
+ "task_set": {
+  "score_rule": "1 on success, else 0.9 x progress x workmanship; seven explicit task contracts with zero-start continuous progress; load-bales keeps its own reward (load-bales-reward-v1). The forklift-tasks-v1 progress has not yet been run with the simulator.",
+  "tasks": [
+   {
+    "selection": {
+     "task": "start-and-park",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/warehouse/start-and-park/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "entry",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "aisle-cruise",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/warehouse/aisle-cruise/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "entry",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "drive-to-pallet",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/warehouse/drive-to-pallet/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "medium",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "carry-to-floor-bay",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/warehouse/carry-to-floor-bay/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "medium",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "ramp-down-loaded",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/yard/ramp-down-loaded/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "medium",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "put-away-rack",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/warehouse/put-away-rack/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "hard",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "load-trailer",
+     "seed": 0,
+     "contract": "forklift-tasks-v1"
+    },
+    "task_id": "forklift/v1/dock/load-trailer/forklift-tasks-v1/seed-0",
+    "task_contract": "forklift-tasks-v1",
+    "difficulty": "hard",
+    "existing": true
+   },
+   {
+    "selection": {
+     "task": "load-bales",
+     "seed": 0
+    },
+    "task_id": "forklift/v1/dock/load-bales/seed-0",
+    "task_contract": "load-bales-reward-v1",
+    "difficulty": "hardest",
+    "existing": true
+   }
+  ]
+ }
+}

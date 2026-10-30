@@ -1,0 +1,12 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "painting-g1",
+  "instances": {
+    "g1": {
+      "model": "g1@1",
+      "mount": "g1_floor_mount",
+      "controller_profile": "barcode_scanning"
+    }
+  },
+  "attachments": {}
+}

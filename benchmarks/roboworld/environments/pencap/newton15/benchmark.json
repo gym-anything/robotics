@@ -1,0 +1,160 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "pencap",
+  "default_task_id": "pencap/seat-cap",
+  "description": "Put the blue cap on the yellow pen's writing tip and press it until it snaps fully into place, then leave the capped pen still, whether held or set down.",
+  "selectors": [
+    "task"
+  ],
+  "resolver": "pencap.tasks:task_resolve",
+  "count": 8,
+  "count_scope": "native catalogue",
+  "splits": [],
+  "split_note": "No train/test split exists in this baseline; none invented.",
+  "evaluator": {
+    "available": true,
+    "source": "pencap/newton15/task.py",
+    "scope": "Environment-owned task success; not physical qualification.",
+    "success": "From the current pen/cap poses only: the pen's writing tip is inside the cap's bore with the axes facing (less than 90 degrees from opposed), and each of the four retention nubs has snapped, judged from that nub's own pen-frame position: its centre is past the bead crest's trailing edge (38.150 mm from the tip) and it does not rest on that corner (touching it with a contact normal within atan(0.25) = 14.0 degrees of radial); aligned, a cap mouth > 39.6675 mm. This holds in every sample of the trailing 0.5 s, and each part's mid-length point stayed within 10 mm of its final position over that window. No alignment gate, collar bound, insertion history, arm, order or support surface is required.",
+    "score": "1 on success, else 0.9 x progress. progress = 0.1 x presented + 0.9 x (0.5 x min(writing-tip depth inside the cap / 39.87 mm seated depth, 1) + 0.5 x fraction of nubs snapped). presented = 1 once the writing tip is inside the cap, else max(0, cos(axis angle from opposed)) x max(0, 1 - tip-to-mouth distance / 25 mm), whether or not the tip is lined up in front of the mouth. Depth and nub terms are 0 until the tip is inside the cap.",
+    "revision": "Instruction 'whether held or set down', a policy-visible clock note, a per-nub snap rule from each nub's own position, no collar bound and a pre-engagement term.",
+    "result_timing": "Simulated time advances only while commands run and the episode is evaluated after the last command, so a cap snapped on less than 0.5 s of commanded time before the agent stops records success false (score 0.9). Policies are told the clock fact (capability 'clock'), not the 0.5 s. A hands-off settle before the final evaluation would remove this; it is a shared result-path change.",
+    "catalogue_source": "pencap/task_scoring.py",
+    "contracts": {
+      "seat-cap": "pencap/seat-cap-v1",
+      "pen-on-notebook": "pencap/pen-on-notebook-v1",
+      "unload-fixture": "pencap/unload-fixture-v1",
+      "reseat-cap": "pencap/reseat-cap-v1",
+      "load-fixture": "pencap/load-fixture-v1",
+      "pass-pen": "pencap/pass-pen-v1",
+      "uncap": "pencap/uncap-v1",
+      "cap-in-fixture": "pencap/cap-in-fixture-v1"
+    },
+    "catalogue_note": "The success and score fields above remain seat-cap's own contract. The other seven contracts, presets and thresholds are defined in pencap/tasks.py, pencap/task_presets.py and pencap/task_scoring.py; each runtime evaluation reports task_id and contract."
+  },
+  "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
+  "tasks": [
+    {
+      "task_id": "pencap/seat-cap",
+      "selection": {
+        "task": "seat-cap"
+      },
+      "description": "Put the blue cap on the yellow pen's writing tip and press it until it snaps fully into place, then leave the capped pen still, whether held or set down.",
+      "difficulty": "hardest",
+      "contract": "pencap/seat-cap-v1"
+    },
+    {
+      "task_id": "pencap/pen-on-notebook",
+      "selection": {
+        "task": "pen-on-notebook"
+      },
+      "description": "Lay the yellow pen on the notebook.",
+      "difficulty": "entry",
+      "contract": "pencap/pen-on-notebook-v1"
+    },
+    {
+      "task_id": "pencap/unload-fixture",
+      "selection": {
+        "task": "unload-fixture"
+      },
+      "description": "Take the capped pen out of the capping fixture and lay it down on the bench.",
+      "difficulty": "entry",
+      "contract": "pencap/unload-fixture-v1"
+    },
+    {
+      "task_id": "pencap/reseat-cap",
+      "selection": {
+        "task": "reseat-cap"
+      },
+      "description": "The cap is only partly on the yellow pen. Press it on until it snaps fully into place, then leave the capped pen still, whether held or set down.",
+      "difficulty": "medium",
+      "contract": "pencap/reseat-cap-v1"
+    },
+    {
+      "task_id": "pencap/load-fixture",
+      "selection": {
+        "task": "load-fixture"
+      },
+      "description": "Stand the yellow pen in the capping fixture, tail end down, ready for its cap.",
+      "difficulty": "medium",
+      "contract": "pencap/load-fixture-v1"
+    },
+    {
+      "task_id": "pencap/pass-pen",
+      "selection": {
+        "task": "pass-pen"
+      },
+      "description": "Lay the yellow pen on the notebook.",
+      "difficulty": "medium",
+      "contract": "pencap/pass-pen-v1"
+    },
+    {
+      "task_id": "pencap/uncap",
+      "selection": {
+        "task": "uncap"
+      },
+      "description": "Take the cap off the yellow pen and lay the pen and the cap down on the bench.",
+      "difficulty": "hard",
+      "contract": "pencap/uncap-v1"
+    },
+    {
+      "task_id": "pencap/cap-in-fixture",
+      "selection": {
+        "task": "cap-in-fixture"
+      },
+      "description": "The yellow pen stands in the capping fixture. Put the blue cap on its writing tip and press it until it snaps fully into place, leaving the capped pen standing in the fixture.",
+      "difficulty": "hard",
+      "contract": "pencap/cap-in-fixture-v1"
+    }
+  ],
+  "task_set": {
+    "selections": [
+      {
+        "task": "pen-on-notebook"
+      },
+      {
+        "task": "unload-fixture"
+      },
+      {
+        "task": "reseat-cap"
+      },
+      {
+        "task": "load-fixture"
+      },
+      {
+        "task": "pass-pen"
+      },
+      {
+        "task": "uncap"
+      },
+      {
+        "task": "cap-in-fixture"
+      },
+      {
+        "task": "seat-cap"
+      }
+    ],
+    "task_ids": [
+      "pencap/pen-on-notebook",
+      "pencap/unload-fixture",
+      "pencap/reseat-cap",
+      "pencap/load-fixture",
+      "pencap/pass-pen",
+      "pencap/uncap",
+      "pencap/cap-in-fixture",
+      "pencap/seat-cap"
+    ],
+    "contracts": {
+      "seat-cap": "pencap/seat-cap-v1",
+      "pen-on-notebook": "pencap/pen-on-notebook-v1",
+      "unload-fixture": "pencap/unload-fixture-v1",
+      "reseat-cap": "pencap/reseat-cap-v1",
+      "load-fixture": "pencap/load-fixture-v1",
+      "pass-pen": "pencap/pass-pen-v1",
+      "uncap": "pencap/uncap-v1",
+      "cap-in-fixture": "pencap/cap-in-fixture-v1"
+    },
+    "score": "1 on success, otherwise 0.9 x progress; untouched starts score 0",
+    "qualification": "Checked in code and with stubbed pose tests only. The seven new tasks are not yet run with the simulator, settled, reached with IK or rendered, and no physical component check is made for them."
+  }
+}

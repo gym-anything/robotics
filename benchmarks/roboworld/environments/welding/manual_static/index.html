@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welding cell · Manual control</title><link rel="stylesheet" href="/styles.css">
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script></head>
+<body>
+<header><div><span class="eyebrow">GYM ANYTHING / ROBOTICS · ROBOTIC GMAW CELL</span><h1>Manual control <span class="tag" id="robot-tag">policy actions only</span></h1></div>
+<span id="badge" class="badge">Connecting…</span></header>
+<main>
+<div id="notice" role="status" aria-live="polite">Connecting to the session through the local proxy…</div>
+<div id="fault" class="fault" hidden><strong>Session fault.</strong> <span id="fault-text"></span> <button id="recover" hidden>Recover (owner: acknowledge, no reset)</button></div>
+<div class="workspace">
+<div class="left">
+<section class="panel view">
+  <div class="bar">
+    <nav class="tabs" role="tablist">
+      <button id="tab-cameras" role="tab" aria-selected="true">Robot cameras</button>
+      <button id="tab-3d" role="tab" aria-selected="false" hidden>3D cell (colliders)</button>
+      <button id="tab-diag" role="tab" aria-selected="false" hidden>Diagnostic render</button>
+    </nav>
+    <div class="bar-right"><span id="render-status" class="muted">No image yet</span><button id="refresh" disabled title="Render the robot cameras now; physics does not advance">Refresh cameras</button></div>
+  </div>
+  <div id="pane-cameras" class="pane">
+    <div id="frames" class="frames"><div class="empty">The robot cameras' images appear here after the first render.</div></div>
+    <p id="stamp" class="muted">No observation captured</p>
+  </div>
+  <div id="pane-3d" class="pane" hidden>
+    <div class="viewbar">
+      <button data-view="cell">Cell</button><button data-view="seam">Seam</button><button data-view="torch">Follow torch</button>
+      <button data-view="bench">Bench camera</button><button data-view="side">Side camera</button><button data-view="top">Top</button>
+      <label class="check inline"><input id="show-robots" type="checkbox" checked> robots</label>
+      <label class="check inline"><input id="show-screens" type="checkbox" checked> screens</label>
+      <span id="view-status" class="muted small">Not loaded</span>
+    </div>
+    <div id="viewport" tabindex="-1" aria-label="3D view of the cell's collision geometry"></div>
+    <p id="view-note" class="muted small">Drag: orbit · right-drag: pan · wheel: zoom. The view only draws what the session reports; moving the camera never steps physics.</p>
+  </div>
+  <div id="pane-diag" class="pane" hidden>
+    <div class="viewbar"><button id="diag-render">Render diagnostic view (no physics)</button><span id="diag-status" class="muted small">No diagnostic render yet</span></div>
+    <div class="diag"><img id="diag-image" alt="Diagnostic render of the cell (owner view, not a robot camera)" hidden><div id="diag-empty" class="empty">GET /v1/render: the owner's diagnostic camera ("hero"). It is not a robot camera.</div></div>
+  </div>
+  <div class="split">
+    <div><h3>Last command</h3><pre id="feedback" class="feedback">No command sent yet.</pre></div>
+    <div><h3>Command log</h3><ol id="log" class="log"><li class="muted">No commands yet</li></ol></div>
+  </div>
+</section>
+<div class="below">
+  <section class="panel"><h2>Welding source feedback</h2><div id="tool" class="kvs"><p class="muted">Waiting for the first observation…</p></div>
+    <p class="hint">What the power source reports to the robot controller (observation <code>tool.*</code>). The commanded set points and the wire stick-out are not robot feedback; the owner panel shows them.</p></section>
+  <section class="panel"><h2>Robot</h2><div id="robot" class="kvs"><p class="muted">Waiting for the first observation…</p></div>
+    <p class="hint">Work point and hand TCP = forward kinematics of the measured joints in the latest observation (the backend's own chains), world frame, mm. Torch angles in world axes: the seam runs along +x (a seed turns the coupon up to ±2°).</p></section>
+  <section class="panel wide"><div class="bar"><h2>Joints</h2><span class="muted small" id="joints-note"></span></div><div id="joints" class="joints"></div></section>
+  <section id="owner-eval" class="panel owner" hidden><div class="bar"><h2>Evaluator <span class="tag">owner key</span></h2><button id="owner-refresh" class="quiet">Refresh</button></div><div id="eval" class="owner-body"><p class="muted">Loading…</p></div></section>
+  <section id="owner-state" class="panel owner" hidden><h2>Source, process and robot state <span class="tag">owner key</span></h2><div id="state" class="owner-body"><p class="muted">Loading…</p></div></section>
+  <section id="owner-cp" class="panel owner" hidden><h2>Checkpoints <span class="tag">owner key</span></h2>
+    <div class="row"><label>Checkpoint label<input id="cp-label" type="text" maxlength="64" placeholder="before_strike" autocomplete="off"></label><button id="cp-save">Save (no physics)</button></div>
+    <div class="row"><label>Saved checkpoint<select id="cp-list"><option value="">None saved</option></select></label><button id="cp-restore">Restore</button></div>
+    <p class="hint">A checkpoint is kept in the session's memory. Restoring starts a new, discontinuous timeline (generation +1) and renders the cameras.</p></section>
+</div>
+</div>
+<aside>
+  <section class="panel"><h2>Task</h2><p id="task">Not connected</p><p id="identity" class="muted small"></p></section>
+  <section class="panel">
+    <div class="bar"><h2>Jog</h2><select id="arm" aria-label="Arm to jog"></select></div>
+    <label class="check"><input id="enabled" type="checkbox" checked> Keys drive the robot (ignored while typing in a field)</label>
+    <div id="held" class="held" aria-live="polite">Ready</div>
+    <div class="keys">
+      <div class="group"><span class="group-title">Move (world axes)</span>
+        <div class="grid3"><span></span><button data-key="w" title="−y: away from the robots, toward the front of the table">W<small>−y away</small></button><span></span>
+        <button data-key="a" title="+x: left in the bench camera">A<small>+x</small></button><button data-key="s" title="+y: toward the robots">S<small>+y toward</small></button><button data-key="d" title="−x: right in the bench camera">D<small>−x</small></button></div>
+        <div class="grid2"><button data-key="r">R<small>+z up</small></button><button data-key="f">F<small>−z down</small></button></div></div>
+      <div class="group"><span class="group-title">Turn about the TCP (world axes)</span>
+        <div class="grid2"><button data-key="i">I<small>+x</small></button><button data-key="k">K<small>−x</small></button>
+        <button data-key="j">J<small>+y</small></button><button data-key="l">L<small>−y</small></button>
+        <button data-key="u">U<small>+z</small></button><button data-key="o">O<small>−z</small></button></div></div>
+      <div class="group" id="hand-keys"><span class="group-title">Hand</span>
+        <div class="grid3"><button data-key="q">Q<small>close</small></button><button data-key="e">E<small>open</small></button><button data-key="h">H<small>force grip</small></button></div></div>
+      <div class="group"><span class="group-title">Wire and time</span>
+        <div class="grid3"><button data-key="[">[<small>inch back</small></button><button data-key="]">]<small>inch fwd</small></button><button data-key=" ">Space<small>advance</small></button></div></div>
+    </div>
+    <div class="settings">
+      <label>Step (mm)<input id="step" type="number" min="0.1" max="100" step="0.5" value="5"></label>
+      <label>Turn (deg)<input id="turn" type="number" min="0.1" max="30" step="0.5" value="5"></label>
+      <label>Duration (s)<input id="dur" type="number" min="0.001" max="10" step="0.05" value="0.25"></label>
+    </div>
+    <p class="hint">One key press = one command, then physics runs for the duration (a whole number of 1 ms ticks). Shift ×4, Alt ×0.2 on the step and turn. 1 / 2 select the torch arm / the hand arm. Holding a key does not repeat, and keys pressed while a command runs are not queued. Moves are <code>cartesian_delta</code>; turns are <code>cartesian_pose</code> at the current work point with the orientation turned about a world axis.</p>
+  </section>
+  <section class="panel" id="hand-panel">
+    <h2>Franka Hand <span class="muted small" id="hand-arm"></span></h2>
+    <div class="row"><button id="hand-open">Open (E)</button><button id="hand-close">Close (Q)</button></div>
+    <div class="row"><label>Grip force, total (N)<input id="grip-force" type="number" min="1" step="1" value="40"></label><button id="hand-force">Force grip (H)</button></div>
+    <p class="hint" id="hand-hint"><code>gripper</code>: open/close in position mode (half gap at its limit), force grip in force mode. Duration from the Jog panel.</p>
+  </section>
+  <section class="panel">
+    <h2>Welding power source <span class="muted small">tool_io</span></h2>
+    <button id="preset" class="primary wide-btn">Load schedule preset</button>
+    <div class="settings">
+      <label>Wire feed (m/min)<input id="wfs" type="text" inputmode="decimal" value="12.7"></label>
+      <label>Voltage (V)<input id="volts" type="text" inputmode="decimal" value="29"></label>
+    </div>
+    <button id="schedule-send" class="wide-btn">Send these set points</button>
+    <div class="grid2 tools">
+      <button id="gas-on">Gas on</button><button id="gas-off">Gas off</button>
+      <button id="touch-on">Touch sense on</button><button id="touch-off">Touch sense off</button>
+      <button id="inch-back">Inch back ([)</button><button id="inch-fwd">Inch forward (])</button>
+      <button id="inch-stop">Stop inching</button><span></span>
+      <button id="arc-on" class="danger">Arc on</button><button id="arc-off">Arc off</button>
+    </div>
+    <p class="hint" id="source-hint">Each button sends one <code>tool_io</code> action with 1 tick; inching sends the inch output for the duration and then stop (two actions, one request). Arc on: the wire runs in and strikes only where it touches metal grounded through the work clamp; while the arc burns a simulated second costs 55–100 s of wall time. The arc has no key.</p>
+    <p class="hint">Values are sent as typed; the source itself refuses an out-of-range set point and nothing runs.</p>
+  </section>
+  <section class="panel">
+    <h2>Time</h2>
+    <div class="row"><label>Advance (s)<input id="advance-s" type="text" inputmode="decimal" value="0.5"></label><button id="advance">Advance, hold targets</button></div>
+    <p class="hint"><code>named_joint_target</code> with no targets: every servo keeps its target; the arc, pool and heat keep evolving.</p>
+  </section>
+  <section class="panel">
+    <h2>Cartesian target</h2>
+    <div class="coords"><label>x (mm)<input id="tx" type="text" inputmode="decimal"></label><label>y (mm)<input id="ty" type="text" inputmode="decimal"></label><label>z (mm)<input id="tz" type="text" inputmode="decimal"></label></div>
+    <div class="row"><button id="use-tcp" class="quiet">Use current TCP</button><button id="goto">Move (keep orientation)</button></div>
+    <div id="orient-box">
+      <div class="coords"><label>Work angle (°)<input id="work" type="text" inputmode="decimal" value="45"></label><label>Push angle (°)<input id="push" type="text" inputmode="decimal" value="7.5"></label><span></span></div>
+      <button id="orient" class="wide-btn">Orient torch (work point held)</button>
+    </div>
+    <p class="hint"><code>cartesian_pose</code> for the selected arm, over the Jog duration. The robot's IK refuses an unreachable target before any tick. Torch angles in world axes: work angle from the plate (y–z plane), push along +x.</p>
+  </section>
+  <section class="panel">
+    <h2>Joint target</h2>
+    <label>Joint<select id="joint"></select></label>
+    <div class="row"><label>Target<input id="joint-value" type="text" inputmode="decimal"></label><button id="joint-send">Apply</button></div>
+    <p id="joint-limits" class="hint"></p>
+  </section>
+</aside>
+</div>
+<footer>Keys and buttons command the robot and its welding source only, through the policy's own actions; the parts move only through contact, the arc burns only where the robot holds the wire to grounded metal. Physics advances only when a command is sent. Every command renders the session's robot cameras (about 4 s per image on the shared GPU). Closing this page disconnects only; the session keeps running.</footer>
+</main>
+<script type="module" src="/app.js"></script></body></html>

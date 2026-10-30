@@ -1,0 +1,85 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "percussion",
+  "default_task_id": "percussion/v1/therapy/melody/seed-0",
+  "description": "Tap percussion instruments in a music-therapy room (Preschool Teachers / Music Therapists action group): two FR3 arms with Franka Hands on a parked robot platform (or a single FR3, two Pandas, or a Unitree G1 with Dex3 hands) play an Orff alto xylophone (13 rosewood bars on felt and pins over six box resonators; Rucz et al. 2021 measured partials, damping with a measured loss-factor floor), single resonator bars and a 14 x 5 in single-headed drum with a Remo Ambassador coated head (air-loaded membrane modes fitted to Wagner 2006), using 5A hickory drumsticks, rubber mallets, a felt beater or a fingertip. Every contact between a striker and a bar or the head is solved implicitly at 48 kHz against the instrument's modes; the sound at the client's ear and at the robot's microphone is simulated through the room. Tasks are judged on the contacts and the simulated sound.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "preset": [
+      "assessment",
+      "gait",
+      "pentatonic",
+      "therapy"
+    ],
+    "task": [
+      "melody",
+      "bordun",
+      "roll",
+      "finger-tap",
+      "take-sticks",
+      "steady-beat",
+      "accent-ostinato",
+      "single-tone",
+      "dynamics",
+      "echo",
+      "strike-and-stop",
+      "pentatonic-setup"
+    ]
+  },
+  "resolver": "percussion.variants:task_resolve",
+  "count": 12,
+  "count_scope": "twelve named tasks (therapy: melody, bordun, roll, finger-tap; gait: take-sticks, steady-beat, accent-ostinato; assessment: single-tone, dynamics, echo, strike-and-stop; pentatonic: pentatonic-setup); seeds vary drum tension, placements, cadence, tune, bordun key, bar, echo rhythm, cue time and lighting",
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "split_note": "Frozen by SHA-256 of (task, seed) over seeds 0..999 of every task (80/10/10); seeds 1000..9999 resolve with split null.",
+  "evaluator": {
+    "available": true,
+    "source": "percussion/task.py",
+    "scope": "Strikes from the vibro-contact log (clustered contact segments: onset, contact time, peak force, struck point, energy per bar mode), rim strokes from rigid tool-hoop contacts, L_AF at the client's ear against physical reference strokes (same instrument model, contact law and acoustic chain at Rucz's / Dahl's measured speeds), timing (IOI, CV, grid fit), dynamics ordering, damping, bar placement; tools not dropped, arms still. No autonomous-solution claim."
+  },
+  "qualification": "Component-qualified by assisted runs: instrument benches against Rucz/Wagner/Dahl, phantom-pivot strokes, robot grasp and strokes through the FR3's legal command path, fingertip touches, bar lifting; no policy solves a task.",
+  "task_set_5": {
+    "tasks": [
+      "finger-tap",
+      "strike-and-stop",
+      "echo",
+      "melody",
+      "pentatonic-setup"
+    ],
+    "why": "Five of the twelve, by difficulty (entry: finger-tap; medium: strike-and-stop; medium-hard: echo; hard: melody, pentatonic-setup) and diversity: drum with a fingertip, resonator bar with a mallet and a damping touch on a cue, drum with a stick reproducing a heard rhythm, xylophone melody with both mallets, and the only non-striking task (lifting three bars off their pins). The other seven stay in the catalogue.",
+    "score_rule": "1 if every check passes, else 0.9 x progress (melody: its own contract, params.MELODY_EVAL; the other four: params.TASK_PROGRESS)"
+  },
+  "task_set": {
+    "tasks": [
+      "finger-tap",
+      "take-sticks",
+      "strike-and-stop",
+      "accent-ostinato",
+      "echo",
+      "pentatonic-setup",
+      "steady-beat",
+      "melody"
+    ],
+    "task_ids": [
+      "percussion/v1/therapy/finger-tap/seed-N",
+      "percussion/v1/gait/take-sticks/seed-N",
+      "percussion/v1/assessment/strike-and-stop/seed-N",
+      "percussion/v1/gait/accent-ostinato/seed-N",
+      "percussion/v1/assessment/echo/seed-N",
+      "percussion/v1/pentatonic/pentatonic-setup/seed-N",
+      "percussion/v1/gait/steady-beat/seed-N",
+      "percussion/v1/therapy/melody/seed-N"
+    ],
+    "why": "The five-task set (task_set_5) plus take-sticks (entry: the only tool-handling task), accent-ostinato (medium-hard: a 6 dB accent pattern on a steady beat) and steady-beat (hard: 48 strokes at the client's cadence with a 10 % tempo change). All four presets and every striker are used: therapy (finger-tap, melody), gait (take-sticks, accent-ostinato, steady-beat), assessment (strike-and-stop, echo), pentatonic (pentatonic-setup).",
+    "left_out": "dynamics is not in the set and accent-ostinato is. dynamics needs a forte stroke within 3 dB of the 6 m/s stick reference and a piano within 3 dB of the 1 m/s one (assessment seed 0: 100.0 and 84.4 dB(A)), 12 dB or more apart, on the assessment drum 0.78 m from the right FR3 base. The default robot cannot play loud clean strokes under libfranka's position interface (0.40-0.64 m/s first contacts at 79-81 dB(A), a planned 1.5 m/s stroke never reached the head); the G1's shown strokes, 90.3-95.8 dB(A), hit neither the piano band (at most 87.4) nor the forte band (at least 97.0). accent-ostinato asks only for a 6 dB contrast with no absolute level. dynamics stays in the catalogue.",
+    "score_rule": "1 if every check passes, else 0.9 x progress; progress is 0 at the untouched start and continuous in the task's own quantities (melody: its own contract, params.MELODY_EVAL fail_scale 0.9; the other seven: params.TASK_PROGRESS fail_scale 0.9)"
+  }
+}

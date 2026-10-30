@@ -1,0 +1,126 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "ur10e",
+  "revision": 1,
+  "description": "Universal Robots UR10e collaborative arm (12.5 kg payload, 1300 mm reach), the arm cobot welding packages carry a MIG gun on",
+  "asset": {
+    "format": "urdf",
+    "resolver": "cache",
+    "path": "urdf/ur10e.urdf",
+    "lock": "assets.lock.json"
+  },
+  "root": {
+    "frame": "base_link",
+    "mounting": "fixed"
+  },
+  "groups": {
+    "arm": {
+      "joints": [
+        "shoulder_pan_joint",
+        "shoulder_lift_joint",
+        "elbow_joint",
+        "wrist_1_joint",
+        "wrist_2_joint",
+        "wrist_3_joint"
+      ],
+      "role": "arm"
+    }
+  },
+  "frames": {
+    "base": {
+      "parent": "base"
+    },
+    "wrist": {
+      "parent": "wrist_3_link"
+    },
+    "flange": {
+      "parent": "flange"
+    },
+    "tool0": {
+      "parent": "tool0"
+    }
+  },
+  "actuation": {
+    "profiles": {
+      "welding": {
+        "joints": {
+          "shoulder_pan_joint": {
+            "kp": 6000.0,
+            "kd": 300.0,
+            "effort_limit": 330.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.0943951023931953
+          },
+          "shoulder_lift_joint": {
+            "kp": 6000.0,
+            "kd": 300.0,
+            "effort_limit": 330.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 2.0943951023931953
+          },
+          "elbow_joint": {
+            "kp": 3000.0,
+            "kd": 120.0,
+            "effort_limit": 150.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 3.141592653589793
+          },
+          "wrist_1_joint": {
+            "kp": 800.0,
+            "kd": 15.0,
+            "effort_limit": 54.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 3.141592653589793
+          },
+          "wrist_2_joint": {
+            "kp": 800.0,
+            "kd": 15.0,
+            "effort_limit": 54.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 3.141592653589793
+          },
+          "wrist_3_joint": {
+            "kp": 800.0,
+            "kd": 15.0,
+            "effort_limit": 54.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "velocity_limit": 3.141592653589793
+          }
+        },
+        "initial_pose": "welding",
+        "gravity_compensation": true,
+        "actuator_gravity_compensation": false,
+        "zero_rolling_torsional": false,
+        "default_gap": null,
+        "all_shape_gap": 0.0,
+        "transform_stage": "compose",
+        "default_tool": null
+      }
+    }
+  },
+  "poses": {
+    "welding": {
+      "shoulder_pan_joint": -1.8848,
+      "shoulder_lift_joint": -1.2991,
+      "elbow_joint": 1.8603,
+      "wrist_1_joint": 1.2601,
+      "wrist_2_joint": 1.2357,
+      "wrist_3_joint": -2.0012
+    }
+  },
+  "sources": {
+    "geometry_mass_inertia_limits": "URDF of Universal Robots' ROS 2 description, commit 6662e15f32c23c12ece57d0050aee9a716e4fc41 (joint torques 330/330/150/54/54/54 N m and speeds 120/120/180/180/180/180 deg/s as in the UR10e datasheet; elbow range limited to +-180 deg by the description)",
+    "gains": "authored estimates (no UR servo gains are published): position servo gains chosen for small tracking error at welding speeds with gravity compensation",
+    "license": "BSD-3-Clause"
+  },
+  "support": {
+    "backend": "newton",
+    "version": "1.5.0"
+  }
+}

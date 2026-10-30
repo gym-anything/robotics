@@ -1,0 +1,53 @@
+{
+ "garment": "shirt",
+ "construction_id": "woven_button_down_shirt",
+ "seconds": 20.0,
+ "ticks": 28800,
+ "dt": 0.0006944444444444445,
+ "source_lay": "laundry/data/frames/p13_garment_flat_lay_catalog.npz",
+ "source_lay_sha256": "0649585cbb4314b8aa298c9f4f02289bba15b247abd9133bde16ac2fea361e2c",
+ "max_displacement_last_0_5s_m": 0.0016122736219518323,
+ "max_displacement_last_1s_m": 0.0017975547208690227,
+ "nonlocal_intersections": 0,
+ "lowest_surface_above_table_m": 9.748458862368636e-07,
+ "highest_point_above_table_m": 0.10779062032699582,
+ "plan_extent_m": [
+  -0.7973604798316956,
+  0.7958354353904724,
+  -0.4042012095451355,
+  0.3180153965950012
+ ],
+ "evaluation": {
+  "success": false,
+  "score": 0.010360788588302009,
+  "gates": {
+   "goal:left_sleeve_and_cuff_on_body:sleeve_on_body": false,
+   "goal:left_sleeve_and_cuff_on_body:cuff_on_body": false,
+   "goal:left_sleeve_and_cuff_on_body:body_laid_out": true,
+   "goal:right_sleeve_and_cuff_on_body:sleeve_on_body": false,
+   "goal:right_sleeve_and_cuff_on_body:cuff_on_body": false,
+   "goal:right_sleeve_and_cuff_on_body:body_laid_out": true,
+   "state:at_rest": true,
+   "integrity:structural_strain": true,
+   "integrity:nonlocal_intersections": true,
+   "integrity:no_runtime_pose_writes": true,
+   "integrity:no_direct_particle_forces": true,
+   "state:released": true,
+   "state:fixtures_clear": true,
+   "state:on_table": true
+  },
+  "failed_gates": [
+   "goal:left_sleeve_and_cuff_on_body:sleeve_on_body",
+   "goal:left_sleeve_and_cuff_on_body:cuff_on_body",
+   "goal:right_sleeve_and_cuff_on_body:sleeve_on_body",
+   "goal:right_sleeve_and_cuff_on_body:cuff_on_body"
+  ],
+  "goal_scores": {
+   "left_sleeve_and_cuff_on_body": 0.012207534297557821,
+   "right_sleeve_and_cuff_on_body": 0.010816440343113307
+  },
+  "progress": 0.011511987320335565
+ },
+ "wall_s": 1025.9,
+ "sha256": "fb1ce343deb85729da8af926276ebaf0bdf1a5ced8d666f845f8d77b5d443d67"
+}

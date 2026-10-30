@@ -1,0 +1,106 @@
+{
+  "terry_cloth": {
+    "source": "https://polyhaven.com/a/terry_cloth",
+    "license": "CC0-1.0",
+    "authors": {
+      "colormass": "Photography",
+      "Rico Cilliers": "Processing"
+    },
+    "dimensions_mm": [
+      367.0535953781794,
+      363.20000886917114
+    ],
+    "files": {
+      "Diffuse": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/terry_cloth/terry_cloth_diff_2k.jpg",
+        "md5": "ec68f836af445018e34273276d352739",
+        "size": 3866360,
+        "path": "terry_cloth_Diffuse.jpg",
+        "sha256": "de2d64c46dbd964b6028ec5ca905a43b8ee278f8ac5ef7fe084f796003681b5a"
+      },
+      "nor_gl": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/terry_cloth/terry_cloth_nor_gl_2k.jpg",
+        "md5": "3bc86d8b716890255c36ae677871ae42",
+        "size": 4114735,
+        "path": "terry_cloth_nor_gl.jpg",
+        "sha256": "cacba8fa0535d97e14e738d46042be78570ec8975cfe34709fa7869f274a76b0"
+      },
+      "Rough": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/terry_cloth/terry_cloth_rough_2k.jpg",
+        "md5": "154d391feac507d293ee65e313450108",
+        "size": 3629940,
+        "path": "terry_cloth_Rough.jpg",
+        "sha256": "44ff3928e16d5d489d00ab05a28a0251d55ca9b8834ed88f611fad06c12c9478"
+      }
+    }
+  },
+  "anti_skid_tiles": {
+    "source": "https://polyhaven.com/a/anti_skid_tiles",
+    "license": "CC0-1.0",
+    "authors": {
+      "Amal Kumar": "All"
+    },
+    "dimensions_mm": [
+      1800.0000715255737,
+      1800.0000715255737
+    ],
+    "files": {
+      "Diffuse": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/anti_skid_tiles/anti_skid_tiles_diff_2k.jpg",
+        "md5": "2282c6205ed4712577731ec3ba2e5789",
+        "size": 2540461,
+        "path": "anti_skid_tiles_Diffuse.jpg",
+        "sha256": "943ebd59ed15115640db045203d2e618cc8764615cf60fe211f196f4d3a8f0a6"
+      },
+      "nor_gl": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/anti_skid_tiles/anti_skid_tiles_nor_gl_2k.jpg",
+        "md5": "59a98fb93b8972ec943c6bbbf974b3f3",
+        "size": 2511144,
+        "path": "anti_skid_tiles_nor_gl.jpg",
+        "sha256": "b721935f53249bf84c9b6d1bade82d9ca4a79abfb53b97e4d80a1156ed86f5f2"
+      },
+      "Rough": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/anti_skid_tiles/anti_skid_tiles_rough_2k.jpg",
+        "md5": "cb6d4a9b34cf64f6850bcec6ab9910fc",
+        "size": 2739213,
+        "path": "anti_skid_tiles_Rough.jpg",
+        "sha256": "b9f84dab12602268cc725501e95c013307b9bd164fb50524653a5fc0e0d3e802"
+      }
+    }
+  },
+  "long_white_tiles": {
+    "source": "https://polyhaven.com/a/long_white_tiles",
+    "license": "CC0-1.0",
+    "authors": {
+      "Jenelle van Heerden": "processing",
+      "Sergej Majboroda": "photography"
+    },
+    "dimensions_mm": [
+      1269.9999809265137,
+      1269.9999809265137
+    ],
+    "files": {
+      "Diffuse": {
+        "size": 2439827,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/long_white_tiles/long_white_tiles_diff_2k.jpg",
+        "md5": "5bbacf1598466e2e6f56e8a44c5f734b",
+        "path": "long_white_tiles_Diffuse.jpg",
+        "sha256": "476ccb9f93aa78dbf3be31a4de66a7b2a180c199c6ee18381498e3159d40655a"
+      },
+      "nor_gl": {
+        "size": 2541844,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/long_white_tiles/long_white_tiles_nor_gl_2k.jpg",
+        "md5": "e72a483dab9f34be6aeacf1215a83401",
+        "path": "long_white_tiles_nor_gl.jpg",
+        "sha256": "df34d8a821182acff16a8c76e6149ab2d90fa23687893c2230273de2f8413d39"
+      },
+      "Rough": {
+        "size": 2059646,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/long_white_tiles/long_white_tiles_rough_2k.jpg",
+        "md5": "f864ca86bf492eaaf578bc3fb10991af",
+        "path": "long_white_tiles_Rough.jpg",
+        "sha256": "bd5a07527998ec222238d155034b069ae594417bbca6417521298409f612d045"
+      }
+    }
+  }
+}

@@ -1,0 +1,223 @@
+mdl 1.7;
+import ::OmniSurface::OmniSurfaceBase::*;
+import ::scene::*;
+import ::state::*;
+import ::math::*;
+import ::tex::*;
+import ::anno::*;
+
+// Render-only tissue appearance for filleting (filleting/render.py). No physics reads these values.
+//
+// Primvars written per corner by filleting/render.py (tissue_fields / fin_fields):
+//   displayColor  base colour (linear RGB) from the anatomy's flesh_color(rest position), with the anatomy's
+//                 per-vertex septum lines / fat flecks removed (they are drawn here per pixel instead)
+//   myophase      myomere phase (one unit per myomere) of the REST position: a myoseptum lies where frac = 0.
+//                 It is a smooth field interpolated linearly across each triangle, so the sheet lines stay thin
+//                 and continuous on a 3.5 mm tissue mesh, which per-vertex colour alone cannot show.
+//   restpos       rest position (m, the anatomy's workpiece frame): procedural structure (fibre grain,
+//                 flake relief, silver-skin fibres, fat lobules) is evaluated here, so it moves with the tissue.
+//   aux           x: septum half-width in phase units (0 = use septum_width); y: silver-skin cover (aux_mode 1) or
+//                 trout cavity-lining weight (aux_mode 2); z: skin cover (skin_blend: the skin texture at st)
+//   st            skin UV (cavity surfaces only), for the band of skin faces along the skin's edge
+
+// ----------------------------------------------------------------------------------------------- noise
+float hash13(float3 p)
+{
+    float3 q = math::frac(p*0.1031);
+    float3 r = q + math::dot(q, float3(q.y, q.z, q.x) + float3(33.33));
+    return math::frac((r.x + r.y)*r.z);
+}
+
+float vnoise(float3 p)
+{
+    float3 i = math::floor(p);
+    float3 f = p - i;
+    float3 u = f*f*(float3(3.0) - 2.0*f);
+    float a = math::lerp(hash13(i), hash13(i + float3(1.0, 0.0, 0.0)), u.x);
+    float b = math::lerp(hash13(i + float3(0.0, 1.0, 0.0)), hash13(i + float3(1.0, 1.0, 0.0)), u.x);
+    float c = math::lerp(hash13(i + float3(0.0, 0.0, 1.0)), hash13(i + float3(1.0, 0.0, 1.0)), u.x);
+    float d = math::lerp(hash13(i + float3(0.0, 1.0, 1.0)), hash13(i + float3(1.0, 1.0, 1.0)), u.x);
+    return math::lerp(math::lerp(a, b, u.y), math::lerp(c, d, u.y), u.z);
+}
+
+// two-octave noise of a rest position (m) with a cell size per axis (m)
+float fbm2(float3 p, float3 cell)
+{
+    float3 q = p/cell;
+    return 0.65*vnoise(q) + 0.35*vnoise(q*2.03 + float3(17.1, 5.3, 11.7));
+}
+
+// ----------------------------------------------------------------------------------------------- tissue
+// Every non-skin tissue surface: knife cuts (flesh), the fish flesh face / pork exterior / trout cavity (cavity).
+//   aux_mode 0: plain flesh; 1: a thin membrane (silver skin) of cover aux.y over the flesh; 2: trout cavity
+//   (lining weight aux.y). skin_blend: blend to the skin texture by the skin cover aux.z (the skin's edge, smooth).
+export material flesh(
+    color fallback = color(0.62, 0.20, 0.13),
+    color septum = color(0.86, 0.80, 0.74),
+    float septum_width = 0.07,           // full line width in phase units, used where aux.x = 0
+    float septum_strength = 0.9,         // peak blend of a sheet line toward the septum colour
+    float septum_wobble = 0.05,          // low-frequency waviness of the lines (phase units)
+    float roughness = 0.34,
+    float wet = 0.55,
+    float flake = 0.0,                   // fish: relief across each myomere + fine fibre striation
+    float grain = 0.0,                   // pork: fibre striation along rest x
+    float marbling = 0.0,                // pork: sparse fine intramuscular fat streaks along the fibres
+    float fat_cream = 0.0,               // pale low-saturation base colour (fat) -> creamy lobular fat
+    float mottle = 0.0,                  // low-frequency colour variation of the muscle (a few mm)
+    color fat_colour = color(0.78, 0.66, 0.50),
+    uniform int aux_mode = 0,
+    color membrane = color(0.80, 0.84, 0.89),
+    float membrane_cover = 0.6,
+    float membrane_fibre = 0.35,
+    color lining = color(0.40, 0.23, 0.22),
+    uniform texture_2d skin_texture = texture_2d(),
+    float skin_blend = 0.0,
+    float skin_roughness = 0.38,
+    float skin_wet = 0.7,
+    float skin_sheen = 0.35
+) = let {
+    color base0 = scene::data_lookup_color("displayColor", fallback);
+    float ph = scene::data_lookup_float("myophase", 0.5);
+    float3 aux = scene::data_lookup_float3("aux", float3(0.0));
+    float3 rp = scene::data_lookup_float3("restpos", float3(0.0));
+    // myoseptal sheet lines (per pixel from the interpolated phase); intensity varies along each line
+    float ph2 = ph + septum_wobble*(fbm2(rp, float3(0.009, 0.007, 0.007)) - 0.5);
+    float f = ph2 - math::floor(ph2);
+    float dd = math::min(f, 1.0 - f);
+    float hw0 = aux.x > 0.0 ? aux.x : 0.5*septum_width;
+    // each septum its own width and brightness; the brightness also varies along the line
+    float kl = math::floor(ph2 + 0.5);
+    float hw = hw0*(0.6 + 0.8*hash13(float3(kl, 3.7, 1.3)));
+    float wob = (0.62 + 0.38*hash13(float3(kl, 9.1, 4.2)))*(0.45 + 0.55*math::smoothstep(0.2, 0.8, fbm2(rp, float3(0.006, 0.004, 0.004))));
+    float line = hw > 0.0 ? (1.0 - math::smoothstep(0.35*hw, 1.25*hw, dd))*wob*septum_strength : 0.0;
+    // fish flakes: slightly deeper colour mid-myomere, lighter next to each septum, fine fibres along x
+    float fib = fbm2(rp, float3(0.004, 0.0003, 0.0003));
+    float relief = 1.0 - flake*(2.0*dd) + flake*0.7*(fib - 0.5);
+    // pork grain and marbling (fibres along rest x)
+    float gr = fbm2(rp, float3(0.003, 0.00028, 0.00028));
+    float grain_f = 1.0 + grain*(gr - 0.5);
+    float mstreak = marbling*math::smoothstep(0.80, 0.92, fbm2(rp + float3(0.31, 0.17, 0.05), float3(0.009, 0.00045, 0.00045)));
+    // creamy fat: where the base colour is pale and unsaturated
+    float lum = math::luminance(base0);
+    float fat = fat_cream*math::smoothstep(0.36, 0.62, lum);
+    float lob = fbm2(rp, float3(0.0028, 0.0028, 0.0028));
+    color fat_c = math::lerp(fat_colour*(0.80 + 0.40*lob), base0*0.9 + fat_colour*0.25, 0.22*(1.0 - lob));
+    float mot = 1.0 + mottle*(fbm2(rp + float3(0.07, 0.13, 0.02), float3(0.006, 0.006, 0.006)) - 0.5);
+    color c1 = math::lerp(base0*relief*grain_f*mot, fat_c, fat);
+    color c2 = math::lerp(c1, fat_colour, mstreak*(1.0 - fat));
+    color c3 = math::lerp(c2, septum, line*(1.0 - fat));
+    // membrane (silver skin / peritoneum): smooth cover from the per-vertex mask, fibrous along x
+    float cover = aux_mode == 1 ? math::smoothstep(0.30, 0.70, aux.y) : 0.0;
+    // fibrous sheet: dense bundles along the muscle with thinner gaps where the red muscle shows through
+    float mf = math::smoothstep(0.30, 0.72, fbm2(rp, float3(0.008, 0.00045, 0.00045)));
+    float mf2 = fbm2(rp + float3(0.11, 0.07, 0.03), float3(0.02, 0.003, 0.003));
+    float amount = math::clamp(cover*membrane_cover*(1.0 - membrane_fibre + membrane_fibre*mf)*(0.85 + 0.3*mf2), 0.0, 1.0);
+    color c4 = math::lerp(c3, membrane, amount);
+    // trout cavity: wet lining
+    float lw = aux_mode == 2 ? math::clamp(aux.y, 0.0, 1.0) : 0.0;
+    float mott = fbm2(rp, float3(0.004, 0.004, 0.004));
+    color c5 = math::lerp(c4, lining*(0.86 + 0.28*mott), lw);
+    // the skin's edge: the skin texture, smoothly
+    float3 uv = state::texture_coordinate(0);
+    float sc = skin_blend > 0.0 ? skin_blend*math::smoothstep(0.30, 0.70, aux.z) : 0.0;
+    color skin_c = tex::lookup_color(skin_texture, float2(uv.x, uv.y), tex::wrap_repeat, tex::wrap_repeat);
+    color c6 = math::lerp(c5, skin_c, sc);
+    // fat: a softer, less glossy wet surface than lean muscle
+    float rough = math::lerp(math::lerp(math::lerp(math::lerp(roughness, 0.45, fat), 0.12, cover), 0.12, lw), skin_roughness, sc);
+    float coat = math::lerp(math::lerp(math::lerp(math::lerp(wet, 0.35, fat), 1.0, cover), 0.9, lw), skin_wet, sc);
+    float spec = math::lerp(math::lerp(0.6, 0.85, cover), skin_sheen, sc);
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: c6,
+    specular_reflection_weight: spec,
+    specular_reflection_roughness: rough,
+    specular_reflection_ior: 1.37,
+    coat_weight: coat,
+    coat_color: math::lerp(color(1.0), color(0.93, 0.96, 1.0), cover),
+    coat_roughness: math::lerp(0.07, 0.04, cover),
+    coat_ior: 1.33
+);
+
+// skin: an 8-bit sRGB texture on the primvar st (skin UV), under a thin wet mucus coat.
+export material skin(
+    uniform texture_2d skin_texture = texture_2d() [[ anno::display_name("Skin texture") ]],
+    float roughness = 0.38,
+    float wet = 0.7,
+    float sheen = 0.35
+) = let {
+    float3 uv = state::texture_coordinate(0);
+    color c = tex::lookup_color(skin_texture, float2(uv.x, uv.y), tex::wrap_repeat, tex::wrap_repeat);
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: c,
+    specular_reflection_weight: sheen,
+    specular_reflection_roughness: roughness,
+    specular_reflection_ior: 1.40,
+    coat_weight: wet,
+    coat_roughness: 0.05,
+    coat_ior: 1.34
+);
+
+// fin: a thin, semi-translucent membrane between bony rays (render-only membranes, frames.py / render.fin_fields).
+//   st.x  ray coordinate (a ray lies at every integer), st.y distance to the free margin (mm)
+//   aux   x: 0 at the fin base .. 1 at the farthest margin; y: fin kind (0 spotted median fin, 1 fleshy adipose
+//         lobe, 2 paired / anal fin); z: distance from the base (mm)
+export material fin(
+    color membrane = color(0.20, 0.20, 0.14),
+    color membrane_tip = color(0.40, 0.40, 0.34),
+    color warm = color(0.46, 0.30, 0.22),
+    color ray = color(0.13, 0.11, 0.085),
+    color spot = color(0.015, 0.015, 0.014),
+    color lead = color(0.70, 0.66, 0.60),
+    float opacity_base = 0.93,
+    float opacity_edge = 0.40,
+    float opacity_paired = 0.62
+) = let {
+    float3 st = state::texture_coordinate(0);
+    float3 aux = scene::data_lookup_float3("aux", float3(0.0, 0.0, 0.0));
+    float fleshy = 1.0 - math::smoothstep(0.5, 0.9, math::abs(aux.y - 1.0));
+    float paired = math::smoothstep(1.5, 1.9, aux.y);
+    float t = math::clamp(aux.x, 0.0, 1.0);
+    float fr = st.x - math::floor(st.x);
+    float dr = math::min(fr, 1.0 - fr);
+    // rays: narrow, slightly segmented toward the tip, absent on the fleshy adipose lobe
+    float seg = 1.0 - 0.15*t*math::smoothstep(0.6, 0.75, math::frac(aux.z/1.6));
+    float rayline = (1.0 - math::smoothstep(0.06, 0.16, dr))*(1.0 - fleshy)*seg;
+    // soft, irregular margin: the membrane recedes between the ray tips (mm)
+    float notch = 0.25 + 1.0*math::smoothstep(0.10, 0.50, dr)*(1.0 - fleshy);
+    float edge = math::smoothstep(notch, notch + 0.8, st.y);
+    // black spots on the dorsal, caudal and adipose fins (rainbow trout), none on paired / anal fins
+    float qx = st.x*0.85;
+    float qy = aux.z/1.7;
+    float cx = math::floor(qx);
+    float cy = math::floor(qy);
+    float hs = hash13(float3(cx, cy, 7.0));
+    float ox = 0.25 + 0.5*hash13(float3(cx, cy, 3.0));
+    float oy = 0.25 + 0.5*hash13(float3(cx, cy, 5.0));
+    float dsp = math::sqrt((qx - cx - ox)*(qx - cx - ox) + (qy - cy - oy)*(qy - cy - oy));
+    float spotm = (hs > 0.62 ? 1.0 - math::smoothstep(0.17, 0.26, dsp) : 0.0)*(1.0 - paired)*math::smoothstep(0.03, 0.15, t);
+    // colour: pigmented at the base, paler and clearer toward the margin; paired / anal fins warmer with a pale
+    // leading ray
+    color memb = math::lerp(math::lerp(membrane, membrane_tip, t), math::lerp(warm, membrane_tip, 0.6*t), paired);
+    color c0 = math::lerp(memb, ray, rayline*0.75);
+    color c1 = math::lerp(c0, lead, paired*(1.0 - math::smoothstep(0.4, 1.2, st.x))*0.7);
+    color c2 = math::lerp(c1, spot, spotm);
+    color c3 = math::lerp(c2, math::lerp(membrane, warm, 0.35)*0.9, fleshy*0.6);
+    float op_m = math::lerp(math::lerp(opacity_base, opacity_paired, paired), opacity_edge*(1.0 - 0.4*paired), math::pow(t, 0.8));
+    float op = math::lerp(math::max(op_m, math::max(rayline*0.95, spotm)), 0.97, fleshy)*edge;
+} in OmniSurface::OmniSurfaceBase::OmniSurfaceBase(
+    diffuse_reflection_weight: 1.0,
+    diffuse_reflection_color: c3,
+    specular_reflection_weight: 0.5,
+    specular_reflection_roughness: 0.22,
+    specular_reflection_ior: 1.37,
+    enable_diffuse_transmission: true,
+    subsurface_weight: 0.45,
+    subsurface_transmission_color: c3*1.6,
+    coat_weight: 0.6,
+    coat_roughness: 0.06,
+    coat_ior: 1.33,
+    thin_walled: true,
+    enable_opacity: true,
+    geometry_opacity: op
+);

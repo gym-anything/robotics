@@ -1,0 +1,18 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "gift-fr3-single",
+  "instances": {
+    "left": {
+      "model": "fr3@1",
+      "mount": "left_arm_mount",
+      "controller_profile": "label_application"
+    }
+  },
+  "attachments": {
+    "left_hand": {
+      "model": "franka-hand@1",
+      "parent": "left/flange",
+      "mount_profile": "franka_native"
+    }
+  }
+}

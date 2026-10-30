@@ -1,0 +1,739 @@
+{
+ "files": [
+  {
+   "path": "polyhaven/concrete_floor_worn_001/concrete_floor_worn_001_diff_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_diff_2k.jpg",
+   "note": "sealed warehouse floor concrete (3 m tile), Poly Haven, CC0"
+  },
+  {
+   "path": "polyhaven/concrete_floor_worn_001/concrete_floor_worn_001_rough_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_rough_2k.jpg",
+   "note": "sealed warehouse floor concrete (3 m tile), Poly Haven, CC0"
+  },
+  {
+   "path": "polyhaven/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_2k.jpg",
+   "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_2k.jpg",
+   "note": "sealed warehouse floor concrete (3 m tile), Poly Haven, CC0"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Fans/Drum_A/DrumFan_A01_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Fans/Drum_A/DrumFan_A01_01.usd",
+   "note": "drum fan (dressing); its base metal maps are also used on drawn steel parts; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Hand_Trucks/Convertible_Steel_A/ConvertibleSteelHandTruck_A01_PR_V_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Hand_Trucks/Convertible_Steel_A/ConvertibleSteelHandTruck_A01_PR_V_NVD_01.usd",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Hand_Trucks/Convertible_Steel_A/materials/M_ConvertibleSteelHandTruck_Sticker.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Hand_Trucks/Convertible_Steel_A/materials/M_ConvertibleSteelHandTruck_Sticker.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Hand_Trucks/Convertible_Steel_A/materials/textures/T_ConvertibleSteelHandTruck_A01_Stickers_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Hand_Trucks/Convertible_Steel_A/materials/textures/T_ConvertibleSteelHandTruck_A01_Stickers_Albedo.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/LowProfilePalletTruck_A01_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/LowProfilePalletTruck_A01_PR_NVD_01.usd",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Albedo.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_Albedo.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_Normal.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_ORM.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_Opacity.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Decals_Opacity.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_Normal.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Pallet_Trucks/Low_Profile_A/materials/textures/T_LowProfilePalletTruck_A01_ORM.png",
+   "note": "hand pallet truck (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Equipment/Signage/PlasticHardWiredExit_A/PlasticHardwiredExitSign_A01_Red_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Equipment/Signage/PlasticHardWiredExit_A/PlasticHardwiredExitSign_A01_Red_01.usd",
+   "note": "exit sign (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/TrashCanWithWheels_A01_Blue_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/TrashCanWithWheels_A01_Blue_01.usd",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_Opacity.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Facilities/Trash_Cans/TrashCanWithWheels_A/materials/T_TrashCanWithWheels_A01_Opacity.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/FireAlarm_A01_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/FireAlarm_A01_01.usd",
+   "note": "fire alarm pull station (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/materials/t_firealarm_a01_albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/materials/t_firealarm_a01_albedo.png",
+   "note": "fire alarm pull station (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/materials/t_firealarm_a01_normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/materials/t_firealarm_a01_normal.png",
+   "note": "fire alarm pull station (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/materials/t_firealarm_a01_orm.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Safety/Fire_Protection/FireAlarm_A/materials/t_firealarm_a01_orm.png",
+   "note": "fire alarm pull station (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/FlatBox_A15_51x63x33cm_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/FlatBox_A15_51x63x33cm_PR_NVD_01.usd",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/M_FlatBox_Cardboard_01.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/M_FlatBox_Cardboard_01.mdl",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/M_FlatBox_Decal_01.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/M_FlatBox_Decal_01.mdl",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Tile_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Tile_Albedo.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Tile_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Tile_Normal.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Tile_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Tile_ORM.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_Albedo.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_Normal.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_ORM.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_Opacity.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Flat_A/materials/textures/T_FlatBox_A01_Trim_Opacity.png",
+   "note": "corrugated carton (stored loads, loose cartons); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/MultiDepthBox_A05_31x31x31cm_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/MultiDepthBox_A05_31x31x31cm_PR_NVD_01.usd",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/MultiDepthBox_A10_31x46x31cm_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/MultiDepthBox_A10_31x46x31cm_PR_NVD_01.usd",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/MultiDepthBox_A12_36x51x36cm_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/MultiDepthBox_A12_36x51x36cm_PR_NVD_01.usd",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/M_MultiDepthBox_Cardboard_01.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/M_MultiDepthBox_Cardboard_01.mdl",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/M_MultiDepthBox_Decal_01.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/M_MultiDepthBox_Decal_01.mdl",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Tile_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Tile_Albedo.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Tile_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Tile_Normal.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Tile_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Tile_ORM.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_Albedo.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_Normal.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_ORM.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_Opacity.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Multi-Depth_A/materials/textures/T_MultiDepthBox_A01_Trim_Opacity.png",
+   "note": "corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/WhiteCorrugatedBox_A11_46x47x47cm_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/WhiteCorrugatedBox_A11_46x47x47cm_PR_NVD_01.usd",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/WhiteCorrugatedBox_A12_51x52x52cm_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/WhiteCorrugatedBox_A12_51x52x52cm_PR_NVD_01.usd",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/M_WhiteCorrugatedBox_Cardboard_01.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/M_WhiteCorrugatedBox_Cardboard_01.mdl",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/M_WhiteCorrugatedBox_Decal_01.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/M_WhiteCorrugatedBox_Decal_01.mdl",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/WhiteBox.material.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/WhiteBox.material.usd",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Tile_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Tile_Albedo.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Tile_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Tile_Normal.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Tile_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Tile_ORM.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_Albedo.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_Normal.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_ORM.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_Opacity.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/White_A/materials/textures/T_WhiteCorrugatedBox_A01_Trim_Opacity.png",
+   "note": "white corrugated carton (stored loads); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/Pallet_Assembly_A_Covering.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/Pallet_Assembly_A_Covering.mdl",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/Pallet_Assembly_Tile.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/Pallet_Assembly_Tile.mdl",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/Pallet_Assembly_Trim.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/Pallet_Assembly_Trim.mdl",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Tile_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Tile_Albedo.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Tile_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Tile_Normal.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Tile_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Tile_ORM.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Trim_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Trim_Albedo.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Trim_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Trim_Normal.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Trim_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Materials/textures/T_Pallet_Assembly_Trim_ORM.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Pallet_Asm_A/Pallet_Asm_A05_102x102x103cm_PR_V_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes_on_Pallet/Pallet_Asm_A/Pallet_Asm_A05_102x102x103cm_PR_V_NVD_01.usd",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Plastic_A/PlasticDrum_A04_PR_V_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Plastic_A/PlasticDrum_A04_PR_V_NVD_01.usd",
+   "note": "plastic drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/SteelDrum_A01_PR_NVD_01.usd",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/SteelDrum_A01_PR_NVD_01.usd",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/M_SteelDrum_A1.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/M_SteelDrum_A1.mdl",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/M_SteelDrum_A2.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/M_SteelDrum_A2.mdl",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/textures/T_SteelDrum_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/textures/T_SteelDrum_A_Normal.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/textures/T_SteelDrum_A_Roughness.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Assets/Warehouse/Storage/Drums/Steel_A/materials/textures/T_SteelDrum_A_Roughness.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Aluminium_Brushed_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Aluminium_Brushed_A.mdl",
+   "note": "plastic drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Aluminium_Brushed_B.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Aluminium_Brushed_B.mdl",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Glossy_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Glossy_A.mdl",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Blue_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Blue_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Green_B.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Green_B.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Orange_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Orange_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Red_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Red_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_White_Glossy_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_White_Glossy_A.mdl",
+   "note": "drum fan (dressing); its base metal maps are also used on drawn steel parts; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Yellow_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Painted_Yellow_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Metal_Rough_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Metal_Rough_A.mdl",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Steel_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Steel_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Aluminium_Brushed_A1_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Aluminium_Brushed_A1_Albedo.png",
+   "note": "plastic drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Aluminium_Brushed_A1_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Aluminium_Brushed_A1_Normal.png",
+   "note": "plastic drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Aluminium_Brushed_A1_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Aluminium_Brushed_A1_ORM.png",
+   "note": "plastic drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Glossy_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Glossy_A_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Glossy_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Glossy_A_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Glossy_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Glossy_A_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Black_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Black_A_Albedo.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Gray_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Gray_A_Albedo.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Green_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Green_A_Albedo.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Green_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Green_A_Normal.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Green_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_Green_A_ORM.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_White_Glossy_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_White_Glossy_A_Albedo.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_White_Glossy_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_White_Glossy_A_Normal.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_White_Glossy_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Painted_White_Glossy_A_ORM.png",
+   "note": "drum fan (dressing); its base metal maps are also used on drawn steel parts; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Rough_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Rough_A_Albedo.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Rough_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Rough_A_Normal.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Rough_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Metal_Rough_A_ORM.png",
+   "note": "steel drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Steel_A1_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Steel_A1_Albedo.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Steel_A1_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Steel_A1_Normal.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Steel_A1_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Metals/Textures/T_Steel_A1_ORM.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Natural_Plastic_Translucent_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Natural_Plastic_Translucent_A.mdl",
+   "note": "plastic drum (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Black_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Black_A.mdl",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Blue_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Blue_A.mdl",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Glossy_Black_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Glossy_Black_A.mdl",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Glossy_White_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Glossy_White_A.mdl",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Red_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Red_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Rough_Black_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_Rough_Black_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_White_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Plastic_White_A.mdl",
+   "note": "exit sign (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Black_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Black_A_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Black_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Black_A_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Black_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Black_A_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Blue_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Blue_A_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Blue_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Blue_A_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Blue_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Blue_A_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_Black_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_Black_A_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_Black_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_Black_A_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_Black_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_Black_A_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_White_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_White_A_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_White_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_White_A_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_White_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Glossy_White_A_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Red_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Red_A_Albedo.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Red_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Red_A_Normal.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Red_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Red_A_ORM.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Rough_Black_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Rough_Black_A_Albedo.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Rough_Black_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Rough_Black_A_Normal.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Rough_Black_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_Rough_Black_A_ORM.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_White_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_White_A_Albedo.png",
+   "note": "exit sign (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_White_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_White_A_Normal.png",
+   "note": "exit sign (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_White_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Plastics/Textures/T_Plastic_White_A_ORM.png",
+   "note": "exit sign (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Rubber_Black_Glossy_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Rubber_Black_Glossy_A.mdl",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Rubber_New_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Rubber_New_A.mdl",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_Black_Glossy_A_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_Black_Glossy_A_Albedo.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_Black_Glossy_A_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_Black_Glossy_A_Normal.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_Black_Glossy_A_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_Black_Glossy_A_ORM.png",
+   "note": "wheeled waste bin (dressing); NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_New_A1_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_New_A1_Albedo.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_New_A1_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_New_A1_Normal.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_New_A1_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Rubber/Textures/T_Rubber_New_A1_ORM.png",
+   "note": "hand truck (dressing); its painted-steel, steel, rubber and plastic base maps are also used on the racks, conveyor, guards and machines; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Wood/Textures/T_Wood_Recycled_A1_Albedo.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Wood/Textures/T_Wood_Recycled_A1_Albedo.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Wood/Textures/T_Wood_Recycled_A1_Normal.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Wood/Textures/T_Wood_Recycled_A1_Normal.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Wood/Textures/T_Wood_Recycled_A1_ORM.png",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Wood/Textures/T_Wood_Recycled_A1_ORM.png",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  },
+  {
+   "path": "nvidia/Assets/DigitalTwin/Materials/Base/Wood/Wood_Recycled_A.mdl",
+   "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/DigitalTwin/Materials/Base/Wood/Wood_Recycled_A.mdl",
+   "note": "stretch-wrapped pallet: the wrinkled film mesh, and the pallet-wood and cardboard maps used on drawn pallets, bales and corner boards; NVIDIA DigitalTwin warehouse pack, NVIDIA Omniverse content licence"
+  }
+ ]
+}

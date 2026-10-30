@@ -1,0 +1,70 @@
+{
+  "schema": "gar.task-catalog.v1",
+  "environment_id": "welding",
+  "default_task_id": "welding/v1/steel-cell/fillet-2f/seed-0",
+  "description": "Robotic GMAW (MIG) cell: a UR10e carries a cobot MIG gun and an FR3 with a Franka Hand handles parts at a steel fixture table. Set the gun up to the procedure, bring the torch to a seam (alone, or while the hand holds the loose bracket), fit a bracket up on its base plate, tack it, and lay horizontal fillets (half the joint, the whole joint, from a source left on another job, over the cell's own tacks) that pass AWS D1.1 visual and macro-section criteria. The arc exists only through a grounded circuit and self-regulates with stand-off; heat, melting, the bead's surface-tension shape, fusion, porosity from lost shielding, the crater and the tack bond all come from the physics.",
+  "selectors": [
+    "preset",
+    "task",
+    "seed",
+    "variation_id",
+    "split",
+    "selection_seed"
+  ],
+  "cli_task_selector": "task",
+  "selector_choices": {
+    "task": [
+      "position-torch",
+      "tack",
+      "fillet-2f",
+      "set-up-gun",
+      "fit-up-bracket",
+      "half-fillet",
+      "stitch-weld-ends",
+      "tack-and-weld",
+      "fillet-from-both-ends",
+      "hold-and-present",
+      "set-up-and-weld"
+    ],
+    "preset": [
+      "steel-cell"
+    ]
+  },
+  "resolver": "welding.variants:task_resolve",
+  "count": 110000,
+  "count_scope": "11 named tasks in the one preset, steel-cell, x the 10,000 variations of the frozen catalogue welding-steel-cell-v1 (welding/variations.py). Every variation serves every task and sets the cell's initial state: the coupon's pose on the fixture table (dx and dy within +-3 mm, yaw within +-2 deg, redrawn where a clamp pad would come within 2 mm of the plate's edge), the wire stick-out left in the gun (6.35-12.7 mm) and a cross draft of 0-2.0 m/s, under the AWS D1.1 limit (air reaches the shield from 1.4 m/s, at most 0.6 % at 2 m/s). Its world seed also sets how far fit-up-bracket's start stands the bracket off its layout (15-30 mm toward the weld side, 3-8 deg of yaw). Variation 0 is the authored layout. set-up-gun, set-up-and-weld and fit-up-bracket also apply a task start preset (welding/presets.py). Seeds 0-9 (the coupon pose and, for fit-up-bracket, the bracket's offset; split null) also resolve and are not counted; a seed and a variation are exclusive. The task set (task_set) leaves out tack, stitch-weld-ends and fillet-from-both-ends, which cannot be shown to succeed as built. Other presets (copper brazing, electrical soldering) and further steel-cell tasks are not built (welding/REPORT.pdf, \"Limitations and work not built\").",
+  "splits": [
+    "train",
+    "validation",
+    "test"
+  ],
+  "split_note": "Frozen per variation: the first 8 bytes of sha256('welding-steel-cell-v1/<id>/split') as a big-endian integer, mod 10: < 8 train, 8 validation, 9 test; variation 0 (the authored layout every published demonstration and probe used) is train. Every task of a variation shares its split. Seeds 0-9 resolve with split null.",
+  "variation_catalogue": {
+    "version": "welding-steel-cell-v1",
+    "count": 10000,
+    "resolver": "welding.variations",
+    "frozen_file": "welding/data/variations/catalogue.jsonl",
+    "manifest": "welding/data/variations/catalogue.manifest.json",
+    "notes": "welding/REPORT.pdf"
+  },
+  "evaluator": {
+    "available": true,
+    "source": "welding/task.py",
+    "scope": "Physical state only: weld cross-sections measured from the thermal solver's cells (legs, throat, convexity, undercut, overlap, root fusion, penetration, porosity) and the order they froze, the bond's fused sections, part poses, contacts, the source's set points and recorded history. Score: 1 on success, else 0.9 x the task's continuous progress (0 at the untouched start state). The mean of the checks is reported as reward.mean_of_checks. No autonomous-solution claim."
+  },
+  "qualification": "See welding/REPORT.pdf for what is qualified by which probe or assisted demonstration, runtime and limitations.",
+  "task_set": {
+    "tasks": [
+      "position-torch",
+      "set-up-gun",
+      "fit-up-bracket",
+      "half-fillet",
+      "hold-and-present",
+      "fillet-2f",
+      "set-up-and-weld",
+      "tack-and-weld"
+    ],
+    "source": "welding/task.py EIGHT_TASKS",
+    "note": "Easiest first. tack, stitch-weld-ends and fillet-from-both-ends stay in the catalogue outside the set because none can be shown to succeed as built; no standard is relaxed to make one pass."
+  }
+}

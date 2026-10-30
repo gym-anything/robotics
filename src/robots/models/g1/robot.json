@@ -1,0 +1,2307 @@
+{
+  "schema": "gar.robot.v1",
+  "id": "g1",
+  "revision": 1,
+  "asset": {
+    "format": "urdf",
+    "resolver": "g1_pinned",
+    "path": "robots/g1_description/g1_29dof_with_hand_rev_1_0.urdf",
+    "lock": "assets.lock.json"
+  },
+  "root": {
+    "frame": "pelvis",
+    "mounting": "floating"
+  },
+  "groups": {
+    "body": {
+      "joints": [
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint",
+        "waist_yaw_joint",
+        "waist_roll_joint",
+        "waist_pitch_joint",
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_shoulder_yaw_joint",
+        "left_elbow_joint",
+        "left_wrist_roll_joint",
+        "left_wrist_pitch_joint",
+        "left_wrist_yaw_joint",
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_shoulder_yaw_joint",
+        "right_elbow_joint",
+        "right_wrist_roll_joint",
+        "right_wrist_pitch_joint",
+        "right_wrist_yaw_joint"
+      ],
+      "role": "body"
+    },
+    "hands": {
+      "joints": [
+        "left_hand_thumb_0_joint",
+        "left_hand_thumb_1_joint",
+        "left_hand_thumb_2_joint",
+        "left_hand_middle_0_joint",
+        "left_hand_middle_1_joint",
+        "left_hand_index_0_joint",
+        "left_hand_index_1_joint",
+        "right_hand_thumb_0_joint",
+        "right_hand_thumb_1_joint",
+        "right_hand_thumb_2_joint",
+        "right_hand_middle_0_joint",
+        "right_hand_middle_1_joint",
+        "right_hand_index_0_joint",
+        "right_hand_index_1_joint"
+      ],
+      "role": "hand"
+    }
+  },
+  "frames": {
+    "base": {
+      "parent": "pelvis"
+    },
+    "left_foot": {
+      "parent": "left_ankle_roll_link"
+    },
+    "right_foot": {
+      "parent": "right_ankle_roll_link"
+    },
+    "left_hand": {
+      "parent": "left_hand_palm_link"
+    },
+    "right_hand": {
+      "parent": "right_hand_palm_link"
+    },
+    "head_camera": {
+      "parent": "d435_link"
+    }
+  },
+  "actuation": {
+    "profiles": {
+      "whiteboard": {
+        "joints": {
+          "left_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_elbow_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_roll_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_pitch_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_yaw_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_2_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_elbow_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_roll_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_pitch_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_yaw_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_2_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          }
+        },
+        "initial_pose": "whiteboard",
+        "transform_stage": "import",
+        "inherit_shape_config": true
+      },
+      "football": {
+        "joints": {
+          "left_hip_pitch_joint": {
+            "kp": 100.0,
+            "kd": 2.0,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_roll_joint": {
+            "kp": 100.0,
+            "kd": 2.0,
+            "effort_limit": 120.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_yaw_joint": {
+            "kp": 100.0,
+            "kd": 2.0,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_knee_joint": {
+            "kp": 150.0,
+            "kd": 4.0,
+            "effort_limit": 120.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_pitch_joint": {
+            "kp": 40.0,
+            "kd": 2.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_roll_joint": {
+            "kp": 40.0,
+            "kd": 2.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_pitch_joint": {
+            "kp": 100.0,
+            "kd": 2.0,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_roll_joint": {
+            "kp": 100.0,
+            "kd": 2.0,
+            "effort_limit": 120.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_yaw_joint": {
+            "kp": 100.0,
+            "kd": 2.0,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_knee_joint": {
+            "kp": 150.0,
+            "kd": 4.0,
+            "effort_limit": 120.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_pitch_joint": {
+            "kp": 40.0,
+            "kd": 2.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_roll_joint": {
+            "kp": 40.0,
+            "kd": 2.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_yaw_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_roll_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_pitch_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_pitch_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_roll_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_yaw_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_elbow_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_roll_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_pitch_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_yaw_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_0_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_1_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_2_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_0_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_1_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_0_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_1_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_pitch_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_roll_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_yaw_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_elbow_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_roll_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_pitch_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_yaw_joint": {
+            "kp": 400.0,
+            "kd": 40.0,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_0_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_1_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_2_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_0_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_1_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_0_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_1_joint": {
+            "kp": 20.0,
+            "kd": 1.0,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          }
+        },
+        "initial_pose": "football",
+        "transform_stage": "import",
+        "inherit_shape_config": true
+      },
+      "barcode_scanning": {
+        "joints": {
+          "left_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_elbow_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_roll_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_pitch_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_yaw_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_2_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_elbow_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_roll_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_pitch_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_yaw_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_2_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          }
+        },
+        "initial_pose": "barcode_scanning",
+        "transform_stage": "import",
+        "inherit_shape_config": true
+      },
+      "batting": {
+        "joints": {
+          "left_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_yaw_joint": {
+            "kp": 300,
+            "kd": 10,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_roll_joint": {
+            "kp": 300,
+            "kd": 10,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_pitch_joint": {
+            "kp": 300,
+            "kd": 10,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_pitch_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_roll_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_yaw_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_elbow_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_roll_joint": {
+            "kp": 120,
+            "kd": 4,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_pitch_joint": {
+            "kp": 60,
+            "kd": 2,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_yaw_joint": {
+            "kp": 60,
+            "kd": 2,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_0_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_1_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_2_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_0_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_1_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_0_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_1_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_pitch_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_roll_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_yaw_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_elbow_joint": {
+            "kp": 200,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_roll_joint": {
+            "kp": 120,
+            "kd": 4,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_pitch_joint": {
+            "kp": 60,
+            "kd": 2,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_yaw_joint": {
+            "kp": 60,
+            "kd": 2,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_0_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_1_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_2_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_0_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_1_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_0_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_1_joint": {
+            "kp": 6.0,
+            "kd": 0.12,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          }
+        },
+        "initial_pose": "batting",
+        "transform_stage": "import",
+        "inherit_shape_config": true
+      },
+      "forklift": {
+        "initial_pose": "forklift_seated",
+        "source": "forklift environment (forklift/operator.py): the G1 seated in the truck cab. Gains are authored estimates by the rule of the H1-2 forklift profile (kp = URDF effort limit / a saturation angle per joint class: hips 0.8 rad, knee and ankles 1.0, waist 0.667, shoulders 0.333, elbow 0.225, wrists 0.475, Dex3 fingers 0.333; kd/kp as there); effort and velocity limits are the pinned URDF's; armature is the reflected rotor inertia of each joint's Unitree motor class (batting/actuators.py: mjlab g1_constants / Unitree; ankles and waist roll/pitch two 5020s) and 1e-3 kg m^2 on the Dex3 fingers (batting DEX3_ARMATURE, estimate)",
+        "joints": {
+          "left_hip_pitch_joint": {
+            "kp": 110.0,
+            "kd": 2.64,
+            "effort_limit": 88.0,
+            "velocity_limit": 32.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0101775
+          },
+          "left_hip_roll_joint": {
+            "kp": 173.8,
+            "kd": 4.171,
+            "effort_limit": 139.0,
+            "velocity_limit": 20.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0251019
+          },
+          "left_hip_yaw_joint": {
+            "kp": 110.0,
+            "kd": 2.64,
+            "effort_limit": 88.0,
+            "velocity_limit": 32.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0101775
+          },
+          "left_knee_joint": {
+            "kp": 139.0,
+            "kd": 3.711,
+            "effort_limit": 139.0,
+            "velocity_limit": 20.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0251019
+          },
+          "left_ankle_pitch_joint": {
+            "kp": 35.0,
+            "kd": 1.166,
+            "effort_limit": 35.0,
+            "velocity_limit": 30.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00721945
+          },
+          "left_ankle_roll_joint": {
+            "kp": 35.0,
+            "kd": 1.166,
+            "effort_limit": 35.0,
+            "velocity_limit": 30.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00721945
+          },
+          "right_hip_pitch_joint": {
+            "kp": 110.0,
+            "kd": 2.64,
+            "effort_limit": 88.0,
+            "velocity_limit": 32.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0101775
+          },
+          "right_hip_roll_joint": {
+            "kp": 173.8,
+            "kd": 4.171,
+            "effort_limit": 139.0,
+            "velocity_limit": 20.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0251019
+          },
+          "right_hip_yaw_joint": {
+            "kp": 110.0,
+            "kd": 2.64,
+            "effort_limit": 88.0,
+            "velocity_limit": 32.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0101775
+          },
+          "right_knee_joint": {
+            "kp": 139.0,
+            "kd": 3.711,
+            "effort_limit": 139.0,
+            "velocity_limit": 20.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0251019
+          },
+          "right_ankle_pitch_joint": {
+            "kp": 35.0,
+            "kd": 1.166,
+            "effort_limit": 35.0,
+            "velocity_limit": 30.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00721945
+          },
+          "right_ankle_roll_joint": {
+            "kp": 35.0,
+            "kd": 1.166,
+            "effort_limit": 35.0,
+            "velocity_limit": 30.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00721945
+          },
+          "waist_yaw_joint": {
+            "kp": 131.9,
+            "kd": 2.638,
+            "effort_limit": 88.0,
+            "velocity_limit": 32.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.0101775
+          },
+          "waist_roll_joint": {
+            "kp": 52.5,
+            "kd": 1.05,
+            "effort_limit": 35.0,
+            "velocity_limit": 30.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00721945
+          },
+          "waist_pitch_joint": {
+            "kp": 52.5,
+            "kd": 1.05,
+            "effort_limit": 35.0,
+            "velocity_limit": 30.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00721945
+          },
+          "left_shoulder_pitch_joint": {
+            "kp": 75.1,
+            "kd": 1.877,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "left_shoulder_roll_joint": {
+            "kp": 75.1,
+            "kd": 1.877,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "left_shoulder_yaw_joint": {
+            "kp": 75.1,
+            "kd": 1.877,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "left_elbow_joint": {
+            "kp": 111.1,
+            "kd": 2.777,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "left_wrist_roll_joint": {
+            "kp": 52.6,
+            "kd": 1.315,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "left_wrist_pitch_joint": {
+            "kp": 10.5,
+            "kd": 0.263,
+            "effort_limit": 5.0,
+            "velocity_limit": 22.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00425
+          },
+          "left_wrist_yaw_joint": {
+            "kp": 10.5,
+            "kd": 0.263,
+            "effort_limit": 5.0,
+            "velocity_limit": 22.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00425
+          },
+          "left_hand_thumb_0_joint": {
+            "kp": 7.4,
+            "kd": 0.124,
+            "effort_limit": 2.45,
+            "velocity_limit": 3.14,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "left_hand_thumb_1_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "left_hand_thumb_2_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "left_hand_middle_0_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "left_hand_middle_1_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "left_hand_index_0_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "left_hand_index_1_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_shoulder_pitch_joint": {
+            "kp": 75.1,
+            "kd": 1.877,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "right_shoulder_roll_joint": {
+            "kp": 75.1,
+            "kd": 1.877,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "right_shoulder_yaw_joint": {
+            "kp": 75.1,
+            "kd": 1.877,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "right_elbow_joint": {
+            "kp": 111.1,
+            "kd": 2.777,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "right_wrist_roll_joint": {
+            "kp": 52.6,
+            "kd": 1.315,
+            "effort_limit": 25.0,
+            "velocity_limit": 37.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00360972
+          },
+          "right_wrist_pitch_joint": {
+            "kp": 10.5,
+            "kd": 0.263,
+            "effort_limit": 5.0,
+            "velocity_limit": 22.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00425
+          },
+          "right_wrist_yaw_joint": {
+            "kp": 10.5,
+            "kd": 0.263,
+            "effort_limit": 5.0,
+            "velocity_limit": 22.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.00425
+          },
+          "right_hand_thumb_0_joint": {
+            "kp": 7.4,
+            "kd": 0.124,
+            "effort_limit": 2.45,
+            "velocity_limit": 3.14,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_hand_thumb_1_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_hand_thumb_2_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_hand_middle_0_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_hand_middle_1_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_hand_index_0_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          },
+          "right_hand_index_1_joint": {
+            "kp": 4.2,
+            "kd": 0.07,
+            "effort_limit": 1.4,
+            "velocity_limit": 12.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0,
+            "armature": 0.001
+          }
+        }
+      },
+      "sewing": {
+        "joints": {
+          "left_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hip_yaw_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_knee_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 139.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_pitch_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_ankle_roll_joint": {
+            "kp": 800,
+            "kd": 20,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 88.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "waist_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 35.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_shoulder_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_elbow_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_roll_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_pitch_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_wrist_yaw_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_thumb_2_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_middle_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "left_hand_index_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_pitch_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_roll_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_shoulder_yaw_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_elbow_joint": {
+            "kp": 120,
+            "kd": 6,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_roll_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 25.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_pitch_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_wrist_yaw_joint": {
+            "kp": 80,
+            "kd": 3,
+            "effort_limit": 5.0,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 2.45,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_thumb_2_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_middle_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_0_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          },
+          "right_hand_index_1_joint": {
+            "kp": 1.8,
+            "kd": 0.035,
+            "effort_limit": 1.4,
+            "limit_kp": 10000.0,
+            "limit_kd": 10.0
+          }
+        },
+        "initial_pose": "sewing",
+        "transform_stage": "import",
+        "inherit_shape_config": true
+      }
+    }
+  },
+  "poses": {
+    "whiteboard": {
+      "left_hip_pitch_joint": -0.15,
+      "left_hip_roll_joint": 0.0,
+      "left_hip_yaw_joint": 0.0,
+      "left_knee_joint": 0.3,
+      "left_ankle_pitch_joint": -0.15,
+      "left_ankle_roll_joint": 0.0,
+      "right_hip_pitch_joint": -0.15,
+      "right_hip_roll_joint": 0.0,
+      "right_hip_yaw_joint": 0.0,
+      "right_knee_joint": 0.3,
+      "right_ankle_pitch_joint": -0.15,
+      "right_ankle_roll_joint": 0.0,
+      "waist_yaw_joint": 0.0,
+      "waist_roll_joint": 0.0,
+      "waist_pitch_joint": 0.0,
+      "left_shoulder_pitch_joint": 0.0,
+      "left_shoulder_roll_joint": 0.0,
+      "left_shoulder_yaw_joint": 0.0,
+      "left_elbow_joint": 0.0,
+      "left_wrist_roll_joint": 0.0,
+      "left_wrist_pitch_joint": 0.0,
+      "left_wrist_yaw_joint": 0.0,
+      "left_hand_thumb_0_joint": 0.0,
+      "left_hand_thumb_1_joint": 0.0,
+      "left_hand_thumb_2_joint": 0.0,
+      "left_hand_middle_0_joint": 0.0,
+      "left_hand_middle_1_joint": 0.0,
+      "left_hand_index_0_joint": 0.0,
+      "left_hand_index_1_joint": 0.0,
+      "right_shoulder_pitch_joint": 0.0,
+      "right_shoulder_roll_joint": 0.0,
+      "right_shoulder_yaw_joint": 0.0,
+      "right_elbow_joint": 0.0,
+      "right_wrist_roll_joint": 0.0,
+      "right_wrist_pitch_joint": 0.0,
+      "right_wrist_yaw_joint": 0.0,
+      "right_hand_thumb_0_joint": 0.0,
+      "right_hand_thumb_1_joint": 0.0,
+      "right_hand_thumb_2_joint": 0.0,
+      "right_hand_middle_0_joint": 0.0,
+      "right_hand_middle_1_joint": 0.0,
+      "right_hand_index_0_joint": 0.0,
+      "right_hand_index_1_joint": 0.0
+    },
+    "football": {
+      "left_hip_pitch_joint": -0.1,
+      "left_hip_roll_joint": 0.0,
+      "left_hip_yaw_joint": 0.0,
+      "left_knee_joint": 0.3,
+      "left_ankle_pitch_joint": -0.2,
+      "left_ankle_roll_joint": 0.0,
+      "right_hip_pitch_joint": -0.1,
+      "right_hip_roll_joint": 0.0,
+      "right_hip_yaw_joint": 0.0,
+      "right_knee_joint": 0.3,
+      "right_ankle_pitch_joint": -0.2,
+      "right_ankle_roll_joint": 0.0,
+      "waist_yaw_joint": 0.0,
+      "waist_roll_joint": 0.0,
+      "waist_pitch_joint": 0.0,
+      "left_shoulder_pitch_joint": 0.0,
+      "left_shoulder_roll_joint": 0.0,
+      "left_shoulder_yaw_joint": 0.0,
+      "left_elbow_joint": 0.0,
+      "left_wrist_roll_joint": 0.0,
+      "left_wrist_pitch_joint": 0.0,
+      "left_wrist_yaw_joint": 0.0,
+      "left_hand_thumb_0_joint": 0.0,
+      "left_hand_thumb_1_joint": 0.0,
+      "left_hand_thumb_2_joint": 0.0,
+      "left_hand_middle_0_joint": 0.0,
+      "left_hand_middle_1_joint": 0.0,
+      "left_hand_index_0_joint": 0.0,
+      "left_hand_index_1_joint": 0.0,
+      "right_shoulder_pitch_joint": 0.0,
+      "right_shoulder_roll_joint": 0.0,
+      "right_shoulder_yaw_joint": 0.0,
+      "right_elbow_joint": 0.0,
+      "right_wrist_roll_joint": 0.0,
+      "right_wrist_pitch_joint": 0.0,
+      "right_wrist_yaw_joint": 0.0,
+      "right_hand_thumb_0_joint": 0.0,
+      "right_hand_thumb_1_joint": 0.0,
+      "right_hand_thumb_2_joint": 0.0,
+      "right_hand_middle_0_joint": 0.0,
+      "right_hand_middle_1_joint": 0.0,
+      "right_hand_index_0_joint": 0.0,
+      "right_hand_index_1_joint": 0.0
+    },
+    "barcode_scanning": {
+      "left_hip_pitch_joint": -0.15,
+      "left_hip_roll_joint": 0.0,
+      "left_hip_yaw_joint": 0.0,
+      "left_knee_joint": 0.3,
+      "left_ankle_pitch_joint": -0.15,
+      "left_ankle_roll_joint": 0.0,
+      "right_hip_pitch_joint": -0.15,
+      "right_hip_roll_joint": 0.0,
+      "right_hip_yaw_joint": 0.0,
+      "right_knee_joint": 0.3,
+      "right_ankle_pitch_joint": -0.15,
+      "right_ankle_roll_joint": 0.0,
+      "waist_yaw_joint": 0.0,
+      "waist_roll_joint": 0.0,
+      "waist_pitch_joint": 0.0,
+      "left_shoulder_pitch_joint": 0.0,
+      "left_shoulder_roll_joint": 0.0,
+      "left_shoulder_yaw_joint": 0.0,
+      "left_elbow_joint": 0.0,
+      "left_wrist_roll_joint": 0.0,
+      "left_wrist_pitch_joint": 0.0,
+      "left_wrist_yaw_joint": 0.0,
+      "left_hand_thumb_0_joint": 0.0,
+      "left_hand_thumb_1_joint": 0.0,
+      "left_hand_thumb_2_joint": 0.0,
+      "left_hand_middle_0_joint": 0.0,
+      "left_hand_middle_1_joint": 0.0,
+      "left_hand_index_0_joint": 0.0,
+      "left_hand_index_1_joint": 0.0,
+      "right_shoulder_pitch_joint": 0.0,
+      "right_shoulder_roll_joint": 0.0,
+      "right_shoulder_yaw_joint": 0.0,
+      "right_elbow_joint": 0.0,
+      "right_wrist_roll_joint": 0.0,
+      "right_wrist_pitch_joint": 0.0,
+      "right_wrist_yaw_joint": 0.0,
+      "right_hand_thumb_0_joint": 0.0,
+      "right_hand_thumb_1_joint": 0.0,
+      "right_hand_thumb_2_joint": 0.0,
+      "right_hand_middle_0_joint": 0.0,
+      "right_hand_middle_1_joint": 0.0,
+      "right_hand_index_0_joint": 0.0,
+      "right_hand_index_1_joint": 0.0
+    },
+    "batting": {
+      "left_hip_pitch_joint": -0.15,
+      "left_hip_roll_joint": 0.0,
+      "left_hip_yaw_joint": 0.0,
+      "left_knee_joint": 0.3,
+      "left_ankle_pitch_joint": -0.15,
+      "left_ankle_roll_joint": 0.0,
+      "right_hip_pitch_joint": -0.15,
+      "right_hip_roll_joint": 0.0,
+      "right_hip_yaw_joint": 0.0,
+      "right_knee_joint": 0.3,
+      "right_ankle_pitch_joint": -0.15,
+      "right_ankle_roll_joint": 0.0,
+      "waist_yaw_joint": 0.0,
+      "waist_roll_joint": 0.0,
+      "waist_pitch_joint": 0.0,
+      "left_shoulder_pitch_joint": 0.0,
+      "left_shoulder_roll_joint": 0.0,
+      "left_shoulder_yaw_joint": 0.0,
+      "left_elbow_joint": 0.0,
+      "left_wrist_roll_joint": 0.0,
+      "left_wrist_pitch_joint": 0.0,
+      "left_wrist_yaw_joint": 0.0,
+      "left_hand_thumb_0_joint": 0.0,
+      "left_hand_thumb_1_joint": 0.0,
+      "left_hand_thumb_2_joint": 0.0,
+      "left_hand_middle_0_joint": 0.0,
+      "left_hand_middle_1_joint": 0.0,
+      "left_hand_index_0_joint": 0.0,
+      "left_hand_index_1_joint": 0.0,
+      "right_shoulder_pitch_joint": 0.0,
+      "right_shoulder_roll_joint": 0.0,
+      "right_shoulder_yaw_joint": 0.0,
+      "right_elbow_joint": 0.0,
+      "right_wrist_roll_joint": 0.0,
+      "right_wrist_pitch_joint": 0.0,
+      "right_wrist_yaw_joint": 0.0,
+      "right_hand_thumb_0_joint": 0.0,
+      "right_hand_thumb_1_joint": 0.0,
+      "right_hand_thumb_2_joint": 0.0,
+      "right_hand_middle_0_joint": 0.0,
+      "right_hand_middle_1_joint": 0.0,
+      "right_hand_index_0_joint": 0.0,
+      "right_hand_index_1_joint": 0.0
+    },
+    "forklift_seated": {
+      "left_hip_pitch_joint": -1.45,
+      "left_hip_roll_joint": 0.0,
+      "left_hip_yaw_joint": 0.0,
+      "left_knee_joint": 1.45,
+      "left_ankle_pitch_joint": -0.05,
+      "left_ankle_roll_joint": 0.0,
+      "right_hip_pitch_joint": -1.45,
+      "right_hip_roll_joint": 0.0,
+      "right_hip_yaw_joint": 0.0,
+      "right_knee_joint": 1.45,
+      "right_ankle_pitch_joint": -0.05,
+      "right_ankle_roll_joint": 0.0,
+      "waist_yaw_joint": 0.0,
+      "waist_roll_joint": 0.0,
+      "waist_pitch_joint": 0.0,
+      "left_shoulder_pitch_joint": -0.3,
+      "left_shoulder_roll_joint": 0.15,
+      "left_shoulder_yaw_joint": 0.0,
+      "left_elbow_joint": 1.2,
+      "left_wrist_roll_joint": 0.0,
+      "left_wrist_pitch_joint": 0.0,
+      "left_wrist_yaw_joint": 0.0,
+      "left_hand_thumb_0_joint": 0.0,
+      "left_hand_thumb_1_joint": 0.0,
+      "left_hand_thumb_2_joint": 0.0,
+      "left_hand_middle_0_joint": 0.0,
+      "left_hand_middle_1_joint": 0.0,
+      "left_hand_index_0_joint": 0.0,
+      "left_hand_index_1_joint": 0.0,
+      "right_shoulder_pitch_joint": -0.3,
+      "right_shoulder_roll_joint": -0.15,
+      "right_shoulder_yaw_joint": 0.0,
+      "right_elbow_joint": 1.2,
+      "right_wrist_roll_joint": 0.0,
+      "right_wrist_pitch_joint": 0.0,
+      "right_wrist_yaw_joint": 0.0,
+      "right_hand_thumb_0_joint": 0.0,
+      "right_hand_thumb_1_joint": 0.0,
+      "right_hand_thumb_2_joint": 0.0,
+      "right_hand_middle_0_joint": 0.0,
+      "right_hand_middle_1_joint": 0.0,
+      "right_hand_index_0_joint": 0.0,
+      "right_hand_index_1_joint": 0.0
+    },
+    "sewing": {
+      "left_hip_pitch_joint": -0.15,
+      "left_hip_roll_joint": 0.0,
+      "left_hip_yaw_joint": 0.0,
+      "left_knee_joint": 0.3,
+      "left_ankle_pitch_joint": -0.15,
+      "left_ankle_roll_joint": 0.0,
+      "right_hip_pitch_joint": -0.15,
+      "right_hip_roll_joint": 0.0,
+      "right_hip_yaw_joint": 0.0,
+      "right_knee_joint": 0.3,
+      "right_ankle_pitch_joint": -0.15,
+      "right_ankle_roll_joint": 0.0,
+      "waist_yaw_joint": 0.0,
+      "waist_roll_joint": 0.0,
+      "waist_pitch_joint": 0.0,
+      "left_shoulder_pitch_joint": 0.0,
+      "left_shoulder_roll_joint": 0.0,
+      "left_shoulder_yaw_joint": 0.0,
+      "left_elbow_joint": 0.0,
+      "left_wrist_roll_joint": 0.0,
+      "left_wrist_pitch_joint": 0.0,
+      "left_wrist_yaw_joint": 0.0,
+      "left_hand_thumb_0_joint": 0.0,
+      "left_hand_thumb_1_joint": 0.0,
+      "left_hand_thumb_2_joint": 0.0,
+      "left_hand_middle_0_joint": 0.0,
+      "left_hand_middle_1_joint": 0.0,
+      "left_hand_index_0_joint": 0.0,
+      "left_hand_index_1_joint": 0.0,
+      "right_shoulder_pitch_joint": 0.0,
+      "right_shoulder_roll_joint": 0.0,
+      "right_shoulder_yaw_joint": 0.0,
+      "right_elbow_joint": 0.0,
+      "right_wrist_roll_joint": 0.0,
+      "right_wrist_pitch_joint": 0.0,
+      "right_wrist_yaw_joint": 0.0,
+      "right_hand_thumb_0_joint": 0.0,
+      "right_hand_thumb_1_joint": 0.0,
+      "right_hand_thumb_2_joint": 0.0,
+      "right_hand_middle_0_joint": 0.0,
+      "right_hand_middle_1_joint": 0.0,
+      "right_hand_index_0_joint": 0.0,
+      "right_hand_index_1_joint": 0.0
+    }
+  },
+  "support": {
+    "backend": "newton",
+    "version": "1.5.0"
+  },
+  "sources": {
+    "baseline_commit": "4166fdf076d756593fc67a9ce4e9eacc9638ea6a",
+    "extraction": "Exact effective legacy controller values; no retuning"
+  }
+}

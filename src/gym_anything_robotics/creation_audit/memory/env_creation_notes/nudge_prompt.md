@@ -1,0 +1,1 @@
+please look at the other environments such as whiteboard, titration, deposit_cans. this is extremely bad and a regression from the other environments, and need many improvements acorss multiple aspects

@@ -1,0 +1,13 @@
+{
+  "schema": "gar.robot-setup.v1",
+  "id": "welding-g1",
+  "description": "Robotic GMAW cell with a Unitree G1 (29 body joints, two Dex3-1 hands) standing at the fixture table on its position servos: a light MIG torch (RM2 + KS-2 class, ~1.6 kg) clamped to the back of the right Dex3 palm by the welding environment, the left Dex3 hand handling the part",
+  "instances": {
+    "g1": {
+      "model": "g1@1",
+      "mount": "g1_floor_mount",
+      "controller_profile": "whiteboard"
+    }
+  },
+  "attachments": {}
+}

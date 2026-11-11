@@ -79,6 +79,9 @@ def score_state(task, need, metrics, start_loads, *, level, square, slot, detect
 
 
 def evaluate(env, metrics):
+    if env.config.task_contract == "tighten-tasks-v2":    # the render-checked set: task_set_v2.py
+        from .task_set_v2 import evaluate as evaluate_v2
+        return evaluate_v2(env, metrics)
     config = env.config
     need = required(config)
     keep_names = pretightened_screws(config) if config.task in NEW_TASKS else ()

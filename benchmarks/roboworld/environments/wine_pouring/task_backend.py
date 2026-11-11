@@ -104,6 +104,9 @@ class NewtonWinePouringBackend(PhysicsBackend):
     def variation_contract(self):
         from wine_pouring.variants import contract
         from wine_pouring.contracts import reward_contract
+        from wine_pouring import task_set_v2
+        if self.config.task_contract == task_set_v2.CONTRACT:
+            contract = task_set_v2.contract
         return dict(**contract(), current=dict(preset=self.config.preset, task=self.config.task, seed=self.config.seed,
                                               contract=reward_contract(self.config.task, self.config.task_contract)),
                     reset="POST /v1/variations/select (or reset with options {preset, task, contract} and a seed) rebuilds the "

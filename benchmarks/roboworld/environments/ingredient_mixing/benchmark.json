@@ -36,7 +36,8 @@
   ],
   "contract": [
    "v1",
-   "ingredient-mixing-tasks-v1"
+   "ingredient-mixing-tasks-v1",
+   "ingredient-mixing-tasks-v2"
   ]
  },
  "resolver": "ingredient_mixing.variants:task_resolve",
@@ -55,7 +56,7 @@
   "legacy_source": "ingredient_mixing/task.py"
  },
  "qualification": "Component-qualified with assisted evidence: the mixture's solver against closed-form flows, each material law on a bench, tools and vessel coupling, robot demonstrations with scripted joint targets (some with labelled phantom assistance). The tasks themselves are not claimed solved by a policy.",
- "task_set": {
+ "task_set_v1": {
   "selections": [
    {
     "preset": "bake",
@@ -133,5 +134,63 @@
   "legacy": "Bare selections and contract=v1 keep the existing instructions, criteria and scores. Revised task ids append the contract before the seed.",
   "swaps": [],
   "qualification": "Existing props and starts; their component and assisted evidence is in REPORT.pdf sections 11.5-11.6. The seven revised contracts are not yet run with the simulator or render-checked."
+ },
+ "task_set": {
+  "selections": [
+   {
+    "preset": "bake",
+    "task": "sauce-blend",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "bake",
+    "task": "muffin-fold",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "bake",
+    "task": "dry-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "bake",
+    "task": "pudding-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "bake",
+    "task": "pancake-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "bake",
+    "task": "cake-mixer",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "hob",
+    "task": "reheat-porridge",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+   },
+   {
+    "preset": "hob",
+    "task": "stir-sauce"
+   }
+  ],
+  "note": "ingredient-mixing-tasks-v2, the render-checked set: the same eight tasks, starts, criteria, failure factor (1 on success, otherwise 0.9 x continuous progress) and difficulty as task_set_v1 (ingredient-mixing-tasks-v1). What differs: cake-mixer's instruction asks for the mixer (\"Beat the batter with the mixer until smooth.\"); reheat-porridge's hot-through follows the spec (coldest portion >= 74 C and spread <= 15 K over the porridge in the pan) with no 99 % batch-share rule in its success or progress. Task ids carry the contract (contract-ingredient-mixing-tasks-v2). stir-sauce keeps its released selection and evaluator. Code: ingredient_mixing/scoring_v2.py."
  }
 }

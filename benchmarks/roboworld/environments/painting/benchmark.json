@@ -32,7 +32,8 @@
   "contract": [
    "checks-v1",
    "painting-tasks-v1",
-   "progress-v1"
+   "progress-v1",
+   "painting-tasks-v2"
   ]
  },
  "resolver": "painting.variants:task_resolve",
@@ -51,7 +52,7 @@
  },
  "qualification": "Component-qualified with assisted evidence: film benches against Orchard/Hester/Eastman/Cobb, roller, brush and aerosol benches with a phantom mount, robot-held tool demonstrations by a scripted operator through the robot interface; phantom forces where labelled.",
  "contract_selection": "Bare selections keep their original instructions, IDs and scores. checks-v1 selects that legacy score for every task except behind-radiator. The seven revised tasks opt into painting-tasks-v1; behind-radiator only accepts its own, unchanged progress-v1 contract.",
- "task_set": {
+ "task_set_v1": {
   "tasks": [
    {
     "selection": {
@@ -152,5 +153,56 @@
   "score_rule": "1 on success, otherwise 0.9 x continuous progress; zero at the untouched start. Formulas: painting/scoring.py.",
   "swaps": [],
   "qualification": "Checked in code and with stubbed states only. The revised contract is not yet run with the simulator or rendered. Four selections have no complete assisted episode. None of the eight tasks is shown to be physically impossible, so all eight are kept."
+ },
+ "task_set": {
+  "note": "The render-checked eight-task set: all eight start with success false and score 0. Same tasks, starts and instructions as task_set_v1. The seven revised tasks select painting-tasks-v2 (painting/task_set_v2.py, verifier painting/task_set_v2_verifier.py), which keeps the legacy untouched (every touched cell), no-runs (settle travel) and roller-release (every grip force 0) success checks that painting-tasks-v1 loosened, and counts touched cells in progress; v1's trim sinks, landed wall drops and named craft pigment are kept. Score: 1 on success, otherwise 0.9 x continuous progress. behind-radiator keeps its released selection (progress-v1).",
+  "selections": [
+   {
+    "preset": "wall",
+    "task": "load-roller",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "craft",
+    "task": "swatch-card",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "wall",
+    "task": "roll-strip",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "spray",
+    "task": "clear-coat",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "wall",
+    "task": "cut-in-trim",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "spray",
+    "task": "spray-stencil",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "craft",
+    "task": "brush-stroke",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+   },
+   {
+    "preset": "wall",
+    "task": "behind-radiator"
+   }
+  ]
  }
 }

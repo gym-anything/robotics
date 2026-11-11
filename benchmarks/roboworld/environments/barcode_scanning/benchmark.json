@@ -55,6 +55,40 @@
       "count-key-quantity": "(sum over products of 0.3 x read under the slot + 0.7 x max(0, 1 - |keyed - truth| / truth) - one per quantity keyed under another location, for a product not in the slot or for a misread - 0.5 x disturbed units, cases, lanes and floor bodies) / products x (0.9 unless the scanner is back)",
       "checkout-bulky": "as checkout-counter over the basket items plus the case, whose credit is read x (1 up to a 10 mm rise, falling linearly to 0 at 50 mm), divided by N + 1",
       "count-by-scanning": "max(0, hits - errors - 0.5 x disturbed) / N x (0.9 unless the scanner is back)"
-    }
+    },
+    "selections": [
+      {
+        "preset": "stockroom",
+        "task": "hold-scanner"
+      },
+      {
+        "preset": "stockroom",
+        "task": "scan-location"
+      },
+      {
+        "preset": "counter",
+        "task": "checkout-counter"
+      },
+      {
+        "preset": "library",
+        "task": "library-checkin"
+      },
+      {
+        "preset": "counter",
+        "task": "checkout-present"
+      },
+      {
+        "preset": "stockroom",
+        "task": "count-key-quantity"
+      },
+      {
+        "preset": "counter",
+        "task": "checkout-bulky"
+      },
+      {
+        "preset": "stockroom",
+        "task": "count-by-scanning"
+      }
+    ]
   }
 }

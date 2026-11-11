@@ -445,6 +445,14 @@ class _ForkliftTrace:
 
 
 class NewtonForkliftBackend(RoboticsBackend):
+    def __new__(cls, *args, contract=None, **kwargs):
+        # forklift-tasks-v2 (forklift/task_set_v2.py): a launch that selects it is built as its session class; every
+        # other launch is this class, unchanged.
+        if contract == "forklift-tasks-v2" and cls is NewtonForkliftBackend:
+            from forklift.task_set_v2_backend import NewtonForkliftTaskSetV2Backend
+            cls = NewtonForkliftTaskSetV2Backend
+        return super().__new__(cls)
+
     def __init__(self, *, robot=None, task="start-and-park", seed=0, preset=None, cameras=None, device=None, config=None,
                  output_dir=None, renderer_options=None, contract=None):
         from forklift.config import Config, TASKS, DEFAULT_ROBOT

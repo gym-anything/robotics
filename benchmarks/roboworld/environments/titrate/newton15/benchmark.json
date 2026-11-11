@@ -6,7 +6,8 @@
   "selectors": [
     "variation_id",
     "constraints",
-    "task"
+    "task",
+    "contract"
   ],
   "resolver": "titrate.newton15.benchmark:resolve",
   "count": 8800,
@@ -29,9 +30,12 @@
       "drain-burette",
       "decant-acid",
       "finish-titration"
+    ],
+    "contract": [
+      "titration-tasks-v2"
     ]
   },
-  "task_set": {
+  "task_set_v1": {
     "tasks": [
       {
         "task_id": "titration/start-stirring/titration-n15-0000",
@@ -100,5 +104,51 @@
     ],
     "score_rule": "1 on success, otherwise 0.9 x continuous progress; None if species conservation fails; untouched start 0",
     "qualification": "Checked by stubbed tests only; the seven tasks other than titration have not been run with the simulator or rendered."
+  },
+  "task_set": {
+    "selections": [
+      {
+        "task": "start-stirring",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "task": "centre-flask",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "task": "prime-burette",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "task": "run-in",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "task": "drain-burette",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "task": "decant-acid",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "task": "finish-titration",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      },
+      {
+        "variation_id": 0
+      }
+    ],
+    "contract": "titration-tasks-v2",
+    "titration_contract": "titration-progress-v1",
+    "note": "The render-checked eight: every untouched start rendered with success false and score 0. Same tasks, starts, instructions, success predicates, progress and scores as task_set_v1; the seven tasks other than titration report the single contract string titration-tasks-v2 (the task is the evaluation's task field) instead of titration-tasks-v1/<task>. Titration keeps its released selection and contract titration-progress-v1. A selection without contract keeps the released behaviour.",
+    "score_rule": "1 on success, otherwise 0.9 x continuous progress; None if species conservation fails; untouched start 0"
   }
 }

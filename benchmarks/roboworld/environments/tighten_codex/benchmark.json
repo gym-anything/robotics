@@ -33,10 +33,11 @@
     "contract": [
       "tighten-legacy-v1",
       "tighten-tasks-v1",
-      "tighten-mixed-v1"
+      "tighten-mixed-v1",
+      "tighten-tasks-v2"
     ]
   },
-  "task_set": {
+  "task_set_v1": {
     "tasks": [
       {
         "selection": {
@@ -118,5 +119,48 @@
     ],
     "failed_attempt_factor": 0.95,
     "qualification": "Checked by stubbed tests only; not yet run with the simulator or rendered."
+  },
+  "task_set": {
+    "selections": [
+      {
+        "task": "front-m4",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "sensor",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "find-loose",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "frame",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "access",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "support",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "aim",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      },
+      {
+        "task": "mixed"
+      }
+    ],
+    "note": "tighten-tasks-v2: the eight-task set after the render check (task_set_v2.py). Same tasks, starts, instructions and scoring as task_set_v1, except that sensor and aim keep the whole-spot detection rule (the whole 4.2 mm spot on the flag) at the flag's home; each v2 task id carries the contract. mixed keeps its released selection and evaluator (tighten-mixed-v1), as in splits/test.json."
   }
 }

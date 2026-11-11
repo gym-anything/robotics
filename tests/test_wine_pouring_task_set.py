@@ -99,7 +99,7 @@ def test_untouched_is_zero_and_success_is_one(selection, seed):
 
 def test_catalogue_and_resolver_keep_ids_defaults_and_all_ten_tasks():
     raw = json.loads((ROOT/'wine_pouring/benchmark.json').read_text())
-    entries = raw['task_set']['tasks']
+    entries = raw['task_set_v1']['tasks']
     assert [e['selection'] for e in entries] == SELECTIONS == contract()['task_set']
     assert raw['count'] == sum(map(len, TASKS.values())) == 10
     assert task_resolve({})['task_id'] == raw['default_task_id']

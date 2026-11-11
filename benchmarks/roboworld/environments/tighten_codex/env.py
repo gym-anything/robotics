@@ -858,6 +858,9 @@ class TightenEnv:
         # outweighs the far one, so a spot 95-99.9 % on a white flag at 130 mm
         # is detected; no partial-coverage switching curve is sourced.
         margin=0. if self.config.task=="mixed" or uses_eight(self.config) else .0021
+        if self.config.task_contract=="tighten-tasks-v2":    # task_set_v2.py: each task's own rule
+            from .task_set_v2 import detection_margin
+            margin=detection_margin(self.config)
         detected=(.04<=distance<=.14 and
                   abs(hit[0]-target_x)<=.005-margin and
                   abs(hit[2]-target_z)<=.022-margin)

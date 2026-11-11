@@ -41,7 +41,7 @@ class CatalogueTests(unittest.TestCase):
     def test_eight_exact_selections_and_original_order(self):
         path = PACKAGES / "laundry/newton15/benchmark.json"
         d = json.loads(path.read_text())
-        self.assertEqual(d["task_set"]["selections"], list(TASK_SET))
+        self.assertEqual(d["task_set_v1"]["selections"], list(TASK_SET))
         self.assertEqual(d["count"], 8)
         self.assertEqual([t.name for t in TASKS[:5]],
                          ["sleeve_tuck_fold", "sleeve_fold", "leg_align_fold", "half_fold", "tie_untangle"])

@@ -232,6 +232,12 @@ class NewtonGiftBagsBackend(RoboticsBackend):
             if "contract" in values and values["contract"] not in (None, contract):
                 raise ValueError("Conflicting task contract selectors")
             values["contract"] = contract
+        from gift_bags import task_set_v2_catalog
+        if values.get("contract") == task_set_v2_catalog.CONTRACT:
+            # gift-bags-tasks-v2: its catalogue, starts and verifier (gift_bags/task_set_v2_*.py). Every other
+            # selection builds the released Config and env.
+            Config, completes_window = task_set_v2_catalog.Config, task_set_v2_catalog.completes_window
+            from gift_bags.task_set_v2_env import GiftBagsEnv
         if device is not None:
             values["device"] = device
         self.config = Config(**values)
@@ -357,7 +363,15 @@ class NewtonGiftBagsBackend(RoboticsBackend):
         return result
 
     # ------------------------------------------------------------------ variations (selected at launch)
+    def _task_set_v2(self):
+        """A gift-bags-tasks-v2 session (gift_bags/task_set_v2_catalog.py); every other session runs as released."""
+        from gift_bags.task_set_v2_catalog import CONTRACT
+        return getattr(self.config, "contract", None) == CONTRACT
+
     def _variation(self):
+        if self._task_set_v2():
+            return dict(preset=self.config.preset, task=self.config.task, seed=self.config.seed,
+                        contract=self.config.contract)
         from gift_bags.task_set_catalog import CONTRACT, selected_contract
         out = dict(preset=self.config.preset, task=self.config.task, seed=self.config.seed)
         if selected_contract(self.config.task, getattr(self.config, "contract", None)) == CONTRACT:
@@ -366,6 +380,8 @@ class NewtonGiftBagsBackend(RoboticsBackend):
 
     def variation_contract(self):
         from gift_bags.task_set_catalog import contract
+        if self._task_set_v2():
+            from gift_bags.task_set_v2_catalog import contract
         return dict(**contract(), current=self._variation(), robot=self.config.robot, in_session_selection=False,
                     reset="The variation is fixed when the session is launched (gar run gift-bags --select "
                           "preset=P --select task=T --select seed=S; gar tasks resolve gift-bags). POST "
@@ -375,6 +391,8 @@ class NewtonGiftBagsBackend(RoboticsBackend):
 
     def select_variation(self, request):
         from gift_bags.task_set_catalog import resolve, instruction, task_id
+        if self._task_set_v2():  # previews v2 entries too; any other contract goes to the released catalogue
+            from gift_bags.task_set_v2_catalog import resolve, instruction, task_id
         if set(request) - {"preset", "task", "seed", "contract"}:
             raise ValueError("Selectors are preset, task, seed and contract")
         preset = request.get("preset", None if "task" in request else self.config.preset)
@@ -845,6 +863,8 @@ class NewtonGiftBagsBackend(RoboticsBackend):
 
     def policy_access(self):
         from gift_bags.task_set_catalog import instruction, completes_window
+        if self._task_set_v2():
+            from gift_bags.task_set_v2_catalog import instruction, completes_window
         rig = self.env.world.rig
         return PolicyAccess(self.config.robot, tuple(self.camera_specs[c] for c in self.cameras),
                             {("joints", n, f): None for n in rig.joints for f in ("position", "velocity")},

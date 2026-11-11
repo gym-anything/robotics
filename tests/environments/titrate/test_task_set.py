@@ -73,7 +73,7 @@ class CatalogueTest(unittest.TestCase):
         from gym_anything_robotics import tasks
         from gym_anything_robotics.tasks import TaskSpec
         cat = json.loads((ROOT/'benchmark.json').read_text())
-        entries = cat['task_set']['tasks']
+        entries = cat['task_set_v1']['tasks']
         self.assertEqual([e['selection'] for e in entries], list(TASK_SET))
         self.assertEqual(cat['count'], 8*variations.COUNT)
         self.assertEqual(len({e['task_id'] for e in entries}), 8)

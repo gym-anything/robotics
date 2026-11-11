@@ -11,6 +11,7 @@ import numpy as np
 from . import params as P
 from . import hydraulics as H
 from .config import LEGACY_CONTRACT, EIGHT_TASK_CONTRACT, VIAL_TO_PAD_CONTRACT
+from . import task_set_v2                     # syringe-tasks-v2: instructed and judged as syringe-tasks-v1
 
 ML = H.ML
 AIR_LIMIT_ML = 0.05          # authored: half a scale division of a 3 mL syringe
@@ -77,7 +78,7 @@ def task_spec(config, layout):
                extra=" If the line will not take the flush, do not force it: leave it clamped and take the syringe off."
                      if L.get("blocked") else "")
     spec["instruction"] = INSTRUCTIONS[config.task].format(**fmt)
-    if config.contract == EIGHT_TASK_CONTRACT and config.task == "flush-lock":
+    if config.contract in task_set_v2.TASK_SET_CONTRACTS and config.task == "flush-lock":
         spec["instruction"] = ("Flush the saline lock on the training arm with {flush_ml:g} mL from the prefilled "
                                "saline syringe on the tray. Leave the lock clamped with nothing attached.{extra}").format(**fmt)
     if config.contract == LEGACY_CONTRACT and config.task == "inject":
@@ -576,6 +577,8 @@ def evaluate(env):
     elif spec.get("contract", LEGACY_CONTRACT) == EIGHT_TASK_CONTRACT:
         from .scoring import reward
         out.update(reward(env, C, out["success"]))
+    elif spec.get("contract") == task_set_v2.CONTRACT:
+        out.update(task_set_v2.reward(env, C, out["success"]))
     else:
         out["contract"] = LEGACY_CONTRACT
     return out

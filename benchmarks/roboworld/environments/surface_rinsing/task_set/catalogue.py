@@ -109,6 +109,9 @@ def instruction(v):
 
 
 def task_resolve(selection):
+    if selection.get("contract") == "surface-rinsing-tasks-v2":
+        from ..task_set_v2 import task_resolve as task_resolve_v2      # surface_rinsing/task_set_v2.py
+        return task_resolve_v2(selection)
     v = resolve(selection.get("preset"), selection.get("task"), selection.get("seed", 0), selection.get("contract"))
     suffix = f"/{CONTRACT}" if v.get("contract") == CONTRACT else ""
     return dict(task_id=f"surface-rinsing/v1/{v['preset']}/{v['task']}{suffix}/seed-{v['seed']}",

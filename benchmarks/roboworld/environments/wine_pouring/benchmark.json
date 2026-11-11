@@ -31,7 +31,8 @@
     "contract": [
       "wine-checks-v1",
       "wine-tasks-v1",
-      "split-progress-v1"
+      "split-progress-v1",
+      "wine-tasks-v2"
     ]
   },
   "resolver": "wine_pouring.variants:task_resolve",
@@ -50,7 +51,7 @@
     "legacy_source": "wine_pouring/task.py"
   },
   "qualification": "Component-qualified with assisted evidence: liquid at rest, pour onset and flow against bottle geometry, bottle grasp and pour by scripted joint targets, glass carry and spill, drip film, dump; no policy solves a task.",
-  "task_set": {
+  "task_set_v1": {
     "robot": "dual-fr3",
     "score_rule": "1 on success, otherwise 0.9 x continuous progress; world fault gives zero progress.",
     "tasks": [
@@ -149,5 +150,56 @@
       "decant-carafe": "Neither assisted decant met the spill tolerance (22.8 and 57.2 mL spilled)."
     },
     "qualification": "Existing layouts and props. The contract wine-tasks-v1 has not been run with the simulator or rendered. Carafe two-hand handling and a collision-free robot dump are not shown; the assisted evidence is component evidence, not a success rate for this contract."
+  },
+  "task_set": {
+    "selections": [
+      {
+        "preset": "service",
+        "task": "carry-glass",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "service",
+        "task": "taste-pour",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "service",
+        "task": "pour-glass",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "service",
+        "task": "refill-glass",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "service",
+        "task": "water-tumbler",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "tasting",
+        "task": "dump-and-pour",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "lined",
+        "task": "lined-measure",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      },
+      {
+        "preset": "service",
+        "task": "split-bottle"
+      }
+    ],
+    "note": "Render-checked eight-task set, contract wine-tasks-v2; each of the seven selects it and gets its own task id with the contract before the seed (wine-pouring/v1/<preset>/<task>/wine-tasks-v2/seed-0). Tasks, starts, instructions, checks, progress, the settled read and the 0.9 failure factor are task_set_v1's (wine-tasks-v1); only the ids and the reported reward.contract differ. split-bottle keeps its released selection (splits/test.json), id and split-progress-v1."
   }
 }

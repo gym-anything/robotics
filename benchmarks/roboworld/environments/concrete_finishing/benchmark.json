@@ -26,7 +26,7 @@
   "task_set_source": "concrete_finishing/task_set_progress.py (explicit contract only); task.py stays the default"
  },
  "qualification": "Component-qualified with assisted evidence: start states at rest, the support plate carrying a pressed sliding float exactly (B4), strength and bleeding against their laws, and robot-held demonstrations by a scripted operator through the robot interface; phantom forces where labelled.",
- "task_set": {
+ "task_set_v1": {
   "tasks": [
    {
     "task_id": "concrete-finishing/v1/b012/tool-sealant/seed-0",
@@ -127,5 +127,62 @@
   "score_rule": "1 on success; otherwise 0.95 x progress from the seed-specific start. pad-finish retains pad-finish/progress-v3. Other entries explicitly select concrete-tasks/progress-v1; bare selections retain their legacy scores.",
   "selection_note": "All eight are existing tasks with unchanged start states, instructions and IDs. pad-float stays registered outside this set. Assisted component demonstrations exist; no whole-task robot solution has been shown.",
   "qualification": "Tested with constructed material states and a stubbed backend only; the concrete-tasks/progress-v1 evaluator has not yet been run with the simulator."
+ },
+ "task_set": {
+  "selections": [
+   {
+    "preset": "b012",
+    "task": "tool-sealant",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "preset": "b012",
+    "task": "patch-drywall",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "preset": "b012",
+    "task": "pad-darby",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "preset": "b012",
+    "task": "pad-edge",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "preset": "b012",
+    "task": "patch-flush",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "preset": "b012",
+    "task": "tool-joints",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "preset": "b012",
+    "task": "pad-trowel",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+   },
+   {
+    "task": "pad-finish"
+   }
+  ],
+  "note": "Render-checked eight-task set, contract concrete-tasks-v2. Same tasks, seeded starts, instructions, predicates, progress and 0.95 failure factor as task_set_v1 (concrete-tasks/progress-v1). Differences: the seven contract selections get their own task ids with the contract before the seed (concrete-finishing/v1/b012/<task>/concrete-tasks-v2/seed-0), and their evaluations report reward_version concrete-tasks-v2 from the first state read after a launch or reset. pad-finish keeps its released selection (splits/test.json), id and pad-finish/progress-v3."
  }
 }

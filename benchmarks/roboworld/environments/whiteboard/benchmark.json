@@ -27,7 +27,7 @@
   },
   "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
   "appended_task_count": 7,
-  "task_set": {
+  "task_set_v1": {
     "tasks": [
       "erase-board",
       "write-text",
@@ -85,5 +85,42 @@
     "legacy": "Omitted selection and all native variation/split/kind/selection_seed requests use the native resolver. Named presets require their explicit contract.",
     "launch": "Resolve with GAR tasks and launch its LaunchSpec/TaskSpec (including saved manifests and managed sessions), or construct NewtonWhiteboardTaskSetBackend directly. The registry factory creates native whiteboard sessions only.",
     "qualification": "Checked by constructed-state unit tests only; the seven presets have not been run with the simulator or rendered."
+  },
+  "task_set": {
+    "contract": "whiteboard-tasks-v2",
+    "note": "The render-checked set (each of the eight untouched starts starts, renders and scores 0). Same seven named presets and native bridge as task_set_v1, with the same authored starts, instructions, verifiers, progress and score. What differs from v1: the contract (whiteboard-tasks-v2, in task ids, backend options and every evaluation), draw-table reports its contract unsuffixed like every task (its table metric is labelled whiteboard-tasks-v2/draw-table), and task_source_sha256 also covers whiteboard/task_set_v2.py and task_set_v2_backend.py. Adding v2 also changes the task_source_sha256 that task_set_v1 runs report (7837e2a2... in the release), because that hash covers benchmark.json, task_set/catalogue.py and the task-set backend, which gained the v2 entry; the v1 starts, instructions, verifiers, progress and scores are unchanged. The bridge keeps its native test-split selection (variation_id 0) and bridge-copy-v1.",
+    "selections": [
+      {
+        "task": "erase-board",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "task": "write-text",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "task": "write-in-colour",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "task": "erase-except-boxed",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "task": "draw-table",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "task": "recap-and-tidy",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "task": "correct-misspelling",
+        "contract": "whiteboard-tasks-v2"
+      },
+      {
+        "variation_id": 0
+      }
+    ]
   }
 }

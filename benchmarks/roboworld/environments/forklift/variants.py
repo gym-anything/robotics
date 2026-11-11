@@ -52,6 +52,9 @@ def check_seed(seed):
 
 
 def task_resolve(selection):
+    if selection.get("contract") == "forklift-tasks-v2":      # the render-checked set: forklift/task_set_v2.py
+        from .task_set_v2 import task_resolve as task_set_v2
+        return task_set_v2(selection)
     from .task import instruction
     from .catalogue import CONTRACT, resolve_contract
     task = selection.get("task") or "start-and-park"

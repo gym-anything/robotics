@@ -324,7 +324,7 @@ def test_catalogue_roundtrips_exact_selections(task_module):
     bench = json.loads((ENV / "benchmark.json").read_text())
     for key, value in V.catalogue_fields().items():
         assert bench[key] == value
-    selections = bench["task_set"]["selections"]
+    selections = bench["task_set_v1"]["selections"]
     assert selections == V.task_set_selections() and len(selections) == 8
     for selection in selections:
         resolved = V.task_resolve(selection)

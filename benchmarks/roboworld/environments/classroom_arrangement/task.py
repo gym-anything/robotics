@@ -1,7 +1,8 @@
 """Task instructions and the outcome evaluator.
 
 The opt-in classroom-tasks-v1 contract dispatches to task_set.py. The checks in this file
-and the group-work evaluator stay the default, unchanged.
+and the group-work evaluator stay the default, unchanged. The opt-in classroom-tasks-v2
+contract dispatches to task_set_v2.py.
 
 The evaluator reads only the simulated world: furniture body poses, glide heights above the floor, contacts, the
 1 s pose history of the watched items (rest window) and the floor occupancy. It never reads actions, the robot's
@@ -51,6 +52,9 @@ FOOT = {"desk": (P.DESK_TOP[0]/2, P.DESK_TOP[1]/2), "chair": (P.CHAIR_OVERALL[0]
 def instruction(config, spec):
     from .catalogue import CONTRACT, description
     text = description(config.task, CONTRACT) if getattr(config, "contract", "v1") == CONTRACT else spec["instruction"]
+    from .task_set_v2_catalogue import CONTRACT as CONTRACT_V2
+    if getattr(config, "contract", "v1") == CONTRACT_V2:  # classroom-tasks-v2: classroom-tasks-v1's text
+        text = description(config.task, CONTRACT_V2)
     return text + (" The coloured floor dots mark where each desk's feet go." if spec["dots"] else "")
 
 
@@ -113,6 +117,10 @@ class Evaluator:
         from .catalogue import CONTRACT
         if getattr(env.config, "contract", "v1") == CONTRACT:
             from .task_set import prepare_start
+            prepare_start(self)
+        from .task_set_v2_catalogue import CONTRACT as CONTRACT_V2
+        if getattr(env.config, "contract", "v1") == CONTRACT_V2:
+            from .task_set_v2 import prepare_start
             prepare_start(self)
 
     # ------------------------------------------------------------------ geometry helpers
@@ -295,6 +303,10 @@ class Evaluator:
         from .catalogue import CONTRACT
         if getattr(self.env.config, "contract", "v1") == CONTRACT:
             from .task_set import CatalogueEvaluation
+            return CatalogueEvaluation(self, motion, window).evaluate()
+        from .task_set_v2_catalogue import CONTRACT as CONTRACT_V2
+        if getattr(self.env.config, "contract", "v1") == CONTRACT_V2:
+            from .task_set_v2 import CatalogueEvaluation
             return CatalogueEvaluation(self, motion, window).evaluate()
         if any(isinstance(c, tuple) and c[0] == "slot" for c in spec["check"].values()):
             return self.by_place(motion, window)

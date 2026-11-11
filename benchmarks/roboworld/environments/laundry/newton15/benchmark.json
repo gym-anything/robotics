@@ -25,12 +25,14 @@
       "tie_untangle",
       "spread_flat",
       "turn_face_down",
-      "thirds_fold"
+      "thirds_fold",
+      "roll"
     ],
     "contract": [
       "laundry-semantic-legacy",
       "laundry-tasks-v1",
-      "laundry-shirt-sleeve-fold-v1"
+      "laundry-shirt-sleeve-fold-v1",
+      "laundry-tasks-v2"
     ]
   },
   "resolver": "laundry.task_set:resolve",
@@ -44,7 +46,7 @@
     "scope": "Environment-owned task success; not physical qualification."
   },
   "qualification": "Defined task catalogue; does not imply every variation passed physical qualification.",
-  "task_set": {
+  "task_set_v1": {
     "selections": [
       {
         "garment": "towel",
@@ -89,5 +91,72 @@
     "contract": "laundry-tasks-v1",
     "shirt_contract": "laundry-shirt-sleeve-fold-v1",
     "qualification": "Code and constructed-state checks only; not yet run with the simulator or render-checked. Authored starts must pass existing IPC/table guards and bounded settling at runtime; failure to qualify aborts construction."
+  },
+  "task_set": {
+    "selections": [
+      {
+        "garment": "towel",
+        "task": "spread_flat",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "towel",
+        "task": "half_fold",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "tee",
+        "task": "half_fold",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "tee",
+        "task": "sleeve_tuck_fold",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "tee",
+        "task": "turn_face_down",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "towel",
+        "task": "thirds_fold",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "towel",
+        "task": "roll",
+        "contract": "laundry-tasks-v2"
+      },
+      {
+        "garment": "shirt"
+      }
+    ],
+    "contract": "laundry-tasks-v2",
+    "note": "The render-checked eight: every untouched start rendered with success false and score 0. Differs from task_set_v1: tee/half_fold and towel/roll replace asymmetric/tie_untangle and jeans/leg_align_fold (on Linux the unchanged P13 reset loader rejects the asymmetric top and the jeans; both stay selectable under laundry-tasks-v2, outside the eight); every start settles before its zero point (at least 3 s, two steady 0.5 s blocks, at most 30 s); thirds_fold counts cloth crossings, so a correct letter fold passes; the ties are bunched on their free distal parts, crossing-free. The shirt keeps its original selection and evaluator.",
+    "score_rule": "1 if success else 0.9 * continuous start-relative progress; crossings give zero. Shirt keeps its original evaluator.",
+    "shirt_contract": "laundry-shirt-sleeve-fold-v1",
+    "qualification": "Constructed-state checks and render checks of the untouched starts (success false, score 0). Every start must pass the existing IPC/table guards (authored starts) and bounded settling at runtime; failure to qualify aborts construction.",
+    "swapped_out": [
+      {
+        "selection": {
+          "garment": "asymmetric",
+          "task": "tie_untangle",
+          "contract": "laundry-tasks-v2"
+        },
+        "replaced_by": "laundry/tee/half_fold",
+        "why": "garment does not construct on Linux with the unchanged reset loader (environment code)"
+      },
+      {
+        "selection": {
+          "garment": "jeans",
+          "task": "leg_align_fold",
+          "contract": "laundry-tasks-v2"
+        },
+        "replaced_by": "laundry/towel/roll",
+        "why": "garment does not construct on Linux with the unchanged reset loader (environment code)"
+      }
+    ]
   }
 }

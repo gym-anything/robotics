@@ -63,6 +63,10 @@ def resolve(task=None, seed=0, moisture=None, topsoil=None, stones=None, contrac
 
 
 def task_resolve(selection):
+    if selection.get("contract") == "soil-tasks-v2":
+        # Opt-in soil-tasks-v2 (catalogue_v2.py); every other selection takes the released path below.
+        from .catalogue_v2 import task_resolve as resolve_v2
+        return resolve_v2(selection)
     result = legacy.task_resolve(selection)  # retains int(seed), topsoil rounding and all old defaults
     task = result["selection"]["task"]
     chosen = selected_contract(task, selection.get("contract"))

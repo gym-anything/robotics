@@ -25,6 +25,9 @@ PROGRESS_TASKS = frozenset(t for _, t, _ in EIGHT_TASKS if t != "split-bottle")
 
 
 def reward_contract(task, selected=""):
+    from .task_set_v2 import accepts                                  # wine-tasks-v2, the render-checked set
+    if accepts(task, selected):
+        return selected
     default = SPLIT_REWARD_CONTRACT if task == "split-bottle" else LEGACY_REWARD_CONTRACT
     choices = (default, TASKS_V1_REWARD_CONTRACT) if task in PROGRESS_TASKS else (default,)
     if not isinstance(selected, str) or (selected and selected not in choices):

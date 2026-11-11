@@ -4,6 +4,10 @@ from pathlib import Path
 
 
 def resolve(selection):
+    if selection and "contract" in selection:
+        # Only the render-checked set names a contract (titration-tasks-v2, task_set_v2.py).
+        from .task_set_v2 import resolve as resolve_v2
+        return resolve_v2(selection)
     from .variations import select
     reference = json.loads(Path(__file__).with_name("reference.json").read_text())
     item = select(selection if selection else {"variation_id": 0},

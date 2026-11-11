@@ -41,7 +41,7 @@ def test_catalogue_resolver_and_legacy_defaults(monkeypatch):
                        environment_robots=lambda env: ["dual-fr3"], ENVIRONMENTS={}))
     from gym_anything_robotics import tasks
     raw = json.loads((ROOT/"gift_bags/benchmark.json").read_text())
-    entries = raw["task_set"]["tasks"]
+    entries = raw["task_set_v1"]["tasks"]
     assert len(entries) == 8
     assert [e["selection"] for e in entries] == C.TASK_SET
     assert raw["count"] == 9

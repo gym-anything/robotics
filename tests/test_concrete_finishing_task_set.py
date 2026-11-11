@@ -108,7 +108,7 @@ def bad_keys(out):
 
 def test_catalogue_exact_selections_and_legacy_defaults():
     b = json.loads((ROOT/"concrete_finishing/benchmark.json").read_text())
-    rows = b["task_set"]["tasks"]
+    rows = b["task_set_v1"]["tasks"]
     assert [r["selection"] for r in rows] == C.selections()
     assert len(rows) == len({r["task_id"] for r in rows}) == 8
     assert C.task_resolve({}) == variants.task_resolve({})

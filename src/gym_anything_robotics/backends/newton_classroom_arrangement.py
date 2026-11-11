@@ -225,6 +225,9 @@ class NewtonClassroomArrangementBackend(RoboticsBackend):
 
     def variation_contract(self):
         from classroom_arrangement.variants import contract
+        from classroom_arrangement.task_set_v2_catalogue import CONTRACT, contract as contract_v2
+        if getattr(self.config, "contract", "v1") == CONTRACT:  # classroom-tasks-v2 episode; any other as released
+            return dict(**contract_v2(contract()), current=self._variation())
         return dict(**contract(), current=self._variation())
 
     def select_variation(self, request):

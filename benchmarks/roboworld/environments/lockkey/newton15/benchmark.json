@@ -4,7 +4,8 @@
   "default_task_id": "lockkey/unlock",
   "description": "Unlock the padlock on the chest with its key from the near (-Y) stand and swing the shackle open. Leave the other key on its stand. The chest lid does not need to be opened.",
   "selectors": [
-    "task"
+    "task",
+    "contract"
   ],
   "resolver": "lockkey.task_set.catalogue:task_resolve",
   "count": 8,
@@ -31,9 +32,12 @@
       "remove-key",
       "which-key",
       "unlock-and-stow"
+    ],
+    "contract": [
+      "lockkey-tasks-v2"
     ]
   },
-  "task_set": {
+  "task_set_v1": {
     "tasks": [
       {
         "task_id": "lockkey/swing-open",
@@ -103,5 +107,43 @@
     "score_rule": "1 if success else 0.9 x progress; zero at each untouched constructed start",
     "swaps": [],
     "qualification": "Code and constructed-state checks only; not yet run with the simulator (no settle, contact, render or policy run)."
+  },
+  "task_set": {
+    "contract": "lockkey-tasks-v2",
+    "selections": [
+      {
+        "task": "swing-open",
+        "contract": "lockkey-tasks-v2"
+      },
+      {
+        "task": "turn-to-open",
+        "contract": "lockkey-tasks-v2"
+      },
+      {
+        "task": "insert-key",
+        "contract": "lockkey-tasks-v2"
+      },
+      {
+        "task": "return-key",
+        "contract": "lockkey-tasks-v2"
+      },
+      {
+        "task": "remove-key",
+        "contract": "lockkey-tasks-v2"
+      },
+      {},
+      {
+        "task": "which-key",
+        "contract": "lockkey-tasks-v2"
+      },
+      {
+        "task": "unlock-and-stow",
+        "contract": "lockkey-tasks-v2"
+      }
+    ],
+    "score_rule": "1 if success else 0.9 x progress; zero at each untouched or idle settled start",
+    "swaps": [],
+    "qualification": "Constructed-state tests, plus the start settle, idle-drift and render checks of the fix round: all eight untouched starts unsuccessful at score 0. No policy run.",
+    "note": "Render-checked eight-task set. Same tasks, instructions, success predicates and difficulty order as task_set_v1; the seven additions select contract lockkey-tasks-v2 and their task ids carry it; unlock keeps its released selection {} (splits/test.json) and contract open-padlock-v1. Differs from v1: the four constructed free-key starts (turn-to-open, swing-open, remove-key, return-key) are settled hands-off for 0.5 s and checked at task setup, which raises instead of serving an invalid start; return-key's key lies at (0.15, -0.20) pitched 2.735 deg tip-down so that it rests on its blade tip and bow; progress zero points are read from the settled start with idle margins (shackle offset +0.5 mm, plug +0.5 deg, withdrawal +0.5 mm, key tilt -5 deg), reported as zero_points; the unlock chain is reported as unlock_chain_reading instead of top-level lock_progress/stage."
   }
 }

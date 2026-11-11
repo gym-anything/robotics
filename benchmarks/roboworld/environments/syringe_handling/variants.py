@@ -148,8 +148,9 @@ def main():
     import json
     from pathlib import Path
     path = Path(__file__).resolve().parent/"benchmark.json"
+    from .task_set_v2 import catalogue_fields as file_fields    # task_set_v1 (the released set) and task_set (v2)
     data = json.loads(path.read_text())
-    data.update(catalogue_fields())
+    data.update(file_fields())
     path.write_text(json.dumps(data, indent=1) + "\n")
     print(f"{path}: {data['count']} task/variant pairs; variants {data['selector_choices']['variant']}")
 

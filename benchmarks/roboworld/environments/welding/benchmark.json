@@ -65,6 +65,39 @@
       "tack-and-weld"
     ],
     "source": "welding/task.py EIGHT_TASKS",
-    "note": "Easiest first. tack, stitch-weld-ends and fillet-from-both-ends stay in the catalogue outside the set because none can be shown to succeed as built; no standard is relaxed to make one pass."
+    "note": "Easiest first. tack, stitch-weld-ends and fillet-from-both-ends stay in the catalogue outside the set because none can be shown to succeed as built; no standard is relaxed to make one pass.",
+    "selections": [
+      {
+        "preset": "steel-cell",
+        "task": "position-torch"
+      },
+      {
+        "preset": "steel-cell",
+        "task": "set-up-gun"
+      },
+      {
+        "preset": "steel-cell",
+        "task": "fit-up-bracket"
+      },
+      {
+        "preset": "steel-cell",
+        "task": "half-fillet"
+      },
+      {
+        "preset": "steel-cell",
+        "task": "hold-and-present"
+      },
+      {
+        "task": "fillet-2f"
+      },
+      {
+        "preset": "steel-cell",
+        "task": "set-up-and-weld"
+      },
+      {
+        "preset": "steel-cell",
+        "task": "tack-and-weld"
+      }
+    ]
   }
 }

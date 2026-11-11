@@ -68,7 +68,7 @@ def world_for(task, seed=0):
 
 def test_exact_selections_and_versioned_resolver():
     raw = json.loads((ROOT / 'forklift/benchmark.json').read_text())
-    rows = raw['task_set']['tasks']
+    rows = raw['task_set_v1']['tasks']
     assert [r['selection'] for r in rows] == list(TASK_SET)
     assert len(rows) == len(set(SET_TASKS)) == 8
     assert raw['count'] == 14

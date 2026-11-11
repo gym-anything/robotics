@@ -17,10 +17,14 @@ from .tasks import DEFAULT_TASK, INSTRUCTIONS, validate
 
 class NewtonPenCapTaskBackend(NewtonPenCapBackend):
     def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=("bench_rgb",),
-                 output_dir=None, renderer_options=None, recording=True, task="seat-cap"):
+                 output_dir=None, renderer_options=None, recording=True, task="seat-cap", contract=None):
         from pencap.newton15.config import Config
         from pencap.task_env import TaskPenCapEnv
         validate(task)
+        if contract is not None:  # pencap-tasks-v2 (task_set_v2.py): its start and verifier; absent: as released
+            from pencap.task_set_v2 import check
+            check(task, contract)
+            from pencap.task_env_v2 import TaskPenCapEnvV2 as TaskPenCapEnv
         from pencap.newton15.catalog import Catalog
         from pencap.newton15.kinematics import Kinematics
         if robot != "dual-panda":

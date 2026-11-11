@@ -19,8 +19,13 @@ class NewtonLaundryBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=("bench_rgb",),
                  output_dir=None, renderer_options=None, recording=True, task=None, contract=None):
         from laundry.newton15.config import Config
-        from laundry.task_set_env import CatalogueLaundryEnv
-        from laundry.task_set import select
+        from laundry.task_set import V2_CONTRACT
+        if contract == V2_CONTRACT:
+            from laundry.task_set_v2_env import CatalogueLaundryEnv
+            from laundry.task_set_v2 import select
+        else:
+            from laundry.task_set_env import CatalogueLaundryEnv
+            from laundry.task_set import select
         from laundry.newton15.catalog import Catalog
         from laundry.newton15.kinematics import Kinematics
         if robot != "dual-panda":

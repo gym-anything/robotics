@@ -31,7 +31,8 @@
   "contract": [
    "legacy",
    "surface-rinsing-tasks-v1",
-   "progress-v1"
+   "progress-v1",
+   "surface-rinsing-tasks-v2"
   ]
  },
  "resolver": "surface_rinsing.task_set.catalogue:task_resolve",
@@ -49,7 +50,7 @@
   "scope": "World state only, with a settle rule (30 s of the whole world advanced with the robot holding, then measured and restored): surfactant per item and per 1 cm gauge, foam, sanitizer immersion time, soil per 1 cm gauge against the 1 ug/cm2 visible-residue limit, pooled water per item, placement in racks/colander/bowl, valves released and parked, soil, tracer and water on clean surfaces and the floor, glass/china impact speeds; no autonomous-solution claim."
  },
  "qualification": "Component-qualified with assisted evidence: water benches without the robot, phantom-actuated valves and phantom-held items, and robot demonstrations by a scripted operator through the robot interface; phantom forces where labelled.",
- "task_set": {
+ "task_set_v1": {
   "tasks": [
    {
     "selection": {
@@ -157,5 +158,57 @@
   ],
   "qualification": "Checked in code and with pure-Python tests only. The revised contract and drain-wash-compartment are not yet run with the simulator or rendered, and no autonomous solution is claimed.",
   "legacy": "Omit contract (or use legacy) for every existing task to retain its original id, instruction, start and evaluator. The pan also accepts its progress-v1 contract explicitly."
+ },
+ "task_set": {
+  "contract": "surface-rinsing-tasks-v2",
+  "note": "The render-checked set. Same eight tasks, scenes, starts and predicates as task_set_v1, except pre-rinse-plates: it keeps its instruction with the temperature sentence ('Mix the water to about 49 C (110-120 F)'), adds a spray_temperature success predicate (flow-weighted mean temperature of the water that left the spray valve since reset within 40.5-51.5 C) and multiplies its cleaning progress by a temperature grade (1 in that band, 0 at 10 C outside it or when no water left the valve). The seven revised selections carry surface-rinsing-tasks-v2 (surface_rinsing/task_set_v2.py); the audited pan keeps its released test-split selection and progress-v1.",
+  "selections": [
+   {
+    "preset": "pot-sink",
+    "task": "rinse-sponge",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "pot-sink",
+    "task": "drain-wash-compartment",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "prep-sink",
+    "task": "rinse-tomatoes",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "can-wash",
+    "task": "flush-floor",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "pot-sink",
+    "task": "rinse-glassware",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "pre-rinse",
+    "task": "pre-rinse-plates",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "can-wash",
+    "task": "rinse-garbage-can",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+   },
+   {
+    "preset": "pot-sink",
+    "task": "scrub-rinse-pan"
+   }
+  ]
  }
 }

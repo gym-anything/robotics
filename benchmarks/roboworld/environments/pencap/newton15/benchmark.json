@@ -4,7 +4,8 @@
   "default_task_id": "pencap/seat-cap",
   "description": "Put the blue cap on the yellow pen's writing tip and press it until it snaps fully into place, then leave the capped pen still, whether held or set down.",
   "selectors": [
-    "task"
+    "task",
+    "contract"
   ],
   "resolver": "pencap.tasks:task_resolve",
   "count": 8,
@@ -107,7 +108,7 @@
       "contract": "pencap/cap-in-fixture-v1"
     }
   ],
-  "task_set": {
+  "task_set_v1": {
     "selections": [
       {
         "task": "pen-on-notebook"
@@ -156,5 +157,52 @@
     },
     "score": "1 on success, otherwise 0.9 x progress; untouched starts score 0",
     "qualification": "Checked in code and with stubbed pose tests only. The seven new tasks are not yet run with the simulator, settled, reached with IK or rendered, and no physical component check is made for them."
+  },
+  "task_set": {
+    "contract": "pencap-tasks-v2",
+    "selections": [
+      {
+        "task": "pen-on-notebook",
+        "contract": "pencap-tasks-v2"
+      },
+      {
+        "task": "unload-fixture",
+        "contract": "pencap-tasks-v2"
+      },
+      {
+        "task": "reseat-cap",
+        "contract": "pencap-tasks-v2"
+      },
+      {
+        "task": "load-fixture",
+        "contract": "pencap-tasks-v2"
+      },
+      {
+        "task": "pass-pen",
+        "contract": "pencap-tasks-v2"
+      },
+      {
+        "task": "uncap",
+        "contract": "pencap-tasks-v2"
+      },
+      {
+        "task": "cap-in-fixture",
+        "contract": "pencap-tasks-v2"
+      },
+      {}
+    ],
+    "task_ids": [
+      "pencap/pen-on-notebook/pencap-tasks-v2",
+      "pencap/unload-fixture/pencap-tasks-v2",
+      "pencap/reseat-cap/pencap-tasks-v2",
+      "pencap/load-fixture/pencap-tasks-v2",
+      "pencap/pass-pen/pencap-tasks-v2",
+      "pencap/uncap/pencap-tasks-v2",
+      "pencap/cap-in-fixture/pencap-tasks-v2",
+      "pencap/seat-cap"
+    ],
+    "score": "1 on success, otherwise 0.9 x progress; untouched starts score 0",
+    "note": "The render-checked set. The seven new tasks select with contract pencap-tasks-v2 (pencap/task_set_v2.py); seat-cap, the audited hardest task, keeps its released selection {}. Same tasks, instructions, success predicates and score rule as task_set_v1. What differs: moved starts (pass-pen, reseat-cap, uncap, unload-fixture, cap-in-fixture) are written to the parts' free-joint coordinates and survive eval_fk (under v1 they revert to the default scene); start-relative progress earns nothing for settling within the 2 mm rest tolerance or for a start with no error to remove; load-fixture's upright credit starts above lying; uncap progress is measured from the snap groove; evaluations report contract pencap-tasks-v2 with their task_id.",
+    "qualification": "Stubbed pose tests; render check: every start built, rendered and idled 1 s in the simulator, untouched starts score 0. No robot trial, IK or physical component check."
   }
 }

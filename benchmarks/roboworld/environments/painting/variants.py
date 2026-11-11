@@ -42,6 +42,9 @@ def contract():
 
 
 def task_resolve(selection):
+    if selection.get("contract") == "painting-tasks-v2":      # the render-checked set: painting/task_set_v2.py
+        from .task_set_v2 import task_resolve as task_set_v2
+        return task_set_v2(selection)
     if set(selection) - {"preset", "task", "seed", "contract"}:
         raise ValueError("Selectors are preset, task, seed and contract")
     v = resolve(selection.get("preset"), selection.get("task"), selection.get("seed", 0), selection.get("contract"))

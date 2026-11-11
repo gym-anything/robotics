@@ -7,6 +7,7 @@ import numpy as np
 
 from . import params as P
 from .contracts import TASKS_V1_REWARD_CONTRACT, reward_contract
+from .task_set_v2 import TASK_SET_CONTRACTS          # wine-tasks-v1 and wine-tasks-v2 (task_set_v2.py) judge alike
 from .task import (Evaluator as LegacyEvaluator, FAIL_SCORE_SCALE, INSTRUCTIONS,
                    LINED_WINDOW_ML, SETTLE_HOLD_MAX_S, SPOT_NAMES, VERIFY_EXTRA_STATE, WINE_NAMES)
 
@@ -74,8 +75,8 @@ def instruction(config, meta=None):
     if "targets" in g and g["targets"] and config.task == "split-bottle":
         spots = [i.get("spot") for i in lay["items"] if i["name"] in g["targets"]]
         spot, spot_b = spots[0], spots[1]
-    templates = (TASKS_V1_INSTRUCTIONS if reward_contract(config.task, getattr(config, "task_contract", "")) ==
-                 TASKS_V1_REWARD_CONTRACT else INSTRUCTIONS)
+    templates = (TASKS_V1_INSTRUCTIONS if reward_contract(config.task, getattr(config, "task_contract", "")) in
+                 TASK_SET_CONTRACTS else INSTRUCTIONS)
     return templates[config.task].format(wine=WINE_NAMES.get(g.get("fresh") or src.get("liquid"), "wine"),
                                             old=WINE_NAMES.get(g.get("old"), ""), spot=SPOT_NAMES.get(spot, ""),
                                             spot_b=SPOT_NAMES.get(spot_b, ""))
@@ -105,7 +106,7 @@ class Evaluator(LegacyEvaluator):
         super().__init__(env)
         self.initial_containers = {}
         self.initial_distance = None
-        if reward_contract(env.config.task, getattr(env.config, "task_contract", "")) == TASKS_V1_REWARD_CONTRACT:
+        if reward_contract(env.config.task, getattr(env.config, "task_contract", "")) in TASK_SET_CONTRACTS:
             # Read the actual filled/settled reset state, not the requested layout
             # volume: particle quantisation makes these different by a few uL.
             self.initial_containers = {n: dict(v) for n, v in env.inventory()["containers"].items()}
@@ -121,7 +122,7 @@ class Evaluator(LegacyEvaluator):
         g = lay["goal"]
         task = env.config.task
         contract = reward_contract(task, getattr(env.config, "task_contract", ""))
-        if contract != TASKS_V1_REWARD_CONTRACT:
+        if contract not in TASK_SET_CONTRACTS:
             out = super().evaluate()
             if task != "split-bottle":
                 out["reward"] = dict(contract=contract, mean_of_checks=out["score"])
@@ -238,7 +239,7 @@ class Evaluator(LegacyEvaluator):
         evaluation marked read.infrastructure_fault. The step reward stays the
         instantaneous evaluate(). Precedent: surface_rinsing/task.py's settle branch."""
         env = self.env
-        if reward_contract(env.config.task, getattr(env.config, "task_contract", "")) != TASKS_V1_REWARD_CONTRACT:
+        if reward_contract(env.config.task, getattr(env.config, "task_contract", "")) not in TASK_SET_CONTRACTS:
             return super().verify()
         ev = self.evaluate()
         read = dict(settle_hold_s=0., stopped="already at rest", robot_still_s_at_request=round(env.robot_still_s(), 3),

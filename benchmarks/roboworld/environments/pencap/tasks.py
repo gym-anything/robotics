@@ -29,6 +29,9 @@ def validate(task):
 
 
 def task_resolve(selection):
+    if isinstance(selection, dict) and "contract" in selection:  # pencap-tasks-v2; absent: released behaviour
+        from .task_set_v2 import task_resolve as task_resolve_v2
+        return task_resolve_v2(selection)
     if not isinstance(selection, dict) or set(selection) - {"task"}:
         raise ValueError("Pencap supports only the task selector")
     task = validate(selection.get("task", DEFAULT_TASK))

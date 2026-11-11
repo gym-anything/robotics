@@ -64,7 +64,7 @@ def verifiers():
 class CatalogueTests(unittest.TestCase):
     def test_exact_eight_and_legacy_default(self):
         b = json.loads((ROOT/"surface_rinsing/benchmark.json").read_text())
-        rows = b["task_set"]["tasks"]
+        rows = b["task_set_v1"]["tasks"]
         self.assertEqual(len(rows), 8)
         self.assertEqual([r["selection"] for r in rows], K.selections())
         self.assertEqual(len(K.TASKS), 9)

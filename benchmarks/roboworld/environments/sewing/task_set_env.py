@@ -72,6 +72,10 @@ class TaskEnvironment(SewingEnv):
 
 
 def make_environment(config, *, contract=None, output_dir=None):
+    from .task_set_v2 import CONTRACT as V2
+    if contract == V2:                     # the render-checked set: task_set_v2_env.py
+        from .task_set_v2_env import make_environment as v2
+        return v2(config, contract=contract, output_dir=output_dir)
     # All GAR selections use the adapter, including legacy: its evaluator and
     # physical construction remain exactly the originals unless opted in.
     return TaskEnvironment(config, contract=contract, output_dir=output_dir)

@@ -96,7 +96,7 @@ class CatalogueTests(unittest.TestCase):
         from gym_anything_robotics import resolve_task, LaunchSpec
         from gym_anything_robotics.tasks import TaskSpec
         b = json.loads((ROOT/"pencap/newton15/benchmark.json").read_text())
-        selections = b["task_set"]["selections"]
+        selections = b["task_set_v1"]["selections"]
         self.assertEqual(selections, [{"task": t} for t in EIGHT_TASKS])
         self.assertEqual(b["count"], 8)
         self.assertEqual([t["task_id"] for t in b["tasks"]], ["pencap/"+t for t in TASKS])

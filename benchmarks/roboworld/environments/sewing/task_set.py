@@ -17,11 +17,20 @@ TASK_SET = tuple(dict(preset="sample-room", task=t, seed=0,
                       **({"contract": CONTRACT} if t in REVISED else {})) for t in EIGHT_TASKS)
 
 
+def _v2(task=None, contract=None):
+    """sewing-tasks-v2, the render-checked set (task_set_v2.py), takes a call naming its contract or a task only it
+    defines; every other call runs as released."""
+    from . import task_set_v2
+    return task_set_v2 if task_set_v2.selects(task, contract) else None
+
+
 def default_contract(task):
     return CURVE if task == "curve" else CONTRACT if task in NEW_TASKS else LEGACY
 
 
 def choose_contract(task, contract=None):
+    if v2 := _v2(task, contract):
+        return v2.choose_contract(task, contract)
     default = default_contract(task)
     choices = (default, CONTRACT) if task in REVISED else (default,)
     if contract is not None and contract not in choices:
@@ -30,6 +39,8 @@ def choose_contract(task, contract=None):
 
 
 def resolve(preset=None, task=None, seed=0, contract=None):
+    if v2 := _v2(task, contract):
+        return v2.resolve(preset, task, seed, contract)
     # Preserve every coercion, alias, default and exception of variants.resolve.
     v = legacy_resolve(preset, task, seed)
     choose_contract(v["task"], contract)
@@ -37,12 +48,16 @@ def resolve(preset=None, task=None, seed=0, contract=None):
 
 
 def instruction(task, robot=None, contract=None):
+    if v2 := _v2(task, contract):
+        return v2.instruction(task, robot, contract)
     chosen = choose_contract(task, contract)
     text = PIVOT_INSTRUCTION if task == "pivot" and chosen == CONTRACT else INSTRUCTIONS[task]
     return text + G1_MACHINE_NOTE if robot == "g1" else text
 
 
 def task_resolve(selection):
+    if v2 := _v2(selection.get("task"), selection.get("contract")):
+        return v2.task_resolve(selection)
     v = resolve(selection.get("preset"), selection.get("task"), selection.get("seed", 0),
                 selection.get("contract"))
     chosen = choose_contract(v["task"], selection.get("contract"))

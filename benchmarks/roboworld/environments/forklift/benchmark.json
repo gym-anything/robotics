@@ -27,10 +27,11 @@
   "contract": [
    "v1",
    "forklift-tasks-v1",
-   "load-bales-reward-v1"
+   "load-bales-reward-v1",
+   "forklift-tasks-v2"
   ]
  },
- "task_set": {
+ "task_set_v1": {
   "score_rule": "1 on success, else 0.9 x progress x workmanship; seven explicit task contracts with zero-start continuous progress; load-bales keeps its own reward (load-bales-reward-v1). The forklift-tasks-v1 progress has not yet been run with the simulator.",
   "tasks": [
    {
@@ -119,6 +120,49 @@
     "task_contract": "load-bales-reward-v1",
     "difficulty": "hardest",
     "existing": true
+   }
+  ]
+ },
+ "task_set": {
+  "note": "forklift-tasks-v2: the render-checked set. The same eight tasks, starts and instructions as task_set_v1 (forklift-tasks-v1); commands run as in the base backend (none cut at the time limit or refused after it), the time limit is the evaluator's time_limit success criterion (sim_time <= TIME_LIMIT_S; each evaluation reports time_limit_s and within_time_limit), a start already at the goal earns no approach credit, and the capabilities declare the limit with that rule. load-bales keeps its released selection and load-bales-reward-v1.",
+  "selections": [
+   {
+    "task": "start-and-park",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "aisle-cruise",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "drive-to-pallet",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "carry-to-floor-bay",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "ramp-down-loaded",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "put-away-rack",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "load-trailer",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+   },
+   {
+    "task": "load-bales"
    }
   ]
  }

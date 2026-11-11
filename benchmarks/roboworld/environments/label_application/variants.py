@@ -59,6 +59,9 @@ def contract():
 
 
 def task_resolve(selection):
+    if selection.get("contract") is not None:
+        from .task_set_v2 import task_resolve as task_resolve_v2      # label-tasks-v2 (task_set_v2.py)
+        return task_resolve_v2(selection)
     from .task import INSTRUCTIONS
     v = resolve(selection.get("preset", "parcel"), selection.get("task"), selection.get("seed", 0))
     return dict(task_id=f"label-application/v1/{v['preset']}/{v['task']}/seed-{v['seed']}",

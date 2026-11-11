@@ -21,7 +21,8 @@
       "seam-to-notch",
       "square-plies",
       "three-sides",
-      "load-and-seam"
+      "load-and-seam",
+      "corner-seam"
     ],
     "preset": [
       "sample-room"
@@ -29,7 +30,8 @@
     "contract": [
       "sewing-v1",
       "sewing-tasks-v1",
-      "sewing-curve-v1"
+      "sewing-curve-v1",
+      "sewing-tasks-v2"
     ]
   },
   "resolver": "sewing.variations:task_resolve",
@@ -52,7 +54,7 @@
     "task_set_source": "sewing/task_set_scoring.py"
   },
   "qualification": "Components are qualified by probes and assisted demonstrations.",
-  "task_set": {
+  "task_set_v1": {
     "tasks": [
       {
         "task_id": "sewing/v1/sample-room/load/seed-0",
@@ -136,5 +138,55 @@
       "baste": "The needle bends by stitch 25-32 at the 6 mm allowance; baste stays in the catalogue."
     },
     "contract_selection": "Bare existing selections keep sewing-v1 (curve keeps its own sewing-curve-v1 contract, unchanged). The task_set explicitly selects sewing-tasks-v1 for load/plain-seam/pivot. New tasks use that contract by default. Task ids remain stable; every evaluation reports task_contract."
+  },
+  "task_set": {
+    "selections": [
+      {
+        "preset": "sample-room",
+        "task": "load",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "preset": "sample-room",
+        "task": "seam-to-notch",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "preset": "sample-room",
+        "task": "plain-seam",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "preset": "sample-room",
+        "task": "square-plies",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "preset": "sample-room",
+        "task": "pivot",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "preset": "sample-room",
+        "task": "corner-seam",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "preset": "sample-room",
+        "task": "load-and-seam",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      },
+      {
+        "task": "curve"
+      }
+    ],
+    "note": "Render-checked eight-task set, contract sewing-tasks-v2; each of the seven selects it and gets its own task id with the contract before the seed (sewing/v1/sample-room/<task>/sewing-tasks-v2/seed-0). Differences from task_set_v1 (sewing-tasks-v1): three-sides is swapped out for corner-seam, the pivot's L seam with both ends backtacked (three-sides' third leg runs outside the pivot mesh's seam band, where the machine ends the episode as a world fault); corner-seam reuses the pivot start and cached state, has a 180 s limit and is defined under this contract only, with variation ids 90-99 after the released 90 (sent with the contract; the released catalogue and its ids are unchanged); load and square-plies score 0.9 x progress short of success, the seam tasks 0.95. Starts, instructions and the other verdicts are v1's. curve keeps its released selection (splits/test.json) and sewing-curve-v1."
   }
 }

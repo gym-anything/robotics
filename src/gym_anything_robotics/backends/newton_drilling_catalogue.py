@@ -9,6 +9,14 @@ from drilling.catalogue_evaluator import configure_environment
 
 
 class NewtonDrillingCatalogueBackend(NewtonDrillingBackend):
+    def __new__(cls, *args, contract=None, **kwargs):
+        # drilling-tasks-v2 (drilling/task_set_v2.py): a launch that selects it is built as its session class; every
+        # other launch is this class, unchanged.
+        if contract == "drilling-tasks-v2" and cls is NewtonDrillingCatalogueBackend:
+            from drilling.task_set_v2_backend import NewtonDrillingTaskSetV2Backend
+            cls = NewtonDrillingTaskSetV2Backend
+        return super().__new__(cls)
+
     def __init__(self, *, contract=None, **kwargs):
         # Preserve the base constructor's coercions, defaults and options (notably int(seed)).
         preset = kwargs.get("preset", "wall")

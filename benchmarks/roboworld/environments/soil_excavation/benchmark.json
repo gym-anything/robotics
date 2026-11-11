@@ -34,7 +34,8 @@
   "contract": [
    "v1",
    "soil-tasks-v1",
-   "soil-set-post-v1"
+   "soil-set-post-v1",
+   "soil-tasks-v2"
   ]
  },
  "resolver": "soil_excavation.catalogue:task_resolve",
@@ -52,7 +53,7 @@
   "scope": "World state only: the soil surface from the particles (1 cm column tops), masses by region (tarp, walkway, spill), loosening from each particle's plastic volume ratio, packing per voxel (air pockets, density), tool poses and both-hand grasps from MuJoCo contacts, the root ball's flare and tilt, the braced post's lateral load test on a state copy, pipe strikes and protective stops. No autonomous-solution claim."
  },
  "qualification": "Not fully qualified. Component evidence: prescribed-spade separation/transport (3.06 kg deposited), retained geometric platen densification and physical trigger actuation. These do not qualify all eleven tasks. Loaded HTTP insertion reaches 121 mm, below the 150 mm task criterion. Grid/contact force convergence, compaction/support, several component mechanisms, humanoid support and broader runtime profiles remain incomplete. The 7.2 s default loaded HTTP/RGB/history run measures 124.2-136.0x per command and 162.7x including startup/ancillary requests/shutdown; this is not a blanket operating guarantee.",
- "task_set": {
+ "task_set_v1": {
   "status": "The revised contract is not yet run with the simulator or rendered.",
   "score_rule": "1 on success; otherwise min(progress, 0.99), the same cap as set-post (set-post has no multiplier). Revised progress is net of its settled start. set-post is unchanged.",
   "default_contracts": {
@@ -158,5 +159,52 @@
     "difficulty": "hardest"
    }
   ]
+ },
+ "task_set": {
+  "contract": "soil-tasks-v2",
+  "selections": [
+   {
+    "task": "penetrate-marked",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "spit-to-tarp",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "planting-hole",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "break-hardpan",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "expose-line",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "cable-trench",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "auger-holes",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+   },
+   {
+    "task": "set-post"
+   }
+  ],
+  "status": "Render-checked (untouched start: success false, score 0, overview render; set-post under soil-tasks-v2) with an idle check; not separately audited or accepted.",
+  "score_rule": "soil-tasks-v2: 1 on success; otherwise 0.9 x progress, progress net of its settled start plus an idle margin (0.002), so an untouched or idle start scores 0. set-post's listed selection keeps soil-set-post-v1 and its min(progress, 0.99).",
+  "swaps": [],
+  "note": "Render-checked eight-task set. Same tasks, seeded layouts, instructions, success criteria and difficulty order as task_set_v1; the seven revised tasks select contract soil-tasks-v2 and their task ids carry it. set-post keeps its released split selection (splits/test.json) and contract soil-set-post-v1; {\"task\": \"set-post\", \"seed\": 0, \"contract\": \"soil-tasks-v2\"} selects the render-checked variant (same instruction, criteria, load test and success; failed-run score 0.9 x progress net of the settled start). Differs from v1: failed runs score 0.9 x progress, not min(progress, 0.99); progress is net of the settled start plus a 0.002 idle margin; penetrate-marked's progress has no both-hands factor (two hands stay a success criterion); break-hardpan credits only soil in 2 cm columns a working body (robot link or tool, not a stone, root ball or post) touched, in work windows that reach 12 cm and hold 1 s."
  }
 }

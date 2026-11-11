@@ -9,7 +9,7 @@ same station with another recipe is never in another split)."""
 import hashlib
 
 from .config import TASKS, VARIANTS, VARIANT_TASKS
-from .scoring import CONTRACT, LEGACY, ORDER, validate_contract
+from .scoring import CONTRACT, LEGACY, ORDER, V2, validate_contract
 
 PLAIN = "plain"                       # the selector's name for "the task as listed" (config.variant "")
 VARIANT_CHOICES = (PLAIN,) + tuple(v for v in VARIANTS if v)
@@ -80,7 +80,7 @@ def _variants_text():
 
 def contract():
     return dict(supported=True, selectors=["preset", "task", "seed", "variant", "contract"], presets=sorted(TASKS),
-                tasks={k: list(v) for k, v in TASKS.items()}, contracts=[LEGACY, CONTRACT], seed_range=[0, 9999],
+                tasks={k: list(v) for k, v in TASKS.items()}, contracts=[LEGACY, CONTRACT, V2], seed_range=[0, 9999],
                 variants={(v or PLAIN): dict(what=text, tasks=list(variant_tasks(v))) for v, text in VARIANTS.items()},
                 qualification="Eight named tasks over two presets (bake, hob); seeds vary batch size, vessel and cart "
                               "placement, mat, milk temperature, hob level, tool order and heap shapes; a variant is "
@@ -96,7 +96,7 @@ def catalogue_fields():
     n_tasks = sum(len(v) for v in TASKS.values())
     return dict(selectors=["preset", "task", "seed", "variant", "contract"],
                 selector_choices=dict(preset=list(TASKS), task=[t for names in TASKS.values() for t in names],
-                                      variant=list(VARIANT_CHOICES), contract=[LEGACY, CONTRACT]),
+                                      variant=list(VARIANT_CHOICES), contract=[LEGACY, CONTRACT, V2]),
                 count=len(pairs()),
                 count_scope=f"{len(pairs())} task/variant pairs: {n_tasks} named tasks ("
                             + "; ".join(f"{p}: {', '.join(names)}" for p, names in TASKS.items())

@@ -6,7 +6,10 @@ Robotics. Each simulation lives in its own package under [`environments/`](envir
 
 ## Splits
 
-- [`splits/train.json`](splits/train.json): training tasks from the simulations.
+- [`splits/train.json`](splits/train.json): training tasks from the simulations, 175 in total. The first 25 are the
+  released train tasks, one per simulation. The other 150 are the remaining six tasks of each simulation's
+  eight-task set, listed under `task_set` in its `benchmark.json`. For the twenty simulations with a revised set they
+  select its `<name>-tasks-v2` contract. With the test task, each simulation has all eight of its tasks in the splits.
 - [`splits/test.json`](splits/test.json): the hardest task of each simulation, 25 tasks in total. These are the test
   tasks of the main results.
 

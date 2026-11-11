@@ -59,7 +59,7 @@ def robot_catalog(monkeypatch):
 def test_exact_catalogue_and_legacy_defaults(robot_catalog):
     from gym_anything_robotics import tasks
     data = json.loads((ROOT/"filleting/benchmark.json").read_text())
-    entries = data["task_set"]["tasks"]
+    entries = data["task_set_v1"]["tasks"]
     assert [r["selection"] for r in entries] == list(TASK_SET)
     assert len({r["task_id"] for r in entries}) == 8
     for selection, row in zip(TASK_SET, entries):

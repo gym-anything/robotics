@@ -10,6 +10,9 @@ VIAL_TO_PAD_CONTRACT = "syringe-vial-to-pad-v1"   # reported by vial-to-pad's ow
 
 
 def resolve_contract(task, contract=None):
+    from . import task_set_v2                                   # syringe-tasks-v2, the render-checked set
+    if contract == task_set_v2.CONTRACT:
+        return task_set_v2.resolve_contract(task)
     value = LEGACY_CONTRACT if contract is None else contract
     if value not in (LEGACY_CONTRACT, EIGHT_TASK_CONTRACT):
         raise ValueError(f"Unknown contract {value!r}; choose {LEGACY_CONTRACT!r} or {EIGHT_TASK_CONTRACT!r}")

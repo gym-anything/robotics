@@ -120,7 +120,7 @@ def test_exact_catalogue_and_legacy_resolution():
     assert data["count"] == 8
     assert resolve({}) == resolve({"task": "mixed", "seed": 0})
     assert resolve({})["task_id"] == data["default_task_id"]
-    entries = data["task_set"]["tasks"]
+    entries = data["task_set_v1"]["tasks"]
     assert tuple(e["selection"]["task"] for e in entries) == EIGHT_ORDER
     for e in entries:
         r = resolve(e["selection"])

@@ -16,13 +16,17 @@ from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observati
 
 class NewtonLockKeyBackend(RoboticsBackend):
     def __init__(self, *, robot="panda", config=None, device=None, cameras=("bench_rgb",),
-                 output_dir=None, renderer_options=None, recording=True, task="unlock"):
+                 output_dir=None, renderer_options=None, recording=True, task="unlock", contract=None):
         from lockkey.newton15.config import Config
         from lockkey.newton15.env import LockKeyEnv
         from lockkey.newton15.catalog import Catalog
         from lockkey.newton15.kinematics import Kinematics
         from lockkey.task_set.catalogue import validate
         self.task = validate(task)
+        if contract is not None:
+            # Opt-in lockkey-tasks-v2 (lockkey/task_set/*_v2.py); without `contract` nothing below changes.
+            from lockkey.task_set.catalogue_v2 import validate_contract
+            validate_contract(self.task, contract)
         if robot != "panda":
             raise UnsupportedConfigurationError("Lock-and-key uses one manufacturer-description Panda")
         config = Config(**config) if isinstance(config, dict) else (config or Config())
@@ -36,6 +40,9 @@ class NewtonLockKeyBackend(RoboticsBackend):
         self.output.mkdir(parents=True, exist_ok=False)
         if self.task == "unlock":
             self.env = LockKeyEnv(config)
+        elif contract is not None:
+            from lockkey.task_set.adapter_v2 import TaskLockKeyEnvV2
+            self.env = TaskLockKeyEnvV2(config, self.task)
         else:
             from lockkey.task_set.adapter import TaskLockKeyEnv
             self.env = TaskLockKeyEnv(config, self.task)
@@ -54,7 +61,9 @@ class NewtonLockKeyBackend(RoboticsBackend):
             self.cameras, (self.camera,) if self.cameras else (), notes={
                 "qualification": ("Reference configuration qualified by assisted physical fixtures, RGB/history runtime and HTTP checks; see lockkey/REPORT.pdf"
                     if self.task == "unlock" else
-                    "Task addition checked in constructed states only; settling, contacts and rendering are not yet checked in the simulator"),
+                    "Task addition checked in constructed states only; settling, contacts and rendering are not yet checked in the simulator"
+                    if contract is None else
+                    "Task addition (lockkey-tasks-v2): any constructed start is settled hands-off and checked at setup; untouched and idle starts render-checked at score 0. No policy run."),
                 "clock": "Exact ticks; a duration must be a whole number of physics ticks",
                 "control": "Physical position servos; IK is not collision-free path planning",
                 "arm": "left selects the single Panda; right is unavailable",

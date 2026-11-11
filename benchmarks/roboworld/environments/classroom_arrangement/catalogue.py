@@ -15,6 +15,9 @@ DIFFICULTY = dict(zip(SET_TASKS, ("entry", "entry", "medium", "medium", "medium"
 
 
 def validate_contract(task, contract):
+    from . import task_set_v2_catalogue as v2
+    if contract == v2.CONTRACT:  # classroom-tasks-v2 (task_set_v2_catalogue.py); every other contract as released
+        return v2.validate(task)
     if contract not in (LEGACY, CONTRACT):
         raise ValueError(f"contract must be {LEGACY!r} or {CONTRACT!r}")
     if contract == CONTRACT and task not in SET_TASKS[:-1]:
@@ -23,6 +26,9 @@ def validate_contract(task, contract):
 
 def description(task, contract=LEGACY):
     from .layout import TASKS
+    from . import task_set_v2_catalogue as v2
+    if contract == v2.CONTRACT:  # classroom-tasks-v2: classroom-tasks-v1's text
+        return v2.description(task)
     validate_contract(task, contract)
     text = TASKS[task]["instruction"]
     if contract == CONTRACT:

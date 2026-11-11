@@ -88,7 +88,7 @@ def test_catalogue_and_frozen_first_fifty():
     payload = ''.join(json.dumps(variations.specification(i), sort_keys=True, separators=(',', ':'))+'\n'
                       for i in range(50)).encode()
     assert hashlib.sha256(payload).hexdigest() == '500f97ec88c1a0aa0594440223a85241861bd452722d6011061147368ce75a3d'
-    entries = raw['task_set']['tasks']
+    entries = raw['task_set_v1']['tasks']
     assert [e['selection'] for e in entries] == list(TASK_SET)
     for e in entries:
         r = variations.task_resolve(e['selection'])

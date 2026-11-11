@@ -32,6 +32,9 @@ def instruction(task, contract=LEGACY):
 
 
 def task_resolve(selection):
+    if selection.get("contract") == "drilling-tasks-v2":      # the render-checked set: drilling/task_set_v2.py
+        from .task_set_v2 import task_resolve as task_set_v2
+        return task_set_v2(selection)
     # Delegate all existing seed typing, falsy defaults and preset inference to the old resolver.
     out = legacy.task_resolve(selection)
     task = out["selection"]["task"]

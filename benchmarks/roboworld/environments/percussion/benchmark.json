@@ -80,6 +80,40 @@
     ],
     "why": "The five-task set (task_set_5) plus take-sticks (entry: the only tool-handling task), accent-ostinato (medium-hard: a 6 dB accent pattern on a steady beat) and steady-beat (hard: 48 strokes at the client's cadence with a 10 % tempo change). All four presets and every striker are used: therapy (finger-tap, melody), gait (take-sticks, accent-ostinato, steady-beat), assessment (strike-and-stop, echo), pentatonic (pentatonic-setup).",
     "left_out": "dynamics is not in the set and accent-ostinato is. dynamics needs a forte stroke within 3 dB of the 6 m/s stick reference and a piano within 3 dB of the 1 m/s one (assessment seed 0: 100.0 and 84.4 dB(A)), 12 dB or more apart, on the assessment drum 0.78 m from the right FR3 base. The default robot cannot play loud clean strokes under libfranka's position interface (0.40-0.64 m/s first contacts at 79-81 dB(A), a planned 1.5 m/s stroke never reached the head); the G1's shown strokes, 90.3-95.8 dB(A), hit neither the piano band (at most 87.4) nor the forte band (at least 97.0). accent-ostinato asks only for a 6 dB contrast with no absolute level. dynamics stays in the catalogue.",
-    "score_rule": "1 if every check passes, else 0.9 x progress; progress is 0 at the untouched start and continuous in the task's own quantities (melody: its own contract, params.MELODY_EVAL fail_scale 0.9; the other seven: params.TASK_PROGRESS fail_scale 0.9)"
+    "score_rule": "1 if every check passes, else 0.9 x progress; progress is 0 at the untouched start and continuous in the task's own quantities (melody: its own contract, params.MELODY_EVAL fail_scale 0.9; the other seven: params.TASK_PROGRESS fail_scale 0.9)",
+    "selections": [
+      {
+        "preset": "therapy",
+        "task": "finger-tap"
+      },
+      {
+        "preset": "gait",
+        "task": "take-sticks"
+      },
+      {
+        "preset": "assessment",
+        "task": "strike-and-stop"
+      },
+      {
+        "preset": "gait",
+        "task": "accent-ostinato"
+      },
+      {
+        "preset": "assessment",
+        "task": "echo"
+      },
+      {
+        "preset": "pentatonic",
+        "task": "pentatonic-setup"
+      },
+      {
+        "preset": "gait",
+        "task": "steady-beat"
+      },
+      {
+        "preset": "therapy",
+        "task": "melody"
+      }
+    ]
   }
 }

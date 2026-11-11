@@ -50,6 +50,9 @@ def contract():
 
 
 def task_resolve(selection):
+    from . import task_set_v2
+    if selection.get("contract") == task_set_v2.CONTRACT:           # the render-checked set, its own task ids
+        return task_set_v2.task_resolve(selection)
     from .contracts import TaskConfig
     from .task_contracts import instruction
     if set(selection) - {"preset", "task", "seed", "contract"}:

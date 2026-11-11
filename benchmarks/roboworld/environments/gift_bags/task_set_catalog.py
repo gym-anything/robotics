@@ -97,6 +97,9 @@ def task_id(v):
 
 
 def task_resolve(selection):
+    from . import task_set_v2_catalog as v2
+    if selection.get("contract") == v2.CONTRACT:  # gift-bags-tasks-v2 (task_set_v2_*.py); otherwise as released
+        return v2.task_resolve(selection)
     v = resolve(selection.get("preset"), selection.get("task"), selection.get("seed", 0), selection.get("contract"))
     return dict(task_id=task_id(v), description=instruction(v["task"], v.get("contract")),
                 backend_options=dict(v), selection=v, split=None)

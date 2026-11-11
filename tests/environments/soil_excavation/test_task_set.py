@@ -131,7 +131,7 @@ class CatalogueTests(unittest.TestCase):
 
     def test_benchmark_exact_selections(self):
         b = json.loads((ROOT/"soil_excavation/benchmark.json").read_text())
-        rows = b["task_set"]["tasks"]
+        rows = b["task_set_v1"]["tasks"]  # the released set; "task_set" lists soil-tasks-v2
         self.assertEqual([r["selection"] for r in rows], list(C.TASK_SET))
         for row in rows:
             self.assertEqual(row["task_id"], C.task_resolve(row["selection"])["task_id"])

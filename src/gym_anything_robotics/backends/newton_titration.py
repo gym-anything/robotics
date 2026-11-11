@@ -16,10 +16,19 @@ from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
 
+def _session_factory(contract):
+    if contract is None:
+        from titrate.newton15.task_session import make_session
+    else:
+        from titrate.newton15.task_set_v2 import make_session
+    return make_session
+
+
 class NewtonTitrationBackend(RoboticsBackend):
     def __init__(self, *, robot="panda", apparatus_fixture=False, config=None, dt_s=None,
                  cameras=("bench_rgb",), output_dir=None, renderer_options=None, recording=True,
-                 liquid_numerics=None, reagents=None, liquid_trace_stride=20, variation_id=None, task='titration'):
+                 liquid_numerics=None, reagents=None, liquid_trace_stride=20, variation_id=None, task='titration',
+                 contract=None):
         if robot != "panda":
             raise UnsupportedConfigurationError("Titration uses the manufacturer-description Franka Panda")
         if type(apparatus_fixture) is not bool or apparatus_fixture == (liquid_numerics is not None):
@@ -29,6 +38,11 @@ class NewtonTitrationBackend(RoboticsBackend):
         from titrate.newton15.lab_config import LabConfig
         from titrate.newton15.task_catalogue import task_name
         self.task = task_name(task)
+        # None keeps the released task contracts; only titration-tasks-v2 (task_set_v2.py) is accepted.
+        self.contract = contract
+        if contract is not None:
+            from titrate.newton15.task_set_v2 import check_contract
+            check_contract(contract)
         if task != 'titration' and apparatus_fixture:
             raise UnsupportedConfigurationError('The catalogue tasks other than titration require liquid')
         if variation_id is not None and (config is not None or reagents is not None):
@@ -52,7 +66,7 @@ class NewtonTitrationBackend(RoboticsBackend):
         self.cameras = tuple(cameras)
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-{"bench_rgb"}:
             raise ValueError("Policy observations support bench_rgb; diagnostic views use render")
-        from titrate.newton15.task_session import make_session
+        make_session = _session_factory(self.contract)
         from titrate.newton15.geometry_api import GeometryCatalog
         from titrate.newton15.session_trace import SessionTrace
         from whiteboard.storage import Store
@@ -131,13 +145,16 @@ class NewtonTitrationBackend(RoboticsBackend):
             spacing_m=self._liquid_numerics.spacing_m if self._liquid_numerics else None)
         if self.task != 'titration' and 'task' not in request:
             result['reset_request']['options']['task'] = 'titration'
+        if self.contract is not None:
+            from titrate.newton15.task_set_v2 import relabel_selection
+            result = relabel_selection(result)
         result['liquid_present'] = self.session.liquid is not None
         if self.session.liquid is None:
             result['task'] = 'Dry apparatus fixture: no liquid and no titration evaluation. '+result['task']
         return result
 
     def _replace_session(self, config, reagents, variation_id, task=None):
-        from titrate.newton15.task_session import make_session
+        make_session = _session_factory(self.contract)
         task = self.task if task is None else task
         from titrate.newton15.geometry_api import GeometryCatalog
         from titrate.newton15.session_trace import SessionTrace

@@ -38,6 +38,9 @@ def resolve(preset=None, task=None, seed=0, contract=None):
 
 
 def task_resolve(selection):
+    if selection.get("contract") == "filleting-tasks-v2":    # the render-checked set: task_set_v2_catalogue.py
+        from .task_set_v2_catalogue import task_resolve as resolve_v2
+        return resolve_v2(selection)
     chosen = resolve(selection.get("preset"), selection.get("task"), selection.get("seed", 0),
                      selection.get("contract"))
     if "contract" not in chosen:

@@ -148,7 +148,7 @@ class CatalogueTests(unittest.TestCase):
 
     def test_eight_exact_selections_and_legacy_identity(self):
         b = json.loads((PACKAGES/"classroom_arrangement"/"benchmark.json").read_text())
-        self.assertEqual(b["task_set"], list(TASK_SET))
+        self.assertEqual(b["task_set_v1"], list(TASK_SET))
         self.assertEqual(len(TASK_SET), 8)
         self.assertEqual(b["count"], 10)
         self.assertEqual(task_resolve({})["task_id"], b["default_task_id"])

@@ -44,6 +44,10 @@ def description(task):
 
 
 def task_resolve(selection):
+    if isinstance(selection, dict) and "contract" in selection:
+        # Opt-in lockkey-tasks-v2 (catalogue_v2.py); a selection without `contract` takes the released path below.
+        from .catalogue_v2 import task_resolve as resolve_v2
+        return resolve_v2(selection)
     if not isinstance(selection, dict) or set(selection) - {"task"}:
         raise ValueError("Lockkey accepts only the task selector; no seeds or reset options")
     task = validate(selection.get("task", DEFAULT_TASK))

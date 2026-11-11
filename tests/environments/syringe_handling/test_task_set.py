@@ -9,7 +9,7 @@ from types import SimpleNamespace as NS
 
 import numpy as np
 
-from syringe_handling import hydraulics as H, params as P, task as T, variants as V
+from syringe_handling import hydraulics as H, params as P, task as T, task_set_v2 as V2, variants as V
 from syringe_handling.config import Config, EIGHT_TASK_CONTRACT as NEW, VIAL_TO_PAD_CONTRACT, LEGACY_CONTRACT
 from syringe_handling.scene import task_layout
 from tests.packages import PACKAGES
@@ -130,9 +130,9 @@ def finish(env):
 class Catalogue(unittest.TestCase):
     def test_exact_set_and_roundtrip(self):
         data = json.loads((ROOT/"benchmark.json").read_text())
-        for k, value in V.catalogue_fields().items():
+        for k, value in V2.catalogue_fields().items():
             self.assertEqual(data[k], value, k)
-        rows = data["task_set"]["selections"]
+        rows = data["task_set_v1"]["selections"]
         self.assertEqual(len(rows), 8)
         self.assertEqual([r["task"] for r in rows], list(V.EIGHT_TASKS))
         for row in rows:

@@ -26,7 +26,7 @@
   "scope": "World state only: glides on floor dots, desk yaw, chair tuck depth / in-use distance / facing, pods (edge gap), exam spacing, chairs inverted on their own desk, accessible 0.915 m route on the floor occupancy grid, items upright and at rest over a 1 s window, nothing toppled or in the door swing; group-work matches its identical desks and chairs to the pod places and checks that the rest of the room is as found, and scores 1 on success, else 0.9 x a continuous progress credit x penalties. No autonomous-solution claim. Explicit contract classroom-tasks-v1 adds state-only continuous progress, place matching and rest-of-room preservation for the seven other task_set entries; 1 on success, else 0.9 x progress."
  },
  "qualification": "Component-qualified with assisted evidence: rest, friction, tip/slide, base, spine, grasps, reflex and robot pushes/turns/lifts of furniture by a scripted operator through the robot interface; phantom forces where labelled.",
- "task_set": [
+ "task_set_v1": [
   {
    "task": "push-in-chairs",
    "seed": 0,
@@ -67,5 +67,61 @@
    "seed": 0
   }
  ],
- "task_set_note": "Seven tasks select contract classroom-tasks-v1; group-work keeps its own evaluator. Bare selections and all ten original task IDs remain available. The classroom-tasks-v1 grading is tested on constructed states only and has not yet been run with the simulator."
+ "task_set_note": "Seven tasks select contract classroom-tasks-v1; group-work keeps its own evaluator. Bare selections and all ten original task IDs remain available. The classroom-tasks-v1 grading is tested on constructed states only and has not yet been run with the simulator.",
+ "task_set": {
+  "contract": "classroom-tasks-v2",
+  "selections": [
+   {
+    "task": "push-in-chairs",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "straighten-row",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "seat-tutoring-group",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "clear-floor",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "exam-row",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "move-teacher-desk",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "chairs-up",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+   },
+   {
+    "task": "group-work"
+   }
+  ],
+  "task_ids": [
+   "classroom-arrangement/v1/room114/push-in-chairs/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/straighten-row/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/seat-tutoring-group/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/clear-floor/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/exam-row/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/move-teacher-desk/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/chairs-up/classroom-tasks-v2/seed-0",
+   "classroom-arrangement/v1/room114/group-work/seed-0"
+  ],
+  "score": "1 on success, else 0.9 x progress; untouched starts score exactly 0. group-work keeps its own evaluator.",
+  "note": "The render-checked set. The seven tasks other than group-work select with contract classroom-tasks-v2 (classroom_arrangement/task_set_v2_catalogue.py, task_set_v2.py); group-work, the audited hardest task, keeps its released selection and its own evaluator. Same tasks, starts, instructions, success predicates and score rule as task_set_v1. What differs: progress is measured from the post-settle start moved 1e-9 (m, or degrees for yaw) toward the goal, so an untouched start scores exactly 0 (under v1 a last-bit difference of the restored start read as 2e-14 progress) and the goal is still exactly 1; evaluations report contract classroom-tasks-v2.",
+  "qualification": "Stubbed state tests; render check: each of the eight starts built, rendered and scored 0. No task was run with a robot or independently audited."
+ }
 }

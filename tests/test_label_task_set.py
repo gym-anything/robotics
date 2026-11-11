@@ -34,7 +34,7 @@ EXPECTED = (
 class CatalogueTest(unittest.TestCase):
     def test_exact_selections_resolve_to_existing_ids_and_contracts(self):
         raw = json.loads((ROOT / "label_application/benchmark.json").read_text())
-        entries = raw["task_set"]["tasks"]
+        entries = raw["task_set_v1"]["tasks"]
         expected = [dict(preset=p, task=t, seed=0) for p, t, _, _ in EXPECTED]
         self.assertEqual([e["selection"] for e in entries], expected)
         self.assertEqual(list(variants.TASK_SET), expected)
@@ -61,7 +61,7 @@ class CatalogueTest(unittest.TestCase):
             self.assertEqual(variants.resolve(preset)["task"], task)
         for preset, task in (("specimen", "tube-wrap"), ("parcel", "cover-old-label")):
             self.assertEqual(variants.resolve(preset, task)["task"], task)
-        self.assertEqual(raw["task_set"]["swaps"], [])
+        self.assertEqual(raw["task_set_v1"]["swaps"], [])
 
     def test_seed_variations_and_invalid_selections(self):
         for preset, task, _, _ in EXPECTED:

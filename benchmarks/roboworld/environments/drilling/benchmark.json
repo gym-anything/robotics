@@ -30,7 +30,8 @@
     ],
     "contract": [
       "v1",
-      "drilling-tasks-v1"
+      "drilling-tasks-v1",
+      "drilling-tasks-v2"
     ]
   },
   "resolver": "drilling.catalogue:task_resolve",
@@ -53,7 +54,7 @@
     "contract_note": "Bare selections and v1 keep the original evaluator; the task set explicitly opts seven bench tasks into continuous scoring (drilling-tasks-v1). ledger-anchor keeps its own progress v3 scoring."
   },
   "qualification": "Component-qualified with assisted evidence (drilling/REPORT.pdf: component experiments, robot demonstrations, stability and runtime): cutting laws against published thrust/torque data, tool mechanisms, holes as contact geometry, percussion, cleaning and anchor setting; no policy solves a task.",
-  "task_set": {
+  "task_set_v1": {
     "tasks": [
       {
         "selection": {
@@ -147,5 +148,56 @@
     "swap": "match-bolt is in the set in place of rebar-relocate: a recorded two-hand attempt with the rotary hammer still breaks the arms' payload limit. rebar-relocate and that limit stay as they are. match-bolt has assisted completions at seeds 0, 3 and 777.",
     "start_states": "Existing presets, objects, marks and placements unchanged. No new props.",
     "qualification": "Tested with constructed Python states only; the drilling-tasks-v1 evaluator has not yet been run with the simulator."
+  },
+  "task_set": {
+    "note": "The render-checked eight-task set: all eight start with success false and score 0. Differences from task_set_v1: the spec's rebar-relocate is task 7 again in place of match-bolt (its rated-payload check stays scored; drilling-tasks-v2 adds its continuous progress, drilling/task_set_v2_evaluator.py), and every instruction is the legacy text, so timber-bolt keeps \"(within 1.2 degrees)\". The six bench tasks keep v1's scoring under the drilling-tasks-v2 name; match-bolt keeps it outside the set as the prepared swap. Score: 1 on success, else 0.9 x continuous progress. ledger-anchor keeps its released selection and progress v3.",
+    "selections": [
+      {
+        "preset": "bench",
+        "task": "take-drill",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "bench",
+        "task": "press-drill",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "bench",
+        "task": "punch-layout",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "bench",
+        "task": "press-blind",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "bench",
+        "task": "panel-holes",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "bench",
+        "task": "timber-bolt",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "wall",
+        "task": "rebar-relocate",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      },
+      {
+        "preset": "wall",
+        "task": "ledger-anchor"
+      }
+    ]
   }
 }

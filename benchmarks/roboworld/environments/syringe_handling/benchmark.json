@@ -53,13 +53,14 @@
   ],
   "contract": [
    "v1",
-   "syringe-tasks-v1"
+   "syringe-tasks-v1",
+   "syringe-tasks-v2"
   ]
  },
  "count": 25,
  "count_scope": "25 task/variant pairs: 8 named tasks (injection: sharps-away, set-dose, draw-dose, inject, vial-to-pad; iv-lock: flush-lock, slow-push, fast-bolus) and 17 variants of them (--select variant=NAME; upright: inject / vial-to-pad with the pad strapped to an upright upper-arm model (its skin vertical, facing the robot) (inject, vial-to-pad); adapter: draw-dose through a vented needle-free vial adapter instead of the blunt fill needle (draw-dose); half-vial: draw-dose / vial-to-pad from a vial that holds 5 mL (draw-dose, vial-to-pad); vacuum-vial: draw-dose from a vial left 25 kPa under ambient by an earlier draw (draw-dose); subcut: inject as a subcutaneous dose: 0.3 mL from a 1 mL syringe through a 27 G x 13 mm needle (inject); blocked: flush-lock with a cannula that is blocked (do not force it) (flush-lock); clamp-open: flush-lock / slow-push / fast-bolus with the slide clamp found open (flush-lock, slow-push, fast-bolus); g22: the iv-lock tasks with a 22 G cannula (flush-lock, slow-push); g18: the iv-lock tasks with an 18 G cannula (flush-lock, slow-push, fast-bolus); short: slow-push as 1 mL over one minute (slow-push); plain: the task as listed); seeds move the loose things and change what the syringe and the vial hold",
  "split_note": "Frozen by SHA-256 of (task, seed) over seeds 0..999 of every task (80/10/10); a variant has the split of its task and seed; seeds 1000..9999 resolve with split null.",
- "task_set": {
+ "task_set_v1": {
   "selections": [
    {
     "preset": "injection",
@@ -119,5 +120,63 @@
    }
   ],
   "note": "Existing placements and success predicates; the seven other tasks select the continuous-reward contract syringe-tasks-v1 explicitly. vial-to-pad keeps its own evaluator (contract v1). The new rewards have not been checked in rendered episodes."
+ },
+ "task_set": {
+  "selections": [
+   {
+    "preset": "injection",
+    "task": "sharps-away",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "injection",
+    "task": "set-dose",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "injection",
+    "task": "draw-dose",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "iv-lock",
+    "task": "flush-lock",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "injection",
+    "task": "inject",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "iv-lock",
+    "task": "fast-bolus",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "iv-lock",
+    "task": "slow-push",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+   },
+   {
+    "preset": "injection",
+    "task": "vial-to-pad"
+   }
+  ],
+  "note": "Render-checked eight-task set, contract syringe-tasks-v2; each of the seven other tasks selects it and gets its own task id with the contract before the seed (syringe-handling/v1/<preset>/<task>/contract-syringe-tasks-v2/seed-0). Starts, instructions, success predicates, progress and the 0.9 failure factor are task_set_v1's (syringe-tasks-v1); only the ids and the reported contract differ. vial-to-pad keeps its released selection (splits/test.json) and its own evaluator."
  }
 }

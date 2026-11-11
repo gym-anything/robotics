@@ -15,6 +15,12 @@ STIR_SAUCE_CONTRACT = "stir-sauce-v1"
 ORDER = ("sauce-blend", "muffin-fold", "dry-whisk", "pudding-whisk", "pancake-whisk", "cake-mixer",
          "reheat-porridge", "stir-sauce")
 DIFFICULTY = dict(zip(ORDER, ("entry", "entry", "medium", "medium", "medium", "hard", "hard", "hardest")))
+# The render-checked set: a TaskConfig with this contract is judged by scoring_v2.py (dispatched below).
+V2 = "ingredient-mixing-tasks-v2"
+
+
+def _v2(config):
+    return getattr(config, "contract", LEGACY) == V2
 
 
 @dataclass
@@ -28,17 +34,26 @@ class TaskConfig(Config):
 
 
 def task_spec(config):
+    if _v2(config):
+        from . import scoring_v2
+        return scoring_v2.task_spec(config)
     from . import task
     return revise_spec(config, task.task_spec(config))
 
 
 def instruction(config):
+    if _v2(config):
+        from . import scoring_v2
+        return scoring_v2.instruction(config)
     from . import task
     original = task.task_spec(config)["instruction"]
     return task.instruction(config).replace(original, task_spec(config)["instruction"], 1)
 
 
 def validate_contract(contract, task):
+    if contract == V2:
+        from . import scoring_v2
+        return scoring_v2.validate_contract(contract, task)
     if contract not in (LEGACY, CONTRACT):
         raise ValueError(f"Unknown contract {contract!r}; choose {LEGACY!r} or {CONTRACT!r}")
     if contract == CONTRACT and task == "stir-sauce":
@@ -47,6 +62,9 @@ def validate_contract(contract, task):
 
 
 def enabled(config):
+    if _v2(config):
+        from . import scoring_v2
+        return scoring_v2.enabled(config)
     return getattr(config, "contract", LEGACY) == CONTRACT and config.task != "stir-sauce"
 
 
@@ -141,6 +159,9 @@ def record_hot_sample(hob, local, temp, mass):
 
 def capture_start(env):
     """Read once after settling; TaskEnv adds the result to the physical start checkpoint without moving anything."""
+    if _v2(env.config):
+        from . import scoring_v2
+        return scoring_v2.capture_start(env)
     if not enabled(env.config) or env.info is None:
         return
     C = evaluate(env.world, env.info, _progress=False)["criteria"]
@@ -202,6 +223,9 @@ def record_hot_state(hob):
     Called at every existing material/heat update (10 ms), before species/heat exchange. The extra read is only
     for the explicitly selected porridge contract. It cannot affect the dynamics or stir-sauce's record.
     """
+    if _v2(getattr(getattr(hob, "w", None), "config", None)):
+        from . import scoring_v2
+        return scoring_v2.record_hot_state(hob)
     if getattr(hob, "task_baseline", None) is None or hob.knob.s_level <= 0:
         return
     import numpy as np
@@ -215,6 +239,9 @@ def record_hot_state(hob):
 
 def evaluate(world, info, *, _progress=True):
     """Separate opt-in judging from the frozen legacy evaluator; never patch its module globals."""
+    if _v2(world.config):
+        from . import scoring_v2
+        return scoring_v2.evaluate(world, info, _progress=_progress)
     from . import task
     if enabled(world.config) and world.config.task == "reheat-porridge":
         out = _porridge_evaluation(world, info)

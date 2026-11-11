@@ -201,6 +201,1237 @@
       "selection": {
         "task": "clearance"
       }
+    },
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "parcel",
+        "task": "press-down",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "parcel",
+        "task": "finish-securing",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "parcel",
+        "task": "carrier-top",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "part",
+        "task": "part-id-hdpe",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "parcel",
+        "task": "gs1-case-side",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "label-application",
+      "selection": {
+        "preset": "part",
+        "task": "part-id-match",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "stockroom",
+        "task": "scan-location"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "counter",
+        "task": "checkout-counter"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "library",
+        "task": "library-checkin"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "counter",
+        "task": "checkout-present"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "stockroom",
+        "task": "count-key-quantity"
+      }
+    },
+    {
+      "environment_id": "barcode-scanning",
+      "selection": {
+        "preset": "counter",
+        "task": "checkout-bulky"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "trout",
+        "task": "put-away-knife",
+        "seed": 0,
+        "contract": "filleting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "trout",
+        "task": "head-off",
+        "seed": 0,
+        "contract": "filleting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "salmon-side",
+        "task": "portion",
+        "seed": 0,
+        "contract": "filleting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "pork-tenderloin",
+        "task": "medallions",
+        "seed": 0,
+        "contract": "filleting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "salmon-side",
+        "task": "excise-defect",
+        "seed": 0,
+        "contract": "filleting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "filleting",
+      "selection": {
+        "preset": "pork-tenderloin",
+        "task": "remove-chain",
+        "seed": 0,
+        "contract": "filleting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "seam-to-notch",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "plain-seam",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "square-plies",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "pivot",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "corner-seam",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "sewing",
+      "selection": {
+        "preset": "sample-room",
+        "task": "load-and-seam",
+        "seed": 0,
+        "contract": "sewing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "position-torch"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "fit-up-bracket"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "half-fillet"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "hold-and-present"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "set-up-and-weld"
+      }
+    },
+    {
+      "environment_id": "welding",
+      "selection": {
+        "preset": "steel-cell",
+        "task": "tack-and-weld"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "aisle-cruise",
+        "seed": 0,
+        "contract": "forklift-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "drive-to-pallet",
+        "seed": 0,
+        "contract": "forklift-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "carry-to-floor-bay",
+        "seed": 0,
+        "contract": "forklift-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "ramp-down-loaded",
+        "seed": 0,
+        "contract": "forklift-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "put-away-rack",
+        "seed": 0,
+        "contract": "forklift-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "forklift",
+      "selection": {
+        "task": "load-trailer",
+        "seed": 0,
+        "contract": "forklift-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "straighten-row",
+        "seed": 0,
+        "contract": "classroom-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "seat-tutoring-group",
+        "seed": 0,
+        "contract": "classroom-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "clear-floor",
+        "seed": 0,
+        "contract": "classroom-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "exam-row",
+        "seed": 0,
+        "contract": "classroom-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "move-teacher-desk",
+        "seed": 0,
+        "contract": "classroom-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "classroom-arrangement",
+      "selection": {
+        "task": "chairs-up",
+        "seed": 0,
+        "contract": "classroom-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "craft",
+        "task": "swatch-card",
+        "seed": 0,
+        "contract": "painting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "wall",
+        "task": "roll-strip",
+        "seed": 0,
+        "contract": "painting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "spray",
+        "task": "clear-coat",
+        "seed": 0,
+        "contract": "painting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "wall",
+        "task": "cut-in-trim",
+        "seed": 0,
+        "contract": "painting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "spray",
+        "task": "spray-stencil",
+        "seed": 0,
+        "contract": "painting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "painting",
+      "selection": {
+        "preset": "craft",
+        "task": "brush-stroke",
+        "seed": 0,
+        "contract": "painting-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "pot-sink",
+        "task": "rinse-sponge",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "prep-sink",
+        "task": "rinse-tomatoes",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "can-wash",
+        "task": "flush-floor",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "pot-sink",
+        "task": "rinse-glassware",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "pre-rinse",
+        "task": "pre-rinse-plates",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "surface-rinsing",
+      "selection": {
+        "preset": "can-wash",
+        "task": "rinse-garbage-can",
+        "seed": 0,
+        "contract": "surface-rinsing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "spit-to-tarp",
+        "seed": 0,
+        "contract": "soil-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "planting-hole",
+        "seed": 0,
+        "contract": "soil-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "break-hardpan",
+        "seed": 0,
+        "contract": "soil-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "expose-line",
+        "seed": 0,
+        "contract": "soil-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "cable-trench",
+        "seed": 0,
+        "contract": "soil-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "soil-excavation",
+      "selection": {
+        "task": "auger-holes",
+        "seed": 0,
+        "contract": "soil-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "service",
+        "task": "taste-pour",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "service",
+        "task": "pour-glass",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "service",
+        "task": "refill-glass",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "service",
+        "task": "water-tumbler",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "tasting",
+        "task": "dump-and-pour",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "wine-pouring",
+      "selection": {
+        "preset": "lined",
+        "task": "lined-measure",
+        "seed": 0,
+        "contract": "wine-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "gait",
+        "task": "take-sticks"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "assessment",
+        "task": "strike-and-stop"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "gait",
+        "task": "accent-ostinato"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "assessment",
+        "task": "echo"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "pentatonic",
+        "task": "pentatonic-setup"
+      }
+    },
+    {
+      "environment_id": "percussion",
+      "selection": {
+        "preset": "gait",
+        "task": "steady-beat"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "patch-drywall",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "pad-darby",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "pad-edge",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "patch-flush",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "tool-joints",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "concrete-finishing",
+      "selection": {
+        "preset": "b012",
+        "task": "pad-trowel",
+        "seed": 0,
+        "variant": "default",
+        "contract": "concrete-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "bench",
+        "task": "press-drill",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "bench",
+        "task": "punch-layout",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "bench",
+        "task": "press-blind",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "bench",
+        "task": "panel-holes",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "bench",
+        "task": "timber-bolt",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "drilling",
+      "selection": {
+        "preset": "wall",
+        "task": "rebar-relocate",
+        "seed": 0,
+        "contract": "drilling-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "receiving",
+        "task": "open-flaps",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "home",
+        "task": "put-lid-on",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "counter",
+        "task": "bag-candle",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "receiving",
+        "task": "open-carton",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "counter",
+        "task": "open-bag",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "gift-bags",
+      "selection": {
+        "preset": "home",
+        "task": "unwrap-gift",
+        "seed": 0,
+        "contract": "gift-bags-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "bake",
+        "task": "muffin-fold",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "bake",
+        "task": "dry-whisk",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "bake",
+        "task": "pudding-whisk",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "bake",
+        "task": "pancake-whisk",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "bake",
+        "task": "cake-mixer",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "ingredient-mixing",
+      "selection": {
+        "preset": "hob",
+        "task": "reheat-porridge",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "ingredient-mixing-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "injection",
+        "task": "set-dose",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "injection",
+        "task": "draw-dose",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "iv-lock",
+        "task": "flush-lock",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "injection",
+        "task": "inject",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "iv-lock",
+        "task": "fast-bolus",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "syringe-handling",
+      "selection": {
+        "preset": "iv-lock",
+        "task": "slow-push",
+        "seed": 0,
+        "variant": "plain",
+        "contract": "syringe-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "lid_cans",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "sort_cups",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "sort_waste",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "empty_tub",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "tub_cups",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "deposit-cans",
+      "selection": {
+        "variant": "reference",
+        "contract": "deposit-tasks-v2",
+        "seed": 0
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "sensor",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "find-loose",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "frame",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "access",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "support",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "tighten-codex",
+      "selection": {
+        "task": "aim",
+        "seed": 0,
+        "contract": "tighten-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "unload-fixture",
+        "contract": "pencap-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "reseat-cap",
+        "contract": "pencap-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "load-fixture",
+        "contract": "pencap-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "pass-pen",
+        "contract": "pencap-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "uncap",
+        "contract": "pencap-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "pencap",
+      "selection": {
+        "task": "cap-in-fixture",
+        "contract": "pencap-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "turn-to-open",
+        "contract": "lockkey-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "insert-key",
+        "contract": "lockkey-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "return-key",
+        "contract": "lockkey-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "remove-key",
+        "contract": "lockkey-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "which-key",
+        "contract": "lockkey-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "lockkey",
+      "selection": {
+        "task": "unlock-and-stow",
+        "contract": "lockkey-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "centre-flask",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "prime-burette",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "run-in",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "drain-burette",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "decant-acid",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "titration",
+      "selection": {
+        "task": "finish-titration",
+        "variation_id": 0,
+        "contract": "titration-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "towel",
+        "task": "half_fold",
+        "contract": "laundry-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "tee",
+        "task": "half_fold",
+        "contract": "laundry-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "tee",
+        "task": "sleeve_tuck_fold",
+        "contract": "laundry-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "tee",
+        "task": "turn_face_down",
+        "contract": "laundry-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "towel",
+        "task": "thirds_fold",
+        "contract": "laundry-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "laundry",
+      "selection": {
+        "garment": "towel",
+        "task": "roll",
+        "contract": "laundry-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "write-text",
+        "contract": "whiteboard-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "write-in-colour",
+        "contract": "whiteboard-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "erase-except-boxed",
+        "contract": "whiteboard-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "draw-table",
+        "contract": "whiteboard-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "recap-and-tidy",
+        "contract": "whiteboard-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "whiteboard",
+      "selection": {
+        "task": "correct-misspelling",
+        "contract": "whiteboard-tasks-v2"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "pass-gate"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "trap"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "pass-square"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "corner-target"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "save"
+      }
+    },
+    {
+      "environment_id": "football",
+      "selection": {
+        "task": "free-kick"
+      }
     }
   ]
 }

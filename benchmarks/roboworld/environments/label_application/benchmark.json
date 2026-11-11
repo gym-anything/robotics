@@ -6,7 +6,8 @@
   "selectors": [
     "preset",
     "task",
-    "seed"
+    "seed",
+    "contract"
   ],
   "resolver": "label_application.variants:task_resolve",
   "count": 10,
@@ -19,7 +20,7 @@
     "scope": "Simulator bond/contact/trapped-air/permanent-set/stress state, label pose on the item, robot contacts and item rest, plus a zxing-cpp decode of rendered reader views at declared poses fixed by the item (fixed 1280 x 720, 24 spp; a renderer that cannot run is no verdict, not a failure). Score: every task reports a continuous progress reward beside success (1 on success, else 0.9 x progress; task.py REWARD_CONTRACTS). The mean of the checks is still reported as reward.mean_of_checks. No autonomous-solution claim."
   },
   "qualification": "Label physics component-qualified by assisted fixtures (peel bench, dispensing, bubbles, tube wrap) and scripted robot demonstrations.",
-  "task_set": {
+  "task_set_v1": {
     "why": "Eight existing tasks spanning local repair, whole-label pressing, multi-region repair, printer-to-item application, curved and vertical surfaces, and matching a printed identity. Two entry, three medium, two hard, one hardest. All ten catalogue ids and preset defaults retain their meaning.",
     "score_rule": "1 if success else 0.9 x continuous progress; 0 at the untouched start. Existing reward contracts are unchanged and reported as reward.contract in every evaluation.",
     "seed_note": "These are the eight exact seed-0 selections on the default dual-fr3. Seeds 0..9999 remain selectable layout variations, not separately qualified tasks.",
@@ -109,6 +110,58 @@
         "task_id": "label-application/v1/specimen/tube-label/seed-0",
         "reward_contract": "progress-v3",
         "difficulty": "hardest"
+      }
+    ]
+  },
+  "task_set": {
+    "contract": "label-tasks-v2",
+    "note": "The render-checked set (all eight started, rendered and scored 0 untouched). Same eight tasks as task_set_v1 with the same starts, instructions, verifiers and reward contracts: the review changed no task code. What differs from v1 is the contract: the seven non-audited selections carry label-tasks-v2 in their task ids (label_application/task_set_v2.py) and run the released code path with the same backend options; tube-label, the audited hardest task, keeps its released test-split selection. The released environment applies under both (fingertip pad-bond adhesive-side rule, refusal of commands after a tear, PhysicsTraceStore trace); the render check ran without those three changes.",
+    "selections": [
+      {
+        "preset": "parcel",
+        "task": "smooth-corner",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "parcel",
+        "task": "press-down",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "parcel",
+        "task": "finish-securing",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "parcel",
+        "task": "carrier-top",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "part",
+        "task": "part-id-hdpe",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "parcel",
+        "task": "gs1-case-side",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "part",
+        "task": "part-id-match",
+        "seed": 0,
+        "contract": "label-tasks-v2"
+      },
+      {
+        "preset": "specimen",
+        "task": "tube-label"
       }
     ]
   }

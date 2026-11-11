@@ -7,6 +7,12 @@ from soil_excavation import catalogue as C
 
 
 class NewtonSoilExcavationTasksBackend(LegacyBackend):
+    def __new__(cls, *args, contract=None, **options):
+        if cls is NewtonSoilExcavationTasksBackend and contract == "soil-tasks-v2":
+            # Opt-in soil-tasks-v2 sessions (soil_excavation/task_set_v2_backend.py); any other launch builds this class.
+            from soil_excavation.task_set_v2_backend import NewtonSoilExcavationTaskSetV2Backend as cls
+        return super(NewtonSoilExcavationTasksBackend, cls).__new__(cls)
+
     def __init__(self, *, contract=None, **options):
         try:
             self._task_contract = C.selected_contract(options.get("task") or "penetrate-marked", contract)

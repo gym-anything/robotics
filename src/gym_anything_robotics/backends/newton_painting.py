@@ -78,8 +78,13 @@ class NewtonPaintingBackend(_Classroom):
             raise UnsupportedConfigurationError(f"painting does not support {robot!r}: {catalog['unsupported'][robot]}")
         if isinstance(robot, str) and robot not in catalog["aliases"]:
             raise UnsupportedConfigurationError(f"Unsupported robot {robot!r}; qualified: {', '.join(catalog['aliases'])}")
+        # painting-tasks-v2 (painting/task_set_v2.py): the world of the selection without a contract, then adopted
+        task_set_v2 = contract == "painting-tasks-v2"
         try:
-            v = resolve(preset, task, int(seed), contract)
+            v = resolve(preset, task, int(seed), None if task_set_v2 else contract)
+            if task_set_v2:
+                from painting.task_set_v2 import check_task as check_task_set_v2
+                check_task_set_v2(v["task"])
         except (ValueError, TypeError) as exc:
             raise UnsupportedConfigurationError(str(exc)) from exc
         from painting.robot_setup import check_task
@@ -97,6 +102,10 @@ class NewtonPaintingBackend(_Classroom):
         if not output_dir:
             (self.output/SESSION_MARKER).write_text("painting session (auto-created; pruned by retention)\n")
         self.env = PaintingEnv(self.config, output_dir=self.output)
+        if task_set_v2:
+            from painting.task_set_v2 import adopt
+            self._task_set_v2 = True
+            adopt(self.env)
         w = self.env.world
         self.arms = tuple(w.arms)
         self.ik = ArmKinematics(w)
@@ -207,6 +216,9 @@ class NewtonPaintingBackend(_Classroom):
 
     # ------------------------------------------------------------------ lifecycle
     def reset(self, *, seed=None, options=None):
+        if getattr(self, "_task_set_v2", False):
+            from painting.task_set_v2 import session_reset
+            return session_reset(self, seed, options)
         from painting.variants import resolve
         options = dict(options or {})
         unknown = set(options) - {"preset", "task", "seed", "contract"}
@@ -228,6 +240,9 @@ class NewtonPaintingBackend(_Classroom):
         return self.env.reset(), {"continuity": "reset", "variation": self._variation()}
 
     def _variation(self):
+        if getattr(self, "_task_set_v2", False):
+            from painting.task_set_v2 import session_variation
+            return session_variation(self)
         c = self.config
         from painting.variants import resolve
         return resolve(c.preset, c.task, c.seed, c.contract)
@@ -256,10 +271,16 @@ class NewtonPaintingBackend(_Classroom):
                 self.trace = Trace(self.env.world, self.output/f"physics-{self.env.generation}.sqlite3")
 
     def variation_contract(self):
+        if getattr(self, "_task_set_v2", False):
+            from painting.task_set_v2 import session_contract
+            return session_contract(self)
         from painting.variants import contract
         return dict(**contract(), current=self._variation())
 
     def select_variation(self, request):
+        if getattr(self, "_task_set_v2", False):
+            from painting.task_set_v2 import session_select
+            return session_select(self, request)
         from painting.variants import resolve
         from painting.catalogue import describe
         if set(request) - {"preset", "task", "seed", "contract"}:

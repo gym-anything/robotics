@@ -18,6 +18,14 @@ from surface_rinsing.task_set.catalogue import resolve
 
 
 class NewtonSurfaceRinsingBackend(LegacyBackend):
+    def __new__(cls, *args, **kwargs):
+        # a launch selecting surface-rinsing-tasks-v2 builds its backend (surface_rinsing/task_set_v2_backend.py);
+        # every other launch is this class
+        if cls is NewtonSurfaceRinsingBackend and kwargs.get("contract") == "surface-rinsing-tasks-v2":
+            from surface_rinsing.task_set_v2_backend import NewtonSurfaceRinsingV2Backend
+            cls = NewtonSurfaceRinsingV2Backend
+        return super().__new__(cls)
+
     def __init__(self, *, robot="mobile-fr3-duo", preset=None, task=None, seed=0, reflex_profile="contact_x5", cameras=None,
                  output_dir=None, renderer_options=None, recording=True, device=None, reflex_stops_base=True,
                  policy_samples=None, contract=None, **unknown):

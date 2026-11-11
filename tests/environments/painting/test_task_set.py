@@ -131,7 +131,7 @@ class Catalogue(unittest.TestCase):
         from painting.variants import task_resolve, contract
         from painting.layout import TASKS
         raw = json.loads((ROOT/"painting/benchmark.json").read_text())
-        rows = raw["task_set"]["tasks"]
+        rows = raw["task_set_v1"]["tasks"]
         self.assertEqual(len(TASKS), 11)
         self.assertEqual([r["selection"]["task"] for r in rows], list(EIGHT_TASKS))
         self.assertEqual([r["selection"] for r in rows], selections())

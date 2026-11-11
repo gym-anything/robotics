@@ -151,7 +151,7 @@ class FakeEnv:
 class CatalogueTests(unittest.TestCase):
     def test_exact_eight_and_resolver(self):
         raw = json.loads((ROOT/"drilling/benchmark.json").read_text())
-        rows = raw["task_set"]["tasks"]
+        rows = raw["task_set_v1"]["tasks"]
         self.assertEqual([r["selection"] for r in rows], list(C.TASK_SET))
         self.assertEqual(len(rows), 8)
         for r in rows:

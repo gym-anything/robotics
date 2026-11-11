@@ -19,6 +19,7 @@ LEGACY_TASKS = tuple(TASKS)
 EIGHT_CONTRACT = "tighten-tasks-v1"
 MIXED_CONTRACT = "tighten-mixed-v1"
 LEGACY_CONTRACT = "tighten-legacy-v1"
+V2_CONTRACT = "tighten-tasks-v2"    # the render-checked set: task_set_v2.py
 NEW_TASKS = ("front-m4", "find-loose")
 TASKS.update({
  "front-m4": ("Re-seat the forward corner screw",
@@ -44,6 +45,9 @@ def contract_for(task, selected=""):
     """Validate a contract without changing how the other selectors are coerced."""
     if type(selected) is not str:
         raise ValueError("contract must be a string")
+    if selected == V2_CONTRACT:
+        from .task_set_v2 import contract_for as contract_v2
+        return contract_v2(task, selected)
     default = MIXED_CONTRACT if task == "mixed" else EIGHT_CONTRACT if task in NEW_TASKS else LEGACY_CONTRACT
     allowed = (default, EIGHT_CONTRACT) if task in LEGACY_TASKS and task != "mixed" else (default,)
     if selected and selected not in allowed:
@@ -52,7 +56,7 @@ def contract_for(task, selected=""):
 
 
 def uses_eight(config):
-    return contract_for(config.task, getattr(config, "task_contract", "")) == EIGHT_CONTRACT
+    return contract_for(config.task, getattr(config, "task_contract", "")) in (EIGHT_CONTRACT, V2_CONTRACT)
 
 
 def instruction(config):
@@ -63,6 +67,9 @@ def instruction(config):
 
 
 def resolve(selection):
+    if selection.get("contract") == V2_CONTRACT:
+        from .task_set_v2 import resolve as resolve_v2
+        return resolve_v2(selection)
     if set(selection)-{"task","seed","contract"}:
         raise ValueError("Selectors are task, seed and contract")
     task=selection.get("task","mixed")

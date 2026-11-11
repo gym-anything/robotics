@@ -27,6 +27,9 @@ def selected_contract(task, contract=None):
 
 
 def task_resolve(selection):
+    from . import task_set_v2                                # the render-checked set, concrete-tasks-v2
+    if selection.get("contract") == task_set_v2.CONTRACT:
+        return task_set_v2.task_resolve(selection)
     result = variants.task_resolve(selection)
     chosen = selected_contract(result["selection"]["task"], selection.get("contract"))
     if chosen == CONTRACT:

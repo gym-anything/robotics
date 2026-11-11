@@ -158,6 +158,9 @@ def preset_config(name, base=None):
 
 
 def resolve(selection):
+    if selection.get("contract") == "whiteboard-tasks-v2":
+        from whiteboard.task_set_v2 import resolve as resolve_v2      # whiteboard/task_set_v2.py
+        return resolve_v2(selection)
     from whiteboard.benchmark import resolve as legacy
     if "task" not in selection and "contract" not in selection:
         return legacy(selection)

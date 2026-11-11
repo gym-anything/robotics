@@ -9,6 +9,14 @@ from whiteboard.task_set.verifier import evaluate
 
 
 class NewtonWhiteboardTaskSetBackend(NewtonWhiteboardBackend):
+    def __new__(cls, *args, **kwargs):
+        # a launch selecting whiteboard-tasks-v2 builds its backend (whiteboard/task_set_v2_backend.py); every other
+        # launch is this class
+        if cls is NewtonWhiteboardTaskSetBackend and kwargs.get("task_contract") == "whiteboard-tasks-v2":
+            from whiteboard.task_set_v2_backend import NewtonWhiteboardTaskSetV2Backend
+            cls = NewtonWhiteboardTaskSetV2Backend
+        return super().__new__(cls)
+
     def __init__(self, *, catalogue_task, task_contract, robot="g1", config=None, task=None,
                  cameras=("g1_rgb",), renderer_options=None, output_dir=None, recording=True,
                  variation_id=None, **config_options):

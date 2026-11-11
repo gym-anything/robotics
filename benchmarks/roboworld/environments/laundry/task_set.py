@@ -9,6 +9,8 @@ from .garment_task import GARMENT_TASK_SPECS, GarmentTaskSpec
 from .newton15.config import GARMENTS
 
 CONTRACT = "laundry-tasks-v1"
+# The render-checked eight (task_set_v2.py); only a selection naming it leaves this module's path.
+V2_CONTRACT = "laundry-tasks-v2"
 LEGACY = "laundry-semantic-legacy"
 SHIRT_CONTRACT = "laundry-shirt-sleeve-fold-v1"
 FAILURE_FACTOR = 0.9
@@ -72,6 +74,9 @@ def select(garment="towel", task=None, contract=None):
 
 
 def resolve(selection):
+    if selection.get("contract") == V2_CONTRACT:
+        from .task_set_v2 import resolve as resolve_v2
+        return resolve_v2(selection)
     # Keep the historical bare garment resolver's output, including its defaults.
     if "task" not in selection and "contract" not in selection:
         from .newton15.benchmark import resolve as original_resolve

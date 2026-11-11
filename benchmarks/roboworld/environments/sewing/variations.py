@@ -91,6 +91,8 @@ def _task_name(task):
 
 def index_of(task, seed):
     """The variation id of a task (name or code) and seed."""
+    if v2 := _v2(task=task):
+        return v2.index_of(task, seed)
     task = _task_name(task)
     if isinstance(seed, bool) or not isinstance(seed, int) or seed not in SEEDS:
         raise ValueError(f"seed must be an integer in [{SEEDS[0]}, {SEEDS[-1]}]")
@@ -127,8 +129,17 @@ def _spec(index):
     return json.dumps(data, sort_keys=True)
 
 
+def _v2(task=None, contract=None):
+    """sewing-tasks-v2 (task_set_v2.py) takes an id or selection naming its contract, or a task only it defines; this
+    catalogue (its ids, entries and digest) is unchanged."""
+    from . import task_set_v2
+    return task_set_v2 if task_set_v2.selects(task, contract) else None
+
+
 def specification(index, contract=None):
     """The catalogue entry of a variation id (a fresh dict; deterministic)."""
+    if v2 := _v2(contract=contract):
+        return v2.specification(index)
     item = json.loads(_spec(_check_index(index)))
     from .task_set import choose_contract, default_contract
     chosen = choose_contract(item["task"], contract)
@@ -142,6 +153,8 @@ def specification(index, contract=None):
 def config_values(entry):
     """sewing.world.Config fields of an entry: what sewing/variants.py resolve gives a fresh session at the entry's task
     and seed (the backend lays them over the session's config overrides, as its constructor does)."""
+    if v2 := _v2(contract=entry.get("contract")):
+        return v2.config_values(entry)
     from .variants import resolve
     return resolve(entry["preset"], entry["task"], entry["seed"])
 
@@ -149,6 +162,8 @@ def config_values(entry):
 def select(*, variation_id=None, preset=None, task=None, seed=None, contract=None):
     """An entry by id (any of preset, task, seed given must match it) or by task and seed (both required without an
     id). Exact; constraints are never relaxed."""
+    if v2 := _v2(contract=contract):
+        return v2.select(variation_id=variation_id, preset=preset, task=task, seed=seed)
     if preset is not None and preset != PRESET:
         raise ValueError(f"preset must be {PRESET!r} (the only preset built)")
     if variation_id is not None:
@@ -195,6 +210,8 @@ def task_resolve(selection):
 
 
 def contract(current=None, checkpoints=None):
+    if v2 := _v2(contract=((current or {}).get("variation") or {}).get("contract")):
+        return v2.variation_contract(current, checkpoints)
     from .task_set import TASK_SET, CONTRACT, LEGACY, CURVE
     return dict(supported=True, catalogue=VERSION, count=COUNT, integer_id_range=[0, COUNT - 1],
                 id_rule=f"variation_id = task index x {len(SEEDS)} + seed over tasks {list(TASK_ORDER)}",

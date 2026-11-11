@@ -68,7 +68,7 @@ class CatalogueTests(unittest.TestCase):
 
     def test_exact_eight_unique_selections_and_explicit_versions(self):
         benchmark = json.loads((ROOT / "whiteboard/benchmark.json").read_text())
-        group = benchmark["task_set"]
+        group = benchmark["task_set_v1"]
         self.assertEqual(group["selections"], list(SELECTIONS))
         self.assertEqual(len({resolve(s)["task_id"] for s in SELECTIONS}), 8)
         for name in NAMES[:-1]:

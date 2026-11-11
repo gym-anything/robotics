@@ -1570,7 +1570,10 @@ class NewtonSyringeHandlingBackend(RoboticsBackend):
     def variation_contract(self):
         from syringe_handling import robot_setup
         from syringe_handling.variants import contract
+        from syringe_handling import task_set_v2
         c = self.config
+        if c.contract == task_set_v2.CONTRACT:
+            contract = task_set_v2.contract
         offered = robot_setup.tasks_for(c.robot)
         return dict(**contract(), current=dict(preset=c.preset, task=c.task, seed=c.seed, variant=c.variant or "plain", contract=c.contract),
                     robot=dict(alias=c.robot, tasks="every task" if offered is None else list(offered)),

@@ -11,6 +11,7 @@ from types import ModuleType, SimpleNamespace
 import numpy as np
 import pytest
 
+from gym_anything_robotics import task_folders
 from wine_pouring import params as P
 from wine_pouring import task as LEGACY
 from wine_pouring import task_contracts as T
@@ -285,7 +286,7 @@ def test_split_exchangeable_targets_and_original_reward():
     assert ev['score'] == .9 and ev['reward']['contract'] == SPLIT_REWARD_CONTRACT
     env.set_volume('coaster', 'red_wine', 1.)
     assert not env.evaluator.evaluate()['checks']['no_spill']
-    assert LEGACY.touch_rule('split-bottle') == (1, LEGACY.TOUCH_FLOOR_N)
+    assert LEGACY.touch_rule('split-bottle') == (1, task_folders.verifier('wine_pouring', 'split-bottle').TOUCH_FLOOR_N)
     for _, task, _ in EIGHT_TASKS[:-1]:
         assert LEGACY.touch_rule(task) == (10, P.CONTACT_FORCE_TOL_N)
 

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/find-loose/tighten-tasks-v2/seed-0",
+  "name": "find-loose",
+  "env_id": "tighten-codex",
+  "split": "train",
+  "selection": {
+    "task": "find-loose",
+    "seed": 0,
+    "contract": "tighten-tasks-v2"
+  },
+  "description": "Find and re-seat the loose screw. After a conveyor jam, one of the sensor's two M3 screws or the corner bracket's forward M4 has worked loose. Find it and re-seat it until its preset driver clicks: green 2.5 mm/0.35 N m for M3, yellow 3 mm/0.60 N m for M4. Leave the other screws tight, the rail level and the reference flag home with the sensor detecting it, after releasing the stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

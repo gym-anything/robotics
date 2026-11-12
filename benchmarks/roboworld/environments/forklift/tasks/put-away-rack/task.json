@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/warehouse/put-away-rack/forklift-tasks-v2/seed-0",
+  "name": "put-away-rack",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "put-away-rack",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+  },
+  "description": "Put the pallet on your forks away in rack location C-01-3 (aisle 2, bay 1, on the second beam level, 3.20 m above the floor, the left-hand pallet position as you face the rack), then back out and lower the forks.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

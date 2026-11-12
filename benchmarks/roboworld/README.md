@@ -20,6 +20,19 @@ gar tasks resolve welding --selector-json '{"task": "fillet-2f"}' --output weldi
 gar run --task-file welding.task.json --port 0 --policy-key
 ```
 
+## Task folders
+
+Each benchmark task has its own folder, `environments/<package>/tasks/<task>/`, with three files:
+
+- `task.json`: the task's id, environment, split, selection and the instruction the agent receives, and the entry
+  points of the two files below.
+- `setup.py`: the code that builds the task's start state (`setup`).
+- `verifier.py`: the code that checks the outcome of an episode (`verify`).
+
+The package around the folders keeps the code its tasks share: the scene, the physics, the robot setups, the rendering
+and the evaluator machinery that a task's verifier calls. Each file's docstring says what its entry point receives.
+`gym_anything_robotics.task_folders` loads the folders, and `gar tasks resolve` gives the same task as its `task.json`.
+
 ## Environments
 
 | Environment | Job | Package | Robot setups (default first) | Test task | Report |

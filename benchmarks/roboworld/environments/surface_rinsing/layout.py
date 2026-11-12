@@ -11,13 +11,15 @@ setup change of the same room:
   can-wash    C: can-wash bay in the south-east corner, floor sloped 1/8 in per ft to a 6 in floor drain, open hose reel
                  with a squeeze valve, 32 gal BRUTE can, dunnage shelf (clean storage)
 Every fixture is a static collider; presets only instantiate their own station's free items and water charts.
-`setup(task, seed)` returns the episode spec (robot start, items, fills, soil, seeds).
+`setup(task, seed)` returns the episode spec (robot start, items, fills, soil, seeds); a benchmark task's free items are
+its setup.py's (tasks/<task>/).
 """
 
 import math
 import numpy as np
 
 from classroom_arrangement.furniture import Part
+from gym_anything_robotics import task_folders
 from . import params as P
 
 INCH = P.INCH
@@ -423,8 +425,57 @@ def board_z(name, x):
     return RIM + DB_DROP*f
 
 
+PACKAGE = "surface_rinsing"
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+class Start:
+    """What a benchmark task's setup.py builds its start on (setup() below calls its setup(s)).
+
+    task, seed      the selection
+    rng             the generator seeded by (task, seed), after the seed's supply, wash and detergent draws
+    jit(s)          a draw uniform in -s..s from rng (0 on seed 0)
+    T_wash, c_wash  the seed's wash temperature (C) and detergent strength (kg/m3)
+    items           name -> free item (kind, pose, wetting, soil); the task adds its own, in order
+    floor_soil      soapy water and debris on a floor region, or None (a clean floor)
+    dz, cx, zdb     pot-sink only: the clearance of an item set on a drainboard (m), the soiled drainboard's centre x
+                    and zdb(x), that board's top z at x"""
+
+    def __init__(self, task, seed, rng, jit, T_wash, c_wash, items):
+        self.task, self.seed, self.rng, self.jit = task, seed, rng, jit
+        self.T_wash, self.c_wash, self.items = T_wash, c_wash, items
+        self.floor_soil = None
+
+
+def ledge_sponge(s):
+    """The soapy sponge on the back ledge behind the rinse bowl: rinse-sponge's and scrub-rinse-pan's start."""
+    jit = s.jit
+    # the soapy sponge lies on the back ledge behind the rinse bowl (where a dishwasher leaves it)
+    rx = 0.5*sum(BOWLS["rinse"]) + jit(0.03)
+    s.items["sponge"] = dict(kind="sponge", pose=(rx, 0.5*(BOWL_Y1 + Y - 0.02), RIM + 0.0005, *yaw_quat(jit(0.12))),
+                             pores=dict(fill=0.75, surf=s.c_wash, T=s.T_wash))
+
+
+def bay_can(s, foam_patches, soil):
+    """The 32 gal can in the can-wash bay, wet with wash solution (rinse-garbage-can's and flush-floor's start; the
+    task gives its foam patches and soil)."""
+    jit = s.jit
+    s.items["can"] = dict(kind="can", pose=(6.10 + jit(0.05), 1.10 + jit(0.05), 0.0005, *yaw_quat(jit(math.pi))),
+                          wet=dict(h=30e-6, surf=s.c_wash, T=20.0, foam_patches=foam_patches), soil=soil)
+
+
 def setup(task, seed=0):
-    """Episode spec of a task/seed: robot start, free items with poses and initial wetting/soil, pool fills."""
+    """Episode spec of a task/seed: robot start, free items with poses and initial wetting/soil, pool fills. The station
+    fills its pools; a benchmark task's setup.py (tasks/<task>/) adds its free items (and floor soil) to a Start."""
     if task not in TASKS:
         raise ValueError(f"Unknown task {task!r}; choose {sorted(TASKS)}")
     station = TASKS[task]["preset"]
@@ -435,6 +486,8 @@ def setup(task, seed=0):
                   T_hot=P.SUPPLY["T_hot"], T_cold=P.SUPPLY["T_cold"] + (rng.uniform(-10, 10) if seed else 0.0))
     c_wash = P.SURFACTANT["c_wash"]*(rng.uniform(0.67, 1.67) if seed else 1.0)
     items, fills, drains = {}, {}, {}
+    st = Start(task, seed, rng, jit, T_wash, c_wash, items)
+    folder = task_setup(task)
     if station == "pot-sink":
         dz = 0.0005
         fills = {"wash": dict(depth=PS["fill_depth"], T=T_wash, surf=c_wash, foam=0.02),
@@ -444,33 +497,8 @@ def setup(task, seed=0):
         x0, x1 = DRAINBOARDS["soiled"]
         cx = (x0 + x1)/2
         zdb = lambda x: board_z("soiled", x)
-        if task == "rinse-glassware":
-            spots = [(cx - 0.16, BOWL_Y0 + 0.13), (cx, BOWL_Y0 + 0.13), (cx + 0.16, BOWL_Y0 + 0.13), (cx - 0.16, BOWL_Y0 + 0.30),
-                     (cx + 0.02, BOWL_Y0 + 0.32), (cx + 0.18, BOWL_Y0 + 0.33)]
-            kinds = ["rocks_glass"]*4 + ["mixing_glass"]*2
-            for k, (kind, (x, y)) in enumerate(zip(kinds, spots)):
-                x, y = x + jit(0.02), y + jit(0.02)
-                items[f"glass_{k}"] = dict(kind=kind, pose=(x, y, zdb(x) + dz, *on_board("soiled", jit(math.pi))),
-                                           wet=dict(h=25e-6, surf=c_wash, T=T_wash, foam_patches=2 + int(rng.integers(0, 3))
-                                                    if seed else 2))
-            cx2 = sum(DRAINBOARDS["clean"])/2
-            items["glass_rack"] = dict(kind="glass_rack", pose=(cx2, (BOWL_Y0 + BOWL_Y1)/2, board_z("clean", cx2) + dz,
-                                                                *on_board("clean", 0.0)))
-        elif task in ("rinse-sponge", "scrub-rinse-pan"):
-            # the soapy sponge lies on the back ledge behind the rinse bowl (where a dishwasher leaves it)
-            rx = 0.5*sum(BOWLS["rinse"]) + jit(0.03)
-            items["sponge"] = dict(kind="sponge", pose=(rx, 0.5*(BOWL_Y1 + Y - 0.02), RIM + 0.0005, *yaw_quat(jit(0.12))),
-                                   pores=dict(fill=0.75, surf=c_wash, T=T_wash))
-            if task == "scrub-rinse-pan":
-                wx = 0.5*sum(BOWLS["wash"])
-                # its 200 mm handle points at the bowl's front: the centre stands 0.36 m back from the front wall so that
-                # the handle's tip (0.322 m out) clears it (at 0.275 m the handle would stand 5 cm through the wall, a
-                # pierce that makes no contact and that the contact-based overlap check does not see)
-                items["pan"] = dict(kind="pan", pose=(wx + jit(0.02), BOWL_Y0 + 0.36 + jit(0.02), BOWL_Z0 + 0.0005,
-                                                      *yaw_quat(math.radians(-90) + jit(0.3))),
-                                    soil=dict(kind="egg", load=1.0 + (jit(0.3) if seed else 0.0),
-                                              soaked_s=float(rng.uniform(20.0, 240.0)) if seed else 120.0), wet=None)
-        else:
+        st.dz, st.cx, st.zdb = dz, cx, zdb
+        if folder is None:                                  # rinse-dishware, outside the benchmark
             for k in range(4):
                 x, y = cx + (-0.13 if k % 2 == 0 else 0.13) + jit(0.01), BOWL_Y0 + 0.16 + 0.25*(k//2) + jit(0.01)
                 items[f"plate_{k}"] = dict(kind="plate", pose=(x, y, zdb(x) + dz, *on_board("soiled", jit(math.pi))),
@@ -488,37 +516,16 @@ def setup(task, seed=0):
     elif station == "pre-rinse":
         fills = {}
         drains = {"prerinse": True}
-        rx = (PRS_X0 + PRS_X1)/2
-        ry = (PRS_Y0 + PRS_Y1)/2
-        items["peg_rack"] = dict(kind="peg_rack", pose=(rx, ry, TABLE_Z + 0.012 + 0.0005, *yaw_quat(math.pi/2)))
-        load = 1.0 + (rng.uniform(-0.3, 0.3) if seed else 0.0)
-        for k in range(6):
-            items[f"plate_{k}"] = dict(kind="plate", in_rack=("peg_rack", k), soil=dict(kind="tomato", load=load), wet=None)
     elif station == "prep-sink":
         fills = {}
         drains = {"prep": True}
-        cx, cy = (VSINK_X0 + X)/2 - 0.05, (VDB_Y0 + VBOWL_Y0)/2
-        items["colander"] = dict(kind="colander", pose=(cx + jit(0.02), cy + jit(0.02), V_RIM + DB_DROP*0.5 + 0.0005,
-                                                         *yaw_quat(jit(math.pi))))
-        for k in range(15):
-            items[f"tomato_{k}"] = dict(kind="tomato", in_colander=k, soil=dict(kind="dust", load=1.0 + (jit(0.3) if seed else 0)))
-        w = WORK
-        items["clean_bowl"] = dict(kind="steel_bowl", pose=(0.5*(w["x0"] + w["x1"]), w["y1"] - 0.30, w["z"] + 0.0005, *yaw_quat(0.0)))
-        items["cutting_board"] = dict(kind="cutting_board", pose=(0.5*(w["x0"] + w["x1"]), w["y0"] + 0.36, w["z"] + 0.0005,
-                                                                  *yaw_quat(math.pi/2)))
     elif station == "can-wash":
         fills = {}
-        items["can"] = dict(kind="can", pose=(6.10 + jit(0.05), 1.10 + jit(0.05), 0.0005, *yaw_quat(jit(math.pi))),
-                            wet=dict(h=30e-6, surf=c_wash, T=20.0, foam_patches=3 if task == "rinse-garbage-can" else 0),
-                            soil=dict(kind="debris", load=1.0) if task == "rinse-garbage-can" else None)
-        if task == "flush-floor":
-            items["can"]["pose"] = (6.75, 1.55, 0.0005, *yaw_quat(0.0))
-            items["can"]["wet"] = None
+    if folder is not None:                                  # a benchmark task: its setup.py adds its items
+        folder.setup(st)
     tools = {"pot-sink": ["faucet", "prsv", "mixing_valve", "lever_wastes"], "pre-rinse": ["prsv_r", "mixing_valve_r"],
              "prep-sink": ["v_faucet"], "can-wash": ["reel"]}[station]
-    floor_soil = None
-    if task == "flush-floor":
-        floor_soil = dict(region=(BAY["x0"] + 0.3, BAY["x0"] + 1.3, 0.35, 1.45), surf=c_wash, h=0.6e-3, grit=0.02, load=1.0)
+    floor_soil = st.floor_soil
     return dict(task=task, preset=station, station=station, seed=int(seed), robot=ROBOT_START[station],
                 spine=ROBOT_SPINE[station], items=items, glides="nylon",
                 fills=fills, drains=drains, tools=tools, supply=supply, c_wash=c_wash, T_wash=T_wash, floor_soil=floor_soil,

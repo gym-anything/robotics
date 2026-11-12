@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/stockroom/hold-scanner/seed-0",
+  "name": "hold-scanner",
+  "env_id": "barcode-scanning",
+  "split": "train",
+  "selection": {
+    "preset": "stockroom",
+    "task": "hold-scanner"
+  },
+  "description": "Take the barcode scanner out of its cradle on the cart tray, hold it steady for 5 seconds, then put it back in the cradle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

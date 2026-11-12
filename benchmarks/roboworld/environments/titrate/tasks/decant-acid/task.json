@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/decant-acid/titration-tasks-v2/titration-n15-0000",
+  "name": "decant-acid",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "decant-acid",
+    "variation_id": 0,
+    "contract": "titration-tasks-v2"
+  },
+  "description": "Pour about half of the hydrochloric acid, roughly 10 mL, from its stock bottle into the clean beaker, so it can be pipetted from there, and stand the bottle back upright on the bench.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

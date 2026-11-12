@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/wall/behind-radiator/seed-0",
+  "name": "behind-radiator",
+  "env_id": "painting",
+  "split": "test",
+  "selection": {
+    "preset": "wall",
+    "task": "behind-radiator"
+  },
+  "description": "With the long-reach dog-leg brush (load it from the cut pail), paint the wall behind the radiator -- the strip between the baseboard and the window apron -- to full hide, without getting paint on the radiator or the trim.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/gait/take-sticks/seed-0",
+  "name": "take-sticks",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "gait",
+    "task": "take-sticks"
+  },
+  "description": "Take both drumsticks from the trap tables, hold them ready a few centimetres above the drumhead for 5 s without playing, then put them back on the trap tables.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

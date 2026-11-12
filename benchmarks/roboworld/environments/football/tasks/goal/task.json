@@ -1,0 +1,18 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/goal",
+  "name": "goal",
+  "env_id": "football",
+  "split": "test",
+  "selection": {},
+  "description": "The football is on the penalty mark in front of the Unitree G1 humanoid. Kick it into the goal.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

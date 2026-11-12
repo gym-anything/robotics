@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/pot-sink/scrub-rinse-pan/seed-0",
+  "name": "scrub-rinse-pan",
+  "env_id": "surface-rinsing",
+  "split": "test",
+  "selection": {
+    "preset": "pot-sink",
+    "task": "scrub-rinse-pan"
+  },
+  "description": "The 10 in aluminium fry pan soaking in the wash compartment (left bowl) has dried egg stuck to its inside; a scrub sponge is on the back ledge. Clean the egg off the pan, rinse it free of detergent, immerse it in the sanitizer compartment (right bowl) for at least 30 s, and set it upside down on the wall shelf over the clean drainboard to drain. Finish with the sponge on the back ledge, no water running and nothing in the hands.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

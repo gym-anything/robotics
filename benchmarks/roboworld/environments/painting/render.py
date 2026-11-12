@@ -428,8 +428,9 @@ def _room(S, mats, spec):
     # blue painter's tape marks for the strip / bands (on the wall, render-only marks)
     if spec["preset"] == "wall":
         tape = []
-        if spec["task"] == "roll-strip":
-            tape = [(L.STRIP["x0"], 0.30), (L.STRIP["x1"], 0.30), (L.STRIP["x0"], 2.20), (L.STRIP["x1"], 2.20)]
+        marks = getattr(L.task_setup(spec["task"]), "TAPE", None)
+        if marks is not None:
+            tape = marks                                        # the task's own marks (tasks/<task>/setup.py)
         elif spec["task"] == "cut-in-ceiling":
             tape = [(L.CEILING_BAND["x0"], Z - 0.12), (L.CEILING_BAND["x1"], Z - 0.12)]
         for k, (x, z) in enumerate(tape):

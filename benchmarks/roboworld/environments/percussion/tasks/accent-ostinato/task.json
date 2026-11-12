@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/gait/accent-ostinato/seed-0",
+  "name": "accent-ostinato",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "gait",
+    "task": "accent-ostinato"
+  },
+  "description": "Play an ostinato on the drum with the drumsticks at 116 BPM for 8 bars, each bar three soft strokes and then an accent at least 6 dB louder than the soft strokes, every stroke evenly spaced.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/sensor/tighten-tasks-v2/seed-0",
+  "name": "sensor",
+  "env_id": "tighten-codex",
+  "split": "train",
+  "selection": {
+    "task": "sensor",
+    "seed": 0,
+    "contract": "tighten-tasks-v2"
+  },
+  "description": "Secure the staged W4F replacement sensor with both prestarted M3 screws and the green 2.5 mm/0.35 N m driver, until it clicks on each screw. The frame is already secured. Leave the reference flag at home with the sensor detecting it and holding on its own after release. The flag slides aside for tool access; the W4F mounting maximum is 0.4 N m.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

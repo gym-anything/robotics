@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/trout/take-knife/seed-0",
+  "name": "take-knife",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "trout",
+    "task": "take-knife",
+    "seed": 0,
+    "contract": "filleting-tasks-v1"
+  },
+  "description": "Take the fillet knife from the block and hold it edge-down above the board.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

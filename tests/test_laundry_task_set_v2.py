@@ -22,14 +22,18 @@ import numpy as np
 from laundry.garment_task import GARMENT_TASK_SPECS, GarmentTaskEvaluator, TabletopFrame
 from laundry.task_set import (CONTRACT as V1_CONTRACT, LEGACY, SHIRT_CONTRACT, TASK_SET as V1_TASK_SET,
                               V2_CONTRACT, make_evaluator as make_original_evaluator, resolve as resolve_any,
-                              select as select_original, task_spec as original_task_spec)
+                              select as select_original, task_spec as original_task_spec, task_verifier)
 from laundry.task_set_v2 import (BY_ID, CONTRACT, TASK_SET_ORDER as EIGHT_TASKS, TASKS, TASK_SET, make_evaluator,
                                  resolve, select, task_spec)
 from laundry.task_set_v2_presets import accordion_curve, reach_report, start_positions
-from laundry.task_set_v2_goals import sheet_crossings, signed_turning, three_ply_fraction
 from tests.environments.laundry.task_set_fixtures import half_fold, recorded, thirds_fold
 from tests.environments.laundry.task_set_v2_fixtures import accordion, letter_fold, quarter_fold, rolled, tee_half_fold
 from tests.packages import PACKAGES, REPO
+
+# Helpers of the thirds_fold and roll objectives, in their verifier.py (tasks/<task>/).
+sheet_crossings = task_verifier("towel", "thirds_fold").sheet_crossings
+three_ply_fraction = task_verifier("towel", "thirds_fold").three_ply_fraction
+signed_turning = task_verifier("towel", "roll").signed_turning
 
 
 # Task names of the registered entries; half_fold here is the towel's (the tee's is "tee/half_fold").

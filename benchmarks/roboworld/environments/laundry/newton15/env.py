@@ -109,6 +109,7 @@ class LaundryEnv:
 
     def evaluate(self):
         from ..garment_assembly import _strain_metrics
+        from ..task_set import verify
         x, v = self.state.particle_q.numpy(), self.state.particle_qd.numpy()
         top = self.sim.topology
         strain = _strain_metrics(x, top.physical_triangles, top.panel_material_coordinates_m, top.panel_triangles)
@@ -120,7 +121,8 @@ class LaundryEnv:
         if self.motion is not None:
             recent = dict(recent_positions_m=np.stack([p for _, p in self.motion]),
                           recent_span_s=(self.tick-self.motion[0][0])*self.config.dt)
-        result = self.task.evaluate(x, v, maximum_structural_strain=max(abs(strain.minimum_principal_stretch-1),
+        # A benchmark task is judged by verify in its verifier.py (tasks/<task>/).
+        result = verify(self.task, x, v, maximum_structural_strain=max(abs(strain.minimum_principal_stretch-1),
             abs(strain.maximum_principal_stretch-1)), nonlocal_intersection_count=self.sim.self_intersection_count(),
             runtime_pose_writes=0, external_particle_force_applications=0, released=clear, fixtures_clear=clear,
             tabletop=self.tabletop, principal_stretch_range=(strain.minimum_principal_stretch,

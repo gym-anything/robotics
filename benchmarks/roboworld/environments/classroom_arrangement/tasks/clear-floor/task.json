@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/clear-floor/classroom-tasks-v2/seed-0",
+  "name": "clear-floor",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "clear-floor",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+  },
+  "description": "Clear the floor before the fire drill: carry or slide the book tote from the aisle to the floor in front of the cubbies at the back, put the wastebasket back in its place beside the teacher's desk, and push the stray chair in the right-hand aisle in under its desk, so a 0.915 m wide route is open from the door to the back of the room. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/warehouse/drive-to-pallet/forklift-tasks-v2/seed-0",
+  "name": "drive-to-pallet",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "drive-to-pallet",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+  },
+  "description": "Drive to the pallet in staging lane S3 along the dock wall and stop square in front of it, ready to pick it up: forks level, at the pallet's openings, just short of the pallet.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

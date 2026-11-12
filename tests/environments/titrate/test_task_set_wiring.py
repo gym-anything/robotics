@@ -18,9 +18,9 @@ from scipy.spatial.transform import Rotation
 
 from titrate.newton15.lab_config import LabConfig
 from titrate.newton15.liquid_charge import Reagents
-from titrate.newton15.task_catalogue import TASKS
+from titrate.newton15.task_catalogue import TASKS, task_setup
 from titrate.newton15.task_presets import preset
-from titrate.newton15.task_session import apply_rigid_start, make_session, precharge_chemistry
+from titrate.newton15.task_session import apply_rigid_start, make_session
 from .test_task_set import initial, ROOT
 
 
@@ -153,7 +153,7 @@ class WiringTest(unittest.TestCase):
         r = Reagents()
         p = preset('finish-titration', LabConfig(), r)
         liquid = Liquid(NS(), self.numerics, Reagents(**p['reagents']))
-        precharge_chemistry(liquid, p)
+        task_setup('finish-titration').precharge_chemistry(liquid, p)
         a, b = liquid.initial_groups['flask']
         n = liquid.chemistry.moles.numpy()
         reacted = liquid.chemistry.reacted.numpy()

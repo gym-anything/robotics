@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/stockroom/count-by-scanning/seed-0",
+  "name": "count-by-scanning",
+  "env_id": "barcode-scanning",
+  "split": "test",
+  "selection": {
+    "preset": "stockroom",
+    "task": "count-by-scanning"
+  },
+  "description": "Cycle count slot A03-3-B (a slot runs from its location label to the next label on the right): scan the slot's location label, then scan every unit in the slot exactly once (the barcodes are on the back or side of the units). Leave the stock faced on the shelf as you found it and return the scanner to its cradle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

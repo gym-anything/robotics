@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/bed/planting-hole/soil-tasks-v2/seed-0",
+  "name": "planting-hole",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "planting-hole",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+  },
+  "description": "Dig a planting hole for the #1 container shrub (root ball 165 mm across, 160 mm tall) centred on the white mark: as deep as the root ball and two to three times as wide at the top, on a firm, undisturbed floor; put the spoil on the tarp.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/wall/ledger-anchor/seed-0",
+  "name": "ledger-anchor",
+  "env_id": "drilling",
+  "split": "test",
+  "selection": {
+    "preset": "wall",
+    "task": "ledger-anchor"
+  },
+  "description": "The ledger is set level on temporary brackets against the concrete wall. Fasten it to the wall with the four 1/2-inch wedge anchors, one at each point marked on the ledger: drill through the ledger and 108 to 125 mm into the concrete, clear the drilling dust with the shop vacuum as needed, drive each anchor to its nominal embedment (95 mm) with its washer on the ledger, and tighten its nut with the impact wrench, whose adaptive-torque module is set for these anchors and stops with a green light at their installation torque, 68 N m.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

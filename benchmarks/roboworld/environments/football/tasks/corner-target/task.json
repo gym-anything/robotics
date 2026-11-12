@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/corner-target",
+  "name": "corner-target",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "corner-target"
+  },
+  "description": "A target sheet covers the goal except its two bottom corners. Kick the ball into the goal through one of the corner openings.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

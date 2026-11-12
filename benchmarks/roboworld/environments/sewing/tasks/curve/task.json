@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "sewing/v1/sample-room/curve/seed-0",
+  "name": "curve",
+  "env_id": "sewing",
+  "split": "test",
+  "selection": {
+    "task": "curve"
+  },
+  "description": "Join the two plies with a seam 10 mm from their edge, from the far end of the right edge around the rounded corner and along the near edge to the left edge; trim the threads and let go of the work.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

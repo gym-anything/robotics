@@ -38,6 +38,7 @@ from scipy.spatial.transform import Rotation
 
 from . import params as P
 from . import hydraulics as H
+from .config import task_setup
 
 MDL_FILE = Path(__file__).with_name("SyringeHandling.mdl")
 # diffuse colour (linear), roughness, metallic. Appearance only (authored); no physics reads these.
@@ -1051,9 +1052,11 @@ def liquid_state(world):
     fl = world.fluid
     d = world.solver.mj_data
     st = dict(syringes=[], vials=[], lines=[], drops=[], puddles=[], t=float(world.sim_time))
+    dose_label = getattr(task_setup(world.config.task), "DOSE_LABEL", "MEDICATION")     # (the task's setup.py)
     for s in fl.syringes.values():
         ch = s.chamber
-        label = "SALINE FLUSH" if s.kind == "flush" else ("CONTRAST" if s.name == "dose" and world.config.task == "fast-bolus" else "MEDICATION" if s.name == "dose" else f"{s.s['nominal_ml']:g} mL")
+        label = "SALINE FLUSH" if s.kind == "flush" else (dose_label if s.name == "dose" else
+                                                          f"{s.s['nominal_ml']:g} mL")
         st["syringes"].append(dict(label=label, body=int(s.barrel), bore=s.s["bore"], nominal_ml=s.s["nominal_ml"], div_ml=s.s["div_ml"], od=s.s["od"], x=float(d.qpos[s.a_pl]), gas=float(ch.gas_volume()),
                                    gas_pos=float(ch.gas_pos), slug=bool(s.s["bore"] < 0.006),
                                    parcels=[(_species(p), float(p[:H.AIR].sum())) for p in ch.stack.items if float(p[:H.AIR].sum()) > 1e-12]))

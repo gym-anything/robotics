@@ -152,24 +152,12 @@ PROP = dict(
     ketchup=dict(half=(0.031, 0.031), h=0.205, mass=0.40, round=True), relish_jar=dict(half=(0.036, 0.036), h=0.095, mass=0.48, round=True),
     starch_box=dict(half=(0.046, 0.028), h=0.150, mass=0.43), tub=dict(half=(0.085, 0.060), h=0.068, mass=0.52),
     towel=dict(half=(0.110, 0.075), h=0.022, mass=0.09, mu=0.6))
+# what stands beside the work is each task's PROPS, in its setup.py (tasks/<task>/)
 # per task: (kind, x from the station's centre, y from the counter's front edge, yaw in degrees). Two zones clear of the
 # arms' ways to the vessel, the crock and the mixer: at the back left (x -0.95 .. -0.52) and, in the bake preset, at the
 # back right (x 0.85 .. 1.40); on the hob everything stands to the left, away from the heat.
 # (Placed clear of the towel that hangs from its rail to 76 mm above the counter between x -0.80 and -0.54, its front
 # 50 mm off the wall: a prop standing inside the towel's slab is thrown over or pushed out when a scene is built.)
-PROPS = {
-    "dry-whisk": (("flour_bag", -0.86, 0.52, 8), ("sugar_jar", -0.71, 0.53, 0), ("baking_tin", -0.60, 0.50, 0), ("salt", -0.50, 0.57, 0),
-                  ("scale", 1.05, 0.47, 4), ("towel", 1.30, 0.40, -12)),
-    "muffin-fold": (("flour_bag", -0.87, 0.53, 6), ("sugar_jar", -0.73, 0.515, 0), ("baking_tin", -0.62, 0.50, 0),
-                    ("milk_carton", 0.90, 0.54, 12), ("egg_carton", 1.07, 0.50, -8), ("oil_bottle", 1.24, 0.55, 0), ("jug", 1.32, 0.40, 30)),
-    "pancake-whisk": (("flour_bag", -0.87, 0.53, -5), ("sugar_jar", -0.73, 0.515, 0), ("baking_tin", -0.61, 0.51, 0),
-                      ("milk_carton", 0.90, 0.54, 10), ("egg_carton", 1.08, 0.50, 5), ("oil_bottle", 1.25, 0.55, 0), ("jug", 1.30, 0.40, 20)),
-    "pudding-whisk": (("pudding_box", -0.62, 0.50, 20), ("milk_carton", -0.80, 0.54, -8), ("jug", 1.00, 0.48, 25), ("towel", 1.28, 0.42, 10)),
-    "cake-mixer": (("cake_box", -0.80, 0.535, 4), ("egg_carton", 0.97, 0.50, -6), ("oil_bottle", 1.15, 0.55, 0), ("jug", 1.30, 0.44, 35)),
-    "sauce-blend": (("mayo_jar", -0.82, 0.52, 0), ("ketchup", -0.68, 0.54, 0), ("relish_jar", -0.57, 0.50, 0), ("towel", 1.10, 0.42, 6)),
-    "stir-sauce": (("milk_carton", -1.48, 0.54, 10), ("starch_box", -1.33, 0.55, -6), ("sugar_jar", -1.18, 0.53, 0), ("jug", -1.05, 0.42, 25)),
-    "reheat-porridge": (("tub", -1.40, 0.50, 8), ("milk_carton", -1.20, 0.55, -10), ("towel", -1.02, 0.40, 14)),
-}
 COUNTER_Z = _p("COUNTER_Z", 0.914, "m", "search", "36 in finished counter height (NKBA figures on trade pages)")
 COUNTER_DEPTH = _p("COUNTER_DEPTH", 0.635, "m", "search", "24 in carcass and 1 in overhang")
 COUNTER_LENGTH = _p("COUNTER_LENGTH", 2.4, "m", "authored", "one bay of a teaching kitchen's counter run")

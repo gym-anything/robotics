@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/counter/bag-purchase/seed-0",
+  "name": "bag-purchase",
+  "env_id": "gift-bags",
+  "split": "test",
+  "selection": {
+    "preset": "counter",
+    "task": "bag-purchase"
+  },
+  "description": "You are at the cash-wrap counter of a boutique, bagging a customer's boxed candle. Take the top gift bag from the stack, open it, square its bottom and put one of the bottom boards in it. Leave the bag standing open on the dark rubber counter mat with the boxed candle inside, upright on the board. Release everything when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

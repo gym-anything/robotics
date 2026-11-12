@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/therapy/finger-tap/seed-0",
+  "name": "finger-tap",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "therapy",
+    "task": "finger-tap"
+  },
+  "description": "Tap the drum 8 times with a fingertip (no tool) at 80 BPM, softly (mezzo-piano), letting the head ring between taps.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

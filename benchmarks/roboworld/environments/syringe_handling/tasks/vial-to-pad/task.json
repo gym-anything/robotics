@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/injection/vial-to-pad/seed-0",
+  "name": "vial-to-pad",
+  "env_id": "syringe-handling",
+  "split": "test",
+  "selection": {
+    "preset": "injection",
+    "task": "vial-to-pad"
+  },
+  "description": "Draw 1 mL of the blue medication from the vial with the pink blunt fill needle. Change to the orange 25 G needle that lies sheathed on the tray. Give the dose into the muscle of the injection pad at the printed ring, square to the skin, no faster than 10 seconds per millilitre. Put the syringe and both needles into the sharps container and leave the vial upright.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

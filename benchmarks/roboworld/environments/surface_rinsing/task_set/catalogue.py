@@ -7,7 +7,7 @@ import hashlib
 from copy import deepcopy
 
 CONTRACT = "surface-rinsing-tasks-v1"
-PAN_CONTRACT = "progress-v1"                # task.REWARD_CONTRACTS["scrub-rinse-pan"]
+PAN_CONTRACT = "progress-v1"                # REWARD_CONTRACT of tasks/scrub-rinse-pan/verifier.py
 NEW_TASK = "drain-wash-compartment"
 STATIONS = ("pot-sink", "pre-rinse", "prep-sink", "can-wash")
 
@@ -132,11 +132,8 @@ def selections():
 def setup(task, seed=0, contract=None):
     from .. import layout
     v = resolve(task=task, seed=seed, contract=contract)
-    # Only the new task has a new scene: same filled sink, no movable ware/tool.
-    spec = layout.setup("rinse-sponge" if task == NEW_TASK else task, seed)
-    if task == NEW_TASK:
-        spec["items"] = {}
-        spec["task"] = task
+    # The new task, outside layout.TASKS, builds its scene in its folder (tasks/drain-wash-compartment/setup.py).
+    spec = layout.setup(task, seed) if task in layout.TASKS else layout.task_setup(task).setup(task, seed)
     spec["instruction"] = instruction(v)
     spec["task_contract"] = v.get("contract", "legacy")
     return spec

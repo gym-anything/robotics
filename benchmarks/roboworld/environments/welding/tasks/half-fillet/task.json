@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/half-fillet/seed-0",
+  "name": "half-fillet",
+  "env_id": "welding",
+  "split": "train",
+  "selection": {
+    "preset": "steel-cell",
+    "task": "half-fillet"
+  },
+  "description": "Weld a 1/4 inch fillet along the right half of the near side of the tacked bracket in the horizontal position: from the right end of the joint (the end on the robots' right, the right end in the bench camera's image) to its middle, 3 inches, and fill the crater where you stop. Leave the left half of the joint unwelded. The spray-transfer schedule for 0.035 inch ER70S-6 wire with 90/10 gas is about 500 in/min (12.7 m/min) wire feed at 29 V.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

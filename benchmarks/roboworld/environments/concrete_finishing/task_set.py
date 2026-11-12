@@ -1,6 +1,6 @@
 """Opt-in task contracts; the original catalogue, IDs and launch defaults remain valid.
 
-No scene changes: all eight reuse layout.TASK_SETUP and its seeded material presets.
+No scene changes: all eight reuse their stations and seeded material presets (tasks/<task>/setup.py).
 Kept outside probes.common.PHYSICS and STAMP_EXTRA, as is the evaluator adapter.
 """
 

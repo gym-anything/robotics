@@ -1,12 +1,19 @@
-"""Deterministic final-state pigment judgements; no history/action milestones."""
+"""Deterministic final-state pigment judgements; no history/action milestones.
+
+Each preset's verdict is its verify(task, ink, config, state) (tasks/<name>/verifier.py), which evaluate calls. Shared
+here: the visible pigment and the target rasters (board), the body-state requirement and tool return of the tasks that
+use tools (require_state, tool_return), the verdict dict (result), and the judgements two presets share: lettering in
+one colour (write-text, write-in-colour) and erasing around kept writing (erase-board, erase-except-boxed).
+"""
 from functools import lru_cache
 import numpy as np
-from scipy.ndimage import maximum_filter, distance_transform_edt
+from scipy.ndimage import maximum_filter
 
 from whiteboard.config import COLORS
 from whiteboard.bridge_verifier import _tiles, _crop, FAIL_SCORE_SCALE
-from .catalogue import TablePlacement, raster
-from .mechanical import mechanics, recap
+from whiteboard.tasks import task_verifier
+from .catalogue import raster
+from .mechanical import mechanics
 
 AREA_ALLOWANCE = 1e-4
 
@@ -46,74 +53,56 @@ def f1(target, actual, ink):
 
 
 def evaluate(task, ink, config, state=None):
-    if task.name == "draw-table":
-        from .table_verifier import evaluate_table
-        answer = evaluate_table(TablePlacement(), ink)
-        answer.update(task_id=task.task_id, contract=task.contract + "/draw-table")
-        return answer
+    return task_verifier(task.name).verify(task, ink, config, state)
+
+
+def board(task, ink):
+    """Visible colour and weight per texel, the start and final target rasters, and a texel's area (m^2)."""
     colors, weight = visible(ink)
     start, target = targets(task, ink.board, ink.width, ink.height)
     texel = ink.board.writing_width * ink.board.writing_height / (ink.width * ink.height)
-    if task.name in ("write-text", "write-in-colour"):
-        channel = tuple(COLORS).index("green" if task.name == "write-in-colour" else "black")
-        actual = weight * (colors == channel)
-        overlap = f1(target == channel, actual, ink)
-        other = float((weight * (colors != channel)).sum()) * texel
-        clean = clip(1 - other / max(float((target == channel).sum()) * texel, 1e-12))
-        return result(task, {"lettering": overlap >= .85, "other_colors_clean": other <= AREA_ALLOWANCE},
-                      overlap * clean, factors={"f1": overlap, "color_cleanliness": clean}, other_color_m2=other)
+    return colors, weight, start, target, texel
+
+
+def require_state(state):
     if state is None:
         raise ValueError("Task requires current tool poses, velocities, robot contacts and pelvis height")
-    if task.name == "recap-and-tidy":
-        checks, progress, detail = recap(config, task, state)
-        area = float(weight.sum()) * texel
-        checks["board_clean"] = area <= AREA_ALLOWANCE
-        clean = clip(1 - max(0., area - AREA_ALLOWANCE) / .001)
-        return result(task, checks, progress * clean, visible_m2=area, **detail)
-    names = ("eraser", "marker_black") if task.name == "correct-misspelling" else ("eraser",)
+
+
+def tool_return(config, state, names):
+    """Standing and tools-returned checks, the tool factor and the tray readings of the named tools."""
     checks, return_quality, tray = mechanics(config, state, names)
     # Returning a tool refines completed board work; untouched tool placement earns nothing.
     tool_factor = .9 + .1 * return_quality
-    if task.name in ("erase-board", "erase-except-boxed"):
-        keep = target < len(COLORS)
-        erase = (start < len(COLORS)) & ~keep
-        residual = float((weight * ~keep).sum()) * texel
-        erased = clip(1 - residual / max(float(erase.sum()) * texel, 1e-12))
-        retention = float((weight * (colors == target) * keep).sum() / max(keep.sum(), 1)) if keep.any() else 1.
-        # Endpoint rule: replacement with identical pigment is fine; no action-history ban.
-        added = float((weight * ((start == 255) | (colors != start))).sum()) * texel
-        checks.update(erased=residual <= AREA_ALLOWANCE, no_added_marks=added <= AREA_ALLOWANCE,
-                      kept=retention >= .90)
-        progress = erased * min(1., retention/.9) * tool_factor
-        return result(task, checks, progress, factors={"erased": erased, "retention": retention,
-                      "tool_return": tool_factor}, residual_m2=residual, added_m2=added, tray=tray)
-    # SCIENSE -> SCIENCE: sixth glyph. Each neighbour gets its own retention gate.
-    start_strokes, final_strokes = task.strokes(True), task.strokes(False)
-    wrong = raster(tuple(s for s in start_strokes if s[0] == "letter 5"), ink.board, ink.width, ink.height) == 0
-    corrected = raster(tuple(s for s in final_strokes if s[0] == "letter 5"), ink.board, ink.width, ink.height) == 0
-    # Non-shared wrong ink measured outside the corrected letter's 2 mm band.
-    sampling = (ink.board.writing_height / ink.height, ink.board.writing_width / ink.width)
-    allowed = distance_transform_edt(~corrected, sampling=sampling) <= .002
-    unwanted = wrong & ~allowed
-    residual = float((weight * unwanted).sum()) * texel
-    removed = clip(1 - residual / max(float(unwanted.sum()) * texel, 1e-12))
-    # A glyph-local crop excludes neighbouring letters from its precision denominator.
-    cell = distance_transform_edt(~(wrong | corrected), sampling=sampling) <= .012
-    overlap = f1(corrected, weight * (colors == 0) * cell, ink)
-    # Start already shares strokes with the desired glyph: credit only its improvement.
-    f0 = f1(corrected, ((start == 0) & cell).astype(float), ink)
-    improved = clip((overlap - f0) / max(1 - f0, 1e-12))
-    retention = {}
-    for i in (0, 1, 2, 3, 4, 6):
-        mask = raster(tuple(s for s in final_strokes if s[0] == f"letter {i}"), ink.board, ink.width, ink.height) == 0
-        retention[str(i)] = float((weight * (colors == 0) * mask).sum() / max(mask.sum(), 1))
-    keep_factor = min(1., min(retention.values()) / .9)
-    word_band = distance_transform_edt(target != 0, sampling=sampling) <= .002
-    stray = float((weight * ((colors != 0) | ~word_band)).sum()) * texel
-    cleanliness = clip(1 - max(0., stray - AREA_ALLOWANCE) / max(float((target == 0).sum()) * texel, 1e-12))
-    checks.update(wrong_letter_removed=residual <= .5e-4, corrected_letter=overlap >= .85,
-                  neighbours_kept=all(v >= .9 for v in retention.values()), rest_clean=stray <= AREA_ALLOWANCE)
-    return result(task, checks, (.5 * removed + .5 * improved) * keep_factor * cleanliness * tool_factor,
-                  factors={"removed": removed, "glyph_f1": overlap, "initial_glyph_f1": f0,
-                           "improved_glyph": improved, "keep": keep_factor, "cleanliness": cleanliness,
-                           "tool_return": tool_factor}, retention=retention, residual_m2=residual, stray_m2=stray, tray=tray)
+    return checks, tool_factor, tray
+
+
+def lettering(task, ink, colour):
+    """The target lettering in one marker colour (write-text: black, write-in-colour: green); no body state."""
+    colors, weight, start, target, texel = board(task, ink)
+    channel = tuple(COLORS).index(colour)
+    actual = weight * (colors == channel)
+    overlap = f1(target == channel, actual, ink)
+    other = float((weight * (colors != channel)).sum()) * texel
+    clean = clip(1 - other / max(float((target == channel).sum()) * texel, 1e-12))
+    return result(task, {"lettering": overlap >= .85, "other_colors_clean": other <= AREA_ALLOWANCE},
+                  overlap * clean, factors={"f1": overlap, "color_cleanliness": clean}, other_color_m2=other)
+
+
+def erasing(task, ink, config, state):
+    """The start writing outside the target erased, the target's writing kept, and the wiper returned."""
+    colors, weight, start, target, texel = board(task, ink)
+    require_state(state)
+    checks, tool_factor, tray = tool_return(config, state, ("eraser",))
+    keep = target < len(COLORS)
+    erase = (start < len(COLORS)) & ~keep
+    residual = float((weight * ~keep).sum()) * texel
+    erased = clip(1 - residual / max(float(erase.sum()) * texel, 1e-12))
+    retention = float((weight * (colors == target) * keep).sum() / max(keep.sum(), 1)) if keep.any() else 1.
+    # Endpoint rule: replacement with identical pigment is fine; no action-history ban.
+    added = float((weight * ((start == 255) | (colors != start))).sum()) * texel
+    checks.update(erased=residual <= AREA_ALLOWANCE, no_added_marks=added <= AREA_ALLOWANCE,
+                  kept=retention >= .90)
+    progress = erased * min(1., retention/.9) * tool_factor
+    return result(task, checks, progress, factors={"erased": erased, "retention": retention,
+                  "tool_return": tool_factor}, residual_m2=residual, added_m2=added, tray=tray)

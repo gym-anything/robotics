@@ -117,7 +117,7 @@ class Scene:
             cxw, cyw = bx + r*.86*math.cos(a), by + r*.86*math.sin(a)
             self.static_box(f"bowl_wall_{k}", (cxw, cyw, z + d/2), (.0008, r*math.tan(math.pi/16)*1.05, d/2),
                             "stainless", yaw=a)
-        if self.c.task in LY.FRAME_PAN["tasks"]:
+        if "FRAME_PAN" in LY.task_props(self.c.task):
             self.tapered_pan("frame_pan", LY.FRAME_PAN)
         self.knife_block(z)
         self.bench_stock(z)

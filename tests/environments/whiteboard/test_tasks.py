@@ -7,8 +7,10 @@ import numpy as np
 from PIL import Image, ImageDraw
 from whiteboard.config import Board, MaterialPriors, COLORS
 from whiteboard.ink import InkSurface
-from whiteboard.tasks import BRIDGE_INSTRUCTION, Task, bridge_strokes, reference_channels
+from whiteboard.tasks import BRIDGE_INSTRUCTION, Task, reference_channels, task_setup
 from whiteboard.variations import resolve
+
+bridge_strokes = task_setup("bridge").bridge_strokes
 
 
 class TaskTests(unittest.TestCase):
@@ -219,7 +221,8 @@ class BridgeTaskTests(unittest.TestCase):
         self.assertTrue(0.2 < faint["progress"] < 0.8, faint["progress"])
 
     def test_bridge_drawings_stay_within_the_robots_writing_reach(self):
-        from whiteboard.variations import BRIDGE_TOP_Z_M, specification
+        from whiteboard.variations import specification
+        BRIDGE_TOP_Z_M = task_setup("bridge").BRIDGE_TOP_Z_M
         for index in range(0, 10000, 7):
             task = specification(index)["task"]
             if task["kind"] == "bridge":

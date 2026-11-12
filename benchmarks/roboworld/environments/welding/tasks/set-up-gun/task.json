@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/set-up-gun/seed-0",
+  "name": "set-up-gun",
+  "env_id": "welding",
+  "split": "train",
+  "selection": {
+    "preset": "steel-cell",
+    "task": "set-up-gun"
+  },
+  "description": "Set the cell up for the spray procedure before welding: set the power source to the procedure's 500 in/min (12.7 m/min) wire feed and 29 V, and leave 1/2 inch of wire sticking out of the contact tip. Do not strike an arc, keep the gun clear of the parts and leave the shielding gas off.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

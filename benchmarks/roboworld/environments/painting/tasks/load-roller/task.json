@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/wall/load-roller/painting-tasks-v1/seed-0",
+  "name": "load-roller",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "wall",
+    "task": "load-roller",
+    "seed": 0,
+    "contract": "painting-tasks-v1"
+  },
+  "description": "Load the dry roller cover evenly with paint from the tray, then hold it above the tray, ready to roll, without dripping.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,44 +1,45 @@
 """Task-only initial arrangements, outside both checkpoint physics source lists.
 
 No setter here is exposed as an action. The factory applies these once before
-liquid initialization and before recording the tick-zero checkpoint.
+liquid initialization and before recording the tick-zero checkpoint. A task's own
+arrangement is arrange(s) in its setup.py (tasks/<task>/); preset() builds the
+Start it works on, then checks the volumes and placements every task shares.
 """
 
-from dataclasses import asdict, replace
+from dataclasses import asdict
 import math
 import random
 
-from .task_catalogue import task_name
+from .task_catalogue import task_name, task_setup
+
+
+class Start:
+    """What a task's setup.py arranges its start on (preset() below calls its arrange(s), if it has one).
+
+    name      the task
+    config    the selected bench layout (lab_config.LabConfig)
+    reagents  the selected nominal charge (liquid_charge.Reagents)
+    rng       random.Random(config.seed), for the task's seeded draws
+    poses     free body name -> start position (x, y, z), for the bodies the task moves
+    actual    the charge the liquid starts with: the nominal one unless the task prepares another
+    base0     base already run into the flask at the start, mL
+    dial      the stirrer dial's start angle, rad"""
+
+    def __init__(self, name, config, reagents, rng, poses, actual, base0, dial):
+        self.name, self.config, self.reagents, self.rng = name, config, reagents, rng
+        self.poses, self.actual, self.base0, self.dial = poses, actual, base0, dial
 
 
 def preset(name, config, reagents, spacing_m=None):
     task_name(name)
     poses, base0, dial = {}, 0., 0.
     rng = random.Random(config.seed)
-    if name == 'centre-flask':
-        # Keep the entire 67 mm flask footprint on the 100 mm plate.
-        radius, angle = rng.uniform(.013, .0165), rng.uniform(0., 2*math.pi)
-        dx, dy = radius*math.cos(angle), radius*math.sin(angle)
-        x, y, z = config.flask_position
-        poses['flask'] = (x+dx, y+dy, z)
-        poses['stir_bar'] = (x+dx, y+dy, z+.005)
-    if name in ('prime-burette', 'drain-burette'):
-        poses['rinse_beaker'] = (.10, -.27, config.bench_height+.0002)
-    if name == 'decant-acid':
-        poses['acid_bottle'] = (-.05, -.28, config.bench_height+.0002)
-        poses['rinse_beaker'] = (.12, -.28, config.bench_height+.0002)
     actual = reagents
-    if name == 'run-in' and reagents.aliquot_ml*reagents.acid_molar/reagents.base_molar <= 1.5:
-        raise ValueError('Run-in needs an equivalence volume above 1.5 mL')
-    if name == 'finish-titration':
-        # All offsets are exact multiples of the reference parcel volume.
-        delta = rng.choice((.3125, .5, .75, 1.))
-        base0 = reagents.aliquot_ml*reagents.acid_molar/reagents.base_molar-delta
-        if not 0 < base0 < reagents.burette_ml:
-            raise ValueError('Paused titration requires enough base for a positive precharge')
-        actual = replace(reagents, dilution_ml=reagents.dilution_ml+base0,
-                         burette_ml=reagents.burette_ml-base0)
-        dial = (500.-100.)/1400.*(5*math.pi/3)
+    arrange = getattr(task_setup(name), 'arrange', None)
+    if arrange is not None:                 # the task's own start (tasks/<task>/setup.py)
+        s = Start(name, config, reagents, rng, poses, actual, base0, dial)
+        arrange(s)
+        actual, base0, dial = s.actual, s.base0, s.dial
     if spacing_m is not None:
         from .liquid_charge import parcel_count
         for key in ('aliquot_ml', 'dilution_ml', 'burette_ml', 'acid_bottle_ml', 'base_bottle_ml'):

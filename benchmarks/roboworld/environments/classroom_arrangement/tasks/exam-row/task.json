@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/exam-row/classroom-tasks-v2/seed-0",
+  "name": "exam-row",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "exam-row",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+  },
+  "description": "Set row 2 up for a test: spread its six desks onto the exam dots, 1.25 m apart across the room, facing the board, each chair pulled out behind its desk ready to sit. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

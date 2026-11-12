@@ -65,11 +65,11 @@ def robot_name(robot):
 def check_task(robot, task):
     """Two-handed tools (spade, trenching shovel, post-hole digger, drill with side handle) and the two-tool backfill
     tasks need both hands; the single-arm configuration is offered the one-handed tasks only."""
-    from .layout import TASKS
+    from .layout import TASKS, task_entry
     name = robot_name(robot)
     allowed = TASKS[task]["robots"]
     if name not in allowed:
-        held = TASKS[task]["held"]
+        held = task_entry(task)["held"]
         why = ("it holds the " + held["both"].replace("_", " ") + " with two hands") if "both" in held else \
               ("it holds " + " and ".join(held.values()) + " at once")
         raise ValueError(f"soil-excavation task {task!r} needs {', '.join(allowed)}: {why}")

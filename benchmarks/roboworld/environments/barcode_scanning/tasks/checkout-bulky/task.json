@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/counter/checkout-bulky/seed-0",
+  "name": "checkout-bulky",
+  "env_id": "barcode-scanning",
+  "split": "train",
+  "selection": {
+    "preset": "counter",
+    "task": "checkout-bulky"
+  },
+  "description": "Ring up the basket as usual, and scan the case of water at the end of the counter with the handheld scanner without lifting the case; return the scanner to its cradle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

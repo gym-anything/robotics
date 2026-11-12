@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/specimen/tube-label/seed-0",
+  "name": "tube-label",
+  "env_id": "label-application",
+  "split": "test",
+  "selection": {
+    "preset": "specimen",
+    "task": "tube-label"
+  },
+  "description": "You are at a blood collection station. A blood collection tube, just drawn from the patient, lies in its cradle, and the printer has just printed and presented the patient's label. Take the printed patient label and apply it correctly to the specimen tube. Here that means lengthwise and straight over the tube manufacturer's label, with the patient's name at the end toward the cap and that end lined up with the manufacturer's label's edge nearest the cap (no closer to the cap), a clear viewing strip left open along the tube, and the tube left in its cradle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/trench/cable-trench/soil-tasks-v2/seed-0",
+  "name": "cable-trench",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "cable-trench",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+  },
+  "description": "Dig a narrow trench for a low-voltage path-light cable along the white line between the two path lights, deep enough for 150 mm of cover, with the spoil on the lawn-side tarp; stay on the walkway.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

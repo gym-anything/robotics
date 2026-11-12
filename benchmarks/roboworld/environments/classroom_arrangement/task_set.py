@@ -139,8 +139,10 @@ def on_top(e, chair, desk):
 
 
 class CatalogueEvaluation:
-    def __init__(self, evaluator, motion, window):
+    def __init__(self, evaluator, motion, window, *, extra=None, weights=None):
+        """extra(criteria) -> {name: criterion} and weights (progress part -> weight) come from the task's verifier."""
         self.e, self.spec = evaluator, evaluator.spec
+        self.extra, self.weights = extra, weights
         self.motion, self.window = motion, bool(window)
         self.items, self.checks = self.spec["items"], self.spec["check"]
         self.start = evaluator._task_set_start
@@ -300,9 +302,8 @@ class CatalogueEvaluation:
             spacing = min(math.dist(self.poses[a][:2], self.poses[b][:2]) for i, a in enumerate(chairs) for b in chairs[i+1:])
             self.criteria["exam"] = dict(check="exam_spacing", ok=spacing >= E["exam_pitch"] - 1e-9,
                                          min_chair_spacing_m=spacing)
-        if self.spec["task"] == "seat-tutoring-group":
-            sides = [self.criteria[f"tchair_{i}"]["side"] for i in range(1, 5) if self.criteria[f"tchair_{i}"]["ok"]]
-            self.criteria["seating_plan"] = dict(check="seating_plan", ok=sorted(sides) == ["left_end", "right_end", "room", "room"])
+        if self.extra is not None:                  # the task's own criteria (its verifier.py)
+            self.criteria.update(self.extra(self.criteria))
         route_penalty = 1.
         if "route" in self.checks:
             ends = self.checks["route"]
@@ -314,11 +315,7 @@ class CatalogueEvaluation:
             route_penalty = 1. - (1. - G["penalty"]["route"])*narrow
         self.criteria["rest_of_room"] = dict(check="as_found", ok=not self.charges, charges=self.charges)
         self.criteria["no_toppled_or_blocking"] = self.safety()
-        weights = {"desks": 0.6, "chairs": 0.4}
-        if self.spec["task"] == "move-teacher-desk":
-            weights = {"desks": 0.75, "chairs": 0.25}
-        elif self.spec["task"] == "clear-floor":
-            weights = {"tote": 0.25, "basket": 0.25, "chairs": 0.25, "route": 0.25}
+        weights = self.weights or {"desks": 0.6, "chairs": 0.4}     # a task's own progress weights (its verifier.py)
         parts = {k: mean_active(v) for k, v in self.progress.items()}
         raw = weighted_active([(w, parts[k]) for k, w in weights.items()])
         deduction = G["place_charge"]*sum(self.charges.values())

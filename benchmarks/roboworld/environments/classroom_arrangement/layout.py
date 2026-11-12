@@ -8,6 +8,7 @@ table and tchair_1..4 (tutoring table), teacher_desk and teacher_chair, tote, ba
 
 import math
 import numpy as np
+from gym_anything_robotics import task_folders
 from . import params as P
 from .furniture import TUCK_DY, USE_DY
 
@@ -203,12 +204,44 @@ PRESETS = {"room114": tuple(TASKS)}
 
 
 def robot_start(task):
-    """(x, y, yaw) of the robot's base_link: parked in an aisle near the task area, arms stowed, spine down."""
-    return {"straighten-row": (3.23, 4.45, math.pi/2), "push-in-chairs": (3.23, 4.45, math.pi/2),
-            "seat-tutoring-group": (0.90, 8.30, math.pi), "make-pod": (1.075, 1.35, math.pi/2),
-            "exam-row": (3.23, 1.35, math.pi/2), "chairs-up": (0.90, 7.90, math.pi), "chairs-down": (0.90, 7.90, math.pi),
-            "clear-floor": (3.23, 1.35, math.pi/2), "move-teacher-desk": (-0.80, 1.47, math.pi),
-            "group-work": (0.60, 1.35, math.pi)}[task]
+    """(x, y, yaw) of the robot's base_link: parked in an aisle near the task area, arms stowed, spine down. A benchmark
+    task's is ROBOT in its setup.py (tasks/<task>/)."""
+    folder = task_setup(task)
+    if folder is not None:
+        return folder.ROBOT
+    return {"make-pod": (1.075, 1.35, math.pi/2), "chairs-down": (0.90, 7.90, math.pi)}[task]
+
+
+PACKAGE = "classroom_arrangement"
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+class Start:
+    """What a benchmark task's setup.py builds its start on (setup() below calls its setup(s)).
+
+    items     the room as laid out (name -> dict(kind, pose, ...)); the task moves what it needs
+    start     the start poses drawn so far (place() records them)
+    targets   name -> goal pose (x, y, yaw); a desk with an on_marks or slot check gets floor dots at its target
+    inverted  the chairs that start upside down on their own desks
+    rng       the generator seeded by (task, seed)
+    place(name, sample)                              draw sample() until the pose conflicts with nothing placed
+    jitter(name, lo, hi, yaw_lo_deg, yaw_hi_deg)     place name lo..hi m and yaw_lo..yaw_hi deg off its pose
+
+    verifier.criteria(s) then gives the evaluator's checks (name -> check) from the same Start."""
+
+    def __init__(self, task, seed, rng, items, start, targets, inverted, place, jitter):
+        self.task, self.seed, self.rng = task, seed, rng
+        self.items, self.start, self.targets, self.inverted = items, start, targets, inverted
+        self.place, self.jitter = place, jitter
 
 
 def pod_targets(pair):
@@ -224,9 +257,6 @@ def pod_targets(pair):
         t[f"chair_1{c}"] = (x, yp - hy - USE_DY, math.pi)
         t[f"chair_2{c}"] = (x, yp + hy + USE_DY, 0.)
     return t
-
-
-EXAM_X = (-3.125, -1.875, -0.625, 0.625, 1.875, 3.125)
 
 
 def setup(task, seed, *, glides="nylon", contents=0):
@@ -259,38 +289,12 @@ def setup(task, seed, *, glides="nylon", contents=0):
             return (x + r*math.cos(a), y + r*math.sin(a), yaw + dyaw)
         return place(name, sample)
 
-    if task == "straighten-row":
-        for c in range(1, 7):
-            d, ch = f"desk_3{c}", f"chair_3{c}"
-            targets[d] = items[d]["pose"]
-            targets[ch] = items[ch]["pose"]
-            items[ch]["pose"] = (items[ch]["pose"][0], items[ch]["pose"][1] + 0.6, 0.)     # out of the way while desks are drawn
-        for c in range(1, 7):
-            d, ch = f"desk_3{c}", f"chair_3{c}"
-            x, y, yaw = jitter(d, 0.05, 0.20, 2, 10)
-            place(ch, lambda: (x - math.sin(yaw)*USE_DY + rng.uniform(-0.05, 0.05), y + math.cos(yaw)*USE_DY + rng.uniform(-0.03, 0.08),
-                               yaw + math.radians(rng.uniform(-8, 8))))
-            check[d] = "on_marks"
-            check[ch] = ("tucked", d)
-    elif task == "push-in-chairs":
-        for c in range(1, 7):
-            ch, d = f"chair_2{c}", f"desk_2{c}"
-            x, y, _ = items[ch]["pose"]
-            targets[ch] = items[ch]["pose"]
-            place(ch, lambda: (x + rng.uniform(-0.12, 0.12), y + rng.uniform(0.40, 0.80), math.radians(rng.uniform(-30, 30))))
-            check[ch] = ("tucked", d)
-            check[d] = "unmoved"
-    elif task == "seat-tutoring-group":
-        tx, ty, _ = TABLE
-        goal = tutoring_chairs_at_table(pulled=0.39)      # seat front 0.275 m from the edge
-        for k in range(1, 5):
-            items[f"tchair_{k}"]["pose"] = (-3.0 + 0.6*k, 0.4, 0.)          # parked out of the way while drawing
-        for k in range(1, 5):
-            n = f"tchair_{k}"
-            place(n, lambda: (tx + rng.uniform(-0.8, 2.0), ty + rng.uniform(-1.75, -0.95), rng.uniform(-math.pi, math.pi)))
-            targets[n] = goal[n]["pose"]
-            check[n] = ("ready", "table")
-        check["table"] = "unmoved"
+    folder = task_setup(task)
+    if folder is not None:                        # a benchmark task: tasks/<task>/setup.py, then its verifier's checks
+        st = Start(task, seed, rng, items, start, targets, inverted, place, jitter)
+        folder.setup(st)
+        targets = st.targets
+        check = task_verifier(task).criteria(st)
     elif task == "make-pod":
         targets = pod_targets(1)
         for n in targets:
@@ -300,65 +304,14 @@ def setup(task, seed, *, glides="nylon", contents=0):
             if n.startswith("chair"):
                 x, y, yaw = items[n]["pose"]
                 items[n]["pose"] = start[n] = (x, y + 0.30, yaw)        # chairs pulled out by the students (in use)
-    elif task == "exam-row":
-        for c in range(1, 7):
-            d, ch = f"desk_2{c}", f"chair_2{c}"
-            targets[d] = (EXAM_X[c - 1], ROWS_Y[1], 0.)
-            targets[ch] = (EXAM_X[c - 1], ROWS_Y[1] + USE_DY, 0.)
-            check[d] = "on_marks"
-            check[ch] = ("in_use", d)
-        check["exam"] = [f"chair_2{c}" for c in range(1, 7)]
-    elif task in ("chairs-up", "chairs-down"):
+    elif task == "chairs-down":
         for c in range(1, 7):
             d, ch = f"desk_4{c}", f"chair_4{c}"
             check[d] = "on_marks"
             targets[d] = items[d]["pose"]
-            if task == "chairs-up":
-                check[ch] = ("up_on", d)
-            else:
-                inverted.add(ch)
-                targets[ch] = items[ch]["pose"]
-                check[ch] = ("tucked", d)
-    elif task == "clear-floor":
-        place("tote", lambda: (-1.075 + rng.uniform(-0.1, 0.1), 4.50 + rng.uniform(-0.4, 0.4), rng.uniform(-0.4, 0.4)))
-        place("basket", lambda: (1.075 + rng.uniform(-0.1, 0.1), 3.10 + rng.uniform(-0.3, 0.3), 0.))
-        x, y, _ = items["chair_36"]["pose"]
-        targets["chair_36"] = items["chair_36"]["pose"]
-        place("chair_36", lambda: (3.235 + rng.uniform(-0.04, 0.04), y + rng.uniform(0.2, 0.5), math.pi/2 + rng.uniform(-0.5, 0.5)))
-        check["tote"] = ("in_zone", CUBBY_ZONE)
-        check["basket"] = ("near", BASKET_HOME, 0.20)
-        check["chair_36"] = ("tucked", "desk_36")
-        check["route"] = [(2.65, 0.6), (0., 8.5)]
-    elif task == "move-teacher-desk":
-        # a quarter turn: the modesty panel faces the windows, the teacher sits on the room side facing them
-        targets["teacher_desk"] = (-2.95, 1.30, math.pi/2)
-        targets["teacher_chair"] = (-2.95 + 0.381 + 0.30, 1.30 - 0.18, -math.pi/2)
-        check["teacher_desk"] = "on_marks"
-        check["teacher_chair"] = ("behind", "teacher_desk", (0.35, 0.95))
-    elif task == "group-work":
-        # The checks name pod places, not furniture: slot_<r><c> is the place desk_<r><c>'s target puts a desk (its dots,
-        # its facing) and seat_<r><c> a chair at the desk in that place. The evaluator matches the room's identical
-        # desks and chairs to the places (task.Evaluator.by_place).
-        for pair in range(3):
-            targets.update(pod_targets(pair))
-        for r in (1, 2):
-            for c in range(1, 7):
-                check[f"slot_{r}{c}"] = ("slot", f"desk_{r}{c}")
-                check[f"seat_{r}{c}"] = ("seat", f"slot_{r}{c}")
-        for pair in range(3):
-            check[f"pod_{pair}"] = [f"slot_{r}{c}" for r in (1, 2) for c in (2*pair + 1, 2*pair + 2)]
-        check["rest_of_room"] = "as_found"
-        check["route"] = [(2.65, 0.6), (0., 8.5)]
-        # the rows 1-2 chairs where the students left them, pulled out 0.48-0.66 m from tucked (seat front 0.06-0.24 m
-        # beyond the desk edge), up to 3 cm sideways and 10 deg turned: clear of the desk's rear legs (a turned chair
-        # nearer than ~0.45 m puts its seat through them, which layout.conflicts does not see) and at most 3 mm wider
-        # than the desk each side, so the aisles keep >= 0.922 m.
-        for r in (1, 2):
-            for c in range(1, 7):
-                ch = f"chair_{r}{c}"
-                x, y, yaw = items[ch]["pose"]
-                place(ch, lambda: (x + rng.uniform(-0.03, 0.03), y + rng.uniform(0.48, 0.66),
-                                   yaw + math.radians(rng.uniform(-10, 10))))
+            inverted.add(ch)
+            targets[ch] = items[ch]["pose"]
+            check[ch] = ("tucked", d)
     for n in inverted:
         items[n]["inverted_on"] = "desk_" + n[6:]
     involved = sorted(set(targets) | {n for n in check if n in items})

@@ -7,15 +7,16 @@ item's pose and the task's target zone, never by where the label actually ended 
   carrier-top,     over each flap half, three positions along the carton, 0.22 m above the top
   press-down
   cover-old-label  over the old label (its seeded position), three positions, 0.22 m
-  gs1-case-side    in front of EACH long side face at two heights and three positions, 0.30 m
+  gs1-case-side    in front of EACH long side face at two heights and three positions, 0.30 m (its verifier.py)
   tube-wrap        rotating tube reader: the tube (with its label) is placed in the reader station, clear of
                    the bench and of the robots, and turned in 30 deg steps (12 stops) in front of a fixed imager
                    0.09 m off the wall at the label band, as an accessioning tube reader spins the tube. The
                    tube's resting roll in the cradle therefore cannot decide the verdict.
   part-id-hdpe     the canister (with its label) lifted into a reader station clear of the bench and the
                    printer stand; around its side at three heights (-25, 0, +25 mm), 12 stops of 30 deg, 0.19 m
+                   (its verifier.py)
   part-id-match    over the target plate on a 4 x 3 grid of positions, the imager turned 0-170 deg in 10 deg
-                   steps (a person turns the scanner to the code), 0.19 m
+                   steps (a person turns the scanner to the code), 0.19 m (its verifier.py)
 Neither the robot nor a tool is ever in a verification frame (their bodies are moved out of view): the scan happens
 after the robot lets go and puts its tool down, and the hands-and-tools check already fails a robot or a tool
 touching the label or the item.
@@ -46,12 +47,9 @@ FILL = .75
 # (at 640 x 360 the same passing labels fail, with 0.375 mm modules ~1.5 px wide).
 VERIFY_RENDER = dict(width=1280, height=720, samples=24)
 TUBE_STATION_LIFT = .30     # m above the cradle: the rotating reader station, clear of the bench and the robots
-CANISTER_STATION_LIFT = .50 # m: the canister reader station, above the printer (top ~1.36 m) and the bench clutter
 CARTON_STATION_LIFT = .50   # m: the carton reader station (GS1 side readers at z ~1.5 m, above the printer top)
 CARTON_STATION_XY = (.12, -.09)   # m: over the carton's start area, away from the printer stand and the robots
 TABLE_Z = .91               # bench top (scene.TABLE)
-PLATE_IMAGER_ROLLS = tuple(range(0, 180, 10))   # deg: a person turns the scanner to the code (a 1-D symbol reads both ways);
-                            # 10 deg steps leave a label at most 5 deg off a roll; the decode holds to ~8.5-9 deg
 HIDDEN_Z = -50.             # bodies kept out of a verification frame go here (robots always; all but the item in a station)
 RENDER_TRIES = 2            # a declared read whose render fails is retried once, then the evaluation has no verdict
 
@@ -97,14 +95,6 @@ def _carton_station(world):
     return dict(body="carton", R_rel=R_station @ R.T, p_body=p, p_station=p_station, R_station=R_station)
 
 
-def _canister_station(world):
-    """part-id-hdpe: the canister (and its label) lifted CANISTER_STATION_LIFT straight up, clear of the bench, the
-    printer stand and the robots, for the handheld reader to circle it. Without this, a reader stop on the printer
-    side sits inside the printer stand's 20 mm side plate for canister offsets dy of -10 to -20 mm."""
-    p, R = world.body_pose("part")
-    return dict(body="part", R_rel=np.eye(3), p_body=p, p_station=p + np.array([0., 0., CANISTER_STATION_LIFT]), R_station=R)
-
-
 def relocate(points, reloc, vectors=False):
     if reloc is None:
         return points
@@ -114,22 +104,26 @@ def relocate(points, reloc, vectors=False):
 
 
 def declared_reads(world, task):
-    """[(name, pose7, relocation or None)] fixed by the item pose and the task's target zone. The ladder tasks read
-    as the task whose bench they share (smooth-corner, finish-securing: press-down; tube-label: tube-wrap)."""
-    from .config import base_task
+    """[(name, pose7, relocation or None)] fixed by the item pose and the task's target zone: a benchmark task's
+    verifier.py reader_views(world) where it has its own (gs1-case-side, part-id-hdpe, part-id-match), else the stops
+    below. The ladder tasks read as the task whose bench they share (smooth-corner, finish-securing: press-down;
+    tube-label: tube-wrap)."""
+    from .config import base_task, task_verifier
+    views = getattr(task_verifier(task), "reader_views", None)
+    if views is not None:
+        return views(world)
     task = base_task(task)
     sc = world.scene
     out = []
-    if task in ("carrier-top", "press-down", "cover-old-label", "gs1-case-side"):
+    if task in ("carrier-top", "press-down", "cover-old-label"):
         reloc = _carton_station(world)
         p, R = reloc["p_station"], reloc["R_station"]
         g = sc.task_geometry["carton"]
         W = lambda v: p + R @ np.asarray(v, float)
         ex, ey, ez = R[:, 0], R[:, 1], R[:, 2]
         # 0.22 m over a carton top: the 0.375 mm carrier-code module spans ~3 px of the 1280 x 720 imager
-        # (at 0.30 m it is 2.2 px, below reliable decoding; the whole label still fits the field); the
-        # GS1 side face keeps 0.30 m (0.5 mm modules)
-        d = .22 if task != "gs1-case-side" else .30
+        # (at 0.30 m it is 2.2 px, below reliable decoding; the whole label still fits the field)
+        d = .22
         if task in ("carrier-top", "press-down"):
             for side, yh in (("rear", 1), ("front", -1)):
                 yc = yh*(g["tape_half"] + g["W"]/2)/2
@@ -140,12 +134,6 @@ def declared_reads(world, task):
             uc, vc = np.mean(o["u"]), np.mean(o["v"])
             for xo in (0., -.05, .05):
                 out.append((f"old_label_x{xo*1e3:+.0f}mm", _pose(W((uc + xo, vc, g["H"]/2 + d)), -ez, ex), reloc))
-        else:
-            for face, s in (("front", -1), ("back", 1)):           # front = -y (away from the robots), back = +y
-                for zc in (.07, .12):
-                    for xo in (0., -.10, .10):
-                        out.append((f"{face}_side_z{zc*1e3:.0f}mm_x{xo*1e3:+.0f}mm",
-                                    _pose(W((xo, s*(g["W"]/2 + d), -g["H"]/2 + zc)), -s*ey, -s*ex), reloc))
     elif task == "tube-wrap":
         g = sc.task_geometry["tube"]
         lab = world.label
@@ -155,28 +143,6 @@ def declared_reads(world, task):
             band = reloc["p_station"] + reloc["R_station"] @ np.array([0., 0., zc])
             eye = band + np.array([0., -(g["r"] + .09), 0.])
             out.append((f"tube_reader_stop_{30*k:03d}deg", _pose(eye, np.array([0., 1., 0.]), reloc["R_station"][:, 2]), reloc))
-    elif task == "part-id-match":
-        name = sc.target
-        p, R = world.body_pose(name)
-        it = sc.items[name]
-        for roll in PLATE_IMAGER_ROLLS:
-            a = np.radians(roll)
-            right = np.cos(a)*R[:, 0] + np.sin(a)*R[:, 1]
-            for yo in (0., -.03, .03):
-                for xo in (-.045, -.015, .015, .045):
-                    eye = p + R @ np.array([xo, yo, it["size"][2]/2 + .19])
-                    out.append((f"plate_x{xo*1e3:+.0f}mm_y{yo*1e3:+.0f}mm_roll{roll:03d}", _pose(eye, -R[:, 2], right), None))
-    elif task == "part-id-hdpe":
-        reloc = _canister_station(world)
-        p, R = reloc["p_station"], reloc["R_station"]
-        it = sc.items["part"]
-        for zh in (0., -.025, .025):
-            for k in range(12):
-                a = np.radians(30*k)
-                radial = np.array([np.cos(a), np.sin(a), 0.])
-                tang = np.array([-np.sin(a), np.cos(a), 0.])
-                eye = p + R @ (radial*(it["radius"] + .19) + np.array([0., 0., zh]))
-                out.append((f"canister_z{zh*1e3:+.0f}mm_turned_{30*k:03d}deg", _pose(eye, -(R @ radial), R @ tang), reloc))
     return out
 
 

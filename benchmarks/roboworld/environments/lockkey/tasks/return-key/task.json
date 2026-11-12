@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/return-key/lockkey-tasks-v2",
+  "name": "return-key",
+  "env_id": "lockkey",
+  "split": "train",
+  "selection": {
+    "task": "return-key",
+    "contract": "lockkey-tasks-v2"
+  },
+  "description": "The padlock's key has been left lying on the work mat. Put it back on its stand, the empty one on the near (-Y) side. Leave the other key on its stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -98,7 +98,9 @@ class PaintModel(unittest.TestCase):
         self.assertGreater(float(delta_e(R, white.rinf[None])[0]), P.EVAL["hide_dE"])
 
     def test_gauge_and_stroke_template(self):
-        from painting.task import _gauge, stroke_width
+        from painting.layout import task_setup
+        from painting.task import _gauge
+        stroke_width = task_setup("brush-stroke").stroke_width
         rng = np.random.default_rng(0)
         dft = 30e-6*(1 + 0.3*rng.standard_normal((100, 80)))           # parcel speckle around an even 30 um coat
         m = np.zeros((100, 80), bool); m[20:80, 20:60] = True
@@ -118,8 +120,8 @@ class PaintModel(unittest.TestCase):
                 self.assertIn("second, finish coat", sp["instruction"])
 
     def test_brush_stroke_instruction_matches_template(self):
-        from painting.layout import TASKS
-        from painting.task import stroke_width
+        from painting.layout import TASKS, task_setup
+        stroke_width = task_setup("brush-stroke").stroke_width
         self.assertAlmostEqual(float(stroke_width(0.5)), 6e-3)
         self.assertIn("6 mm", TASKS["brush-stroke"]["instruction"])
         self.assertNotIn("4 mm", TASKS["brush-stroke"]["instruction"])

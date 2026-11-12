@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/service/water-tumbler/wine-tasks-v2/seed-0",
+  "name": "water-tumbler",
+  "env_id": "wine-pouring",
+  "split": "train",
+  "selection": {
+    "preset": "service",
+    "task": "water-tumbler",
+    "seed": 0,
+    "contract": "wine-tasks-v2"
+  },
+  "description": "Fill the water tumbler at spot 2 from the carafe with about 250 mL of water; no spills; put the carafe back where it stood.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

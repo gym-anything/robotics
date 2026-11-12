@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/trap",
+  "name": "trap",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "trap"
+  },
+  "description": "A teammate has passed the ball to you along the ground. Receive it and bring it under control at your feet.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

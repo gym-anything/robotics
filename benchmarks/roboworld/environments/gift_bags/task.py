@@ -7,8 +7,9 @@ fault is a backend fault, never a task outcome.
 
 bag-purchase differs from open-bag, which shares _eval_bag: the board must be inside the bag (on the bottom panel's
 inner side), the candle must rest on it with its print up, the bag must stand mouth up, the stack under the taken bag
-is reported but not judged, the score is 1 on success else FAILED_SCORE_FACTOR x a continuous progress (_bag_progress), and the
-explicit evaluation completes the hands-off window itself (SETTLE_TASKS; env.GiftBagsEnv.final_evaluation).
+is reported but not judged, the score is 1 on success else FAILED_SCORE_FACTOR (tasks/bag-purchase/verifier.py) x a
+continuous progress (_bag_progress), and the explicit evaluation completes the hands-off window itself (SETTLE_TASKS;
+env.GiftBagsEnv.final_evaluation).
 "Open" is the mouth plus the least front-to-back face gap at any height (the gusset checks are reported only); the
 window counts only contact with the job's items, directly or through one piece of stock (_job_contact); "at rest" is
 read over the window's last 2 s.
@@ -19,6 +20,8 @@ from collections import deque
 
 import numpy as np
 from scipy.spatial import ConvexHull, Delaunay, cKDTree
+
+from .config import task_verifier
 
 HANDS_OFF_S = 3.0
 
@@ -78,7 +81,6 @@ CANDLE_REST_MM = 5.            # "upright on the board": the carton's lowest cor
 REST_MM = 5.                   # progress: the bag stands ON the mat when its lowest point is this close to the mat top [A]
 TEAR_ZERO_MM = 25.             # progress: integrity 1 up to TEAR_TOL_MM, falling linearly to 0 here (about 2.5 of the
                                # tote's 10 mm cells, a rip anyone sees: a torn tote is not handed to a customer) [A]
-FAILED_SCORE_FACTOR = .9       # score: 1 on success, else this x progress (label_application's convention) [A]
 RIM_GAP_MIN_FRAC = .5          # "open" is the mouth (hull ratio >= MOUTH_RATIO_MIN) and not pinched: the least
 RIM_PAIR_HALF_X = .080         # front-to-back gap of the rim across its middle 160 mm >= this fraction of the gusset
                                # depth G (a mouth pinched shut at its middle reads hull 1.0; recorded totes 76-102 mm) [A]
@@ -293,31 +295,37 @@ class Evaluator:
 
     # ------------------------------------------------------------------ evaluation
     def evaluate(self):
+        """The episode's outcome: a benchmark task's verifier.py (tasks/<task>/) decides, through evaluate_task; the
+        tasks outside the benchmark (open-present, pinch) are judged here."""
+        folder = task_verifier(self.task)
+        if folder is not None:
+            return folder.verify(self)
+        return self.evaluate_task(Evaluator._other_checks)
+
+    def _other_checks(self, checks, metrics, rows):
+        """The checks of the tasks outside the benchmark: open-present's (pinch has none)."""
+        if self.task == "open-present":
+            self._eval_unwrap(checks, metrics)
+            self._eval_lid(checks, metrics, frame_out=True)
+
+    def evaluate_task(self, released=None, *, score_of=None, progress_of=None):
+        """The released evaluation, with the task's parts from its verifier.py: the hands-off window, then
+        released(self, checks, metrics, rows) adds the task's checks; success needs every check and the score is their
+        mean, or score_of(self, success, mean, checks, metrics) for a task with a score of its own (bag-purchase).
+        progress_of(self, S, metrics) is the task's progress under the task-set contracts, whose evaluators
+        (task_set_evaluator.py, task_set_v2_evaluator.py) override this method and hand the other selections here."""
         checks, metrics = {}, {}
         rows = list(self.history.rows)
         complete = len(rows) >= self.history.n
         checks["hands_off_window"] = complete and not any(r["contact"] for r in rows)
         metrics["hands_off_window_s"] = len(rows)*self.env.config.dt
-        if self.task in ("open-bag", "bag-purchase"):
-            self._eval_bag(checks, metrics, rows)
-            self._eval_tear(checks, metrics, 0, "bag", TEAR_TOL_MM)
-        elif self.task == "lift-lid":
-            self._eval_lid(checks, metrics)
-        elif self.task in ("unwrap-gift", "open-present"):
-            self._eval_unwrap(checks, metrics)
-            if self.task == "open-present":
-                self._eval_lid(checks, metrics, frame_out=True)
-        elif self.task == "open-carton":
-            self._eval_carton(checks, metrics, rows)
+        if released is not None:
+            released(self, checks, metrics, rows)
         checks = {k: bool(v) for k, v in checks.items()}
         success = bool(checks) and all(checks.values())
         score = float(np.mean([bool(v) for v in checks.values()])) if checks else 0.
-        if self.task == "bag-purchase":
-            # 1 on success, else FAILED_SCORE_FACTOR x progress: every failure below every success, every success 1.
-            # The mean of the checks is also reported.
-            metrics["mean_of_checks"] = score
-            progress = self._bag_progress(checks, metrics)
-            score = 1. if success else FAILED_SCORE_FACTOR*progress
+        if score_of is not None:
+            score = score_of(self, success, score, checks, metrics)
         return dict(success=success, score=score, checks=checks, metrics=metrics)
 
     def _bag_progress(self, checks, metrics):
@@ -563,7 +571,9 @@ class Evaluator:
         else:
             checks["frame_in_base"] = bool(in_base)
 
-    def _eval_unwrap(self, checks, metrics):
+    def _eval_unwrap(self, checks, metrics, box_checks=None):
+        """The box's outer surface left bare of paper (box_checks(self, checks, metrics): the task's own checks of the
+        box, unwrap-gift's verifier.py), the wrap's damage and tears (reported only)."""
         ipc = self.world.ipc
         xs = ipc.x_free()
         pts = []
@@ -604,17 +614,8 @@ class Evaluator:
         else:
             metrics["box_coverage"] = 0.
         checks["unwrapped"] = metrics["box_coverage"] <= COVERAGE_MAX
-        if self.task == "unwrap-gift":
-            g = self.geo["box"]
-            pb, Rb = ipc.body_pose(self.body["gift_base"])
-            pl, Rl = ipc.body_pose(self.body["gift_lid"])
-            base_org = pb - Rb @ ipc.bodies[self.body["gift_base"]].render["com_offset"]
-            lid_org = pl - Rl @ ipc.bodies[self.body["gift_lid"]].render["com_offset"]
-            overlap = g["base_h"] - float((Rb.T @ (lid_org - base_org))[2])
-            metrics["lid_overlap_mm"] = 1e3*overlap
-            checks["box_closed"] = overlap*1e3 >= LID_CLOSED_OVERLAP_MM
-            metrics["box_tilt_deg"] = _tilt_deg(Rb)
-            checks["box_upright"] = metrics["box_tilt_deg"] <= 15.
+        if box_checks is not None:
+            box_checks(self, checks, metrics)
         # fragments: connected components of intact wrap triangles; large torn-off pieces left on the box fail
         metrics["damaged_triangles"] = int((ipc.damage >= 1.).sum()) if len(ipc.damage) else 0
         self._eval_tear(checks, metrics, 0, "wrap", None)                # tearing the wrap is allowed: reported only

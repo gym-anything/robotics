@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/bench/take-drill/drilling-tasks-v1/seed-0",
+  "name": "take-drill",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "bench",
+    "task": "take-drill",
+    "seed": 0,
+    "contract": "drilling-tasks-v1"
+  },
+  "description": "Take the cordless drill in both hands, one hand on its grip and the other on its motor housing, and hold it ready to drill straight down into the bench, the bit tip 30 to 70 mm above the bench, for 3 seconds. Do not run it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

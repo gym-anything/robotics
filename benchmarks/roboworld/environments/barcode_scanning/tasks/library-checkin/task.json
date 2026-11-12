@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/library/library-checkin/seed-0",
+  "name": "library-checkin",
+  "env_id": "barcode-scanning",
+  "split": "train",
+  "selection": {
+    "preset": "library",
+    "task": "library-checkin"
+  },
+  "description": "Check in the returned books: scan each book's library barcode (the library's own label, not the ISBN; it is on the back cover or inside the front cover) at the desk scanner and put each book in the returns bin.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

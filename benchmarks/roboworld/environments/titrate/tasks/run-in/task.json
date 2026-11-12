@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/run-in/titration-tasks-v2/titration-n15-0000",
+  "name": "run-in",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "run-in",
+    "variation_id": 0,
+    "contract": "titration-tasks-v2"
+  },
+  "description": "A rough titration of this sample took 10 mL of base. Run base from the burette into the flask until about 9 mL has gone in, then close the stopcock. The solution should still be colourless.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

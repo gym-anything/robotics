@@ -20,6 +20,8 @@ from typing import ClassVar, Mapping, Protocol
 
 import numpy as np
 
+from gym_anything_robotics import task_folders
+
 from .garment_assembly import SewnGarmentTopology
 from .garment_asset import GarmentConstruction, PathRef
 from .garment_meshing import GarmentPatternMesh
@@ -1394,66 +1396,17 @@ def _ref(panel: str, path: str, *, reverse: bool = False) -> PathRef:
     return PathRef(panel, path, reverse=reverse)
 
 
-_SHIRT_BODY_PANELS = (
-    "left_front", "right_front", "back", "back_yoke", "chest_pocket", "collar_stand", "collar",
-)
+def _folder_spec(name: str) -> GarmentTaskSpec:
+    """The released spec of a benchmark task: spec() in its verifier.py (tasks/<name>/)."""
+    return task_folders.verifier("laundry", name).spec()
 
 
 GARMENT_TASK_SPECS: Mapping[tuple[str, str], GarmentTaskSpec] = MappingProxyType(
     {
         (spec.construction_id, spec.id): spec
         for spec in (
-            GarmentTaskSpec(
-                id="sleeve_tuck_fold",
-                label="Tuck both short sleeves into the T-shirt body footprint",
-                construction_id="cotton_jersey_half_sleeve_tee",
-                goals=(
-                    PanelContainmentGoal(
-                        "left_sleeve_contained",
-                        ("left_sleeve",),
-                        ("front", "back"),
-                        required_fraction=0.90,
-                    ),
-                    PanelStackGoal(
-                        "left_sleeve_stacked",
-                        ("left_sleeve",),
-                        ("front", "back"),
-                    ),
-                    PanelContainmentGoal(
-                        "right_sleeve_contained",
-                        ("right_sleeve",),
-                        ("front", "back"),
-                        required_fraction=0.90,
-                    ),
-                    PanelStackGoal(
-                        "right_sleeve_stacked",
-                        ("right_sleeve",),
-                        ("front", "back"),
-                    ),
-                ),
-            ),
-            GarmentTaskSpec(
-                id="sleeve_fold",
-                label="Fold both long sleeves and cuffs onto the shirt body",
-                construction_id="woven_button_down_shirt",
-                goals=tuple(
-                    SleeveOnBodyGoal(
-                        f"{side}_sleeve_and_cuff_on_body",
-                        f"{side}_sleeve",
-                        f"{side}_cuff",
-                        _SHIRT_BODY_PANELS,
-                        ("left_front", "right_front", "back"),
-                        ("cap_front", "cap_back"),
-                        (_ref("back", "bottom_hem"), _ref("back", "neckline")),
-                    )
-                    for side in ("left", "right")
-                ),
-                rest_window_s=0.5,
-                limit_compression=False,
-                tabletop_support_fraction=0.95,
-                full_credit_requires_success=True,
-                partial_credit_cap=0.9,
-            ),
+            _folder_spec("sleeve_tuck_fold"),
+            _folder_spec("sleeve_fold"),
             GarmentTaskSpec(
                 id="leg_align_fold",
                 label="Fold one jeans leg shell onto the other",
@@ -1483,26 +1436,7 @@ GARMENT_TASK_SPECS: Mapping[tuple[str, str], GarmentTaskSpec] = MappingProxyType
                     ),
                 ),
             ),
-            GarmentTaskSpec(
-                id="half_fold",
-                label="Fold the terry towel long edge to long edge",
-                construction_id="terry_cotton_bath_towel",
-                goals=(
-                    PathAlignmentGoal(
-                        "long_hem_alignment",
-                        _ref("terry_body", "long_left_hem"),
-                        _ref("terry_body", "long_right_hem", reverse=True),
-                        rms_threshold_m=0.025,
-                        maximum_threshold_m=0.060,
-                    ),
-                    ProjectedAreaFractionGoal(
-                        "half_footprint",
-                        maximum_fraction=0.62,
-                        panel_ids=("terry_body",),
-                    ),
-                ),
-                maximum_structural_strain=0.20,
-            ),
+            _folder_spec("half_fold"),
             GarmentTaskSpec(
                 id="tie_untangle",
                 label="Extend both asymmetric waist ties without intersections",

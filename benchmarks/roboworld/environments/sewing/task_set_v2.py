@@ -22,15 +22,17 @@ import json
 from functools import lru_cache
 
 from . import task_set as V1
-from .task import INSTRUCTIONS, G1_MACHINE_NOTE, TIME_LIMIT_S as V1_TIME_LIMIT_S
+from .task import INSTRUCTIONS, G1_MACHINE_NOTE, TIME_LIMIT_S as V1_TIME_LIMIT_S, task_setup
 from .variants import resolve as legacy_resolve
 
 CONTRACT = "sewing-tasks-v2"
-# Defined by this contract only. Code A14 follows the released A10-A13 (task.py).
+# Defined by this contract only. Code A14 follows the released A10-A13 (task.py); its base, the start it reuses, is BASE
+# in tasks/corner-seam/setup.py.
 CORNER_SEAM_INSTRUCTION = ("Join the two plies with a seam 10 mm from the right edge, turning a square corner, and "
                            "continue 10 mm from the near edge to the left edge; backtack three or four stitches at "
                            "both ends, trim the threads and let go of the work.")
-EXTRA_TASKS = {"corner-seam": dict(code="A14", base="pivot", time_limit_s=180.0, instruction=CORNER_SEAM_INSTRUCTION)}
+EXTRA_TASKS = {"corner-seam": dict(code="A14", base=task_setup("corner-seam").BASE, time_limit_s=180.0,
+                                   instruction=CORNER_SEAM_INSTRUCTION)}
 TASKS = ("load", "seam-to-notch", "plain-seam", "square-plies", "pivot", "corner-seam", "load-and-seam")
 EIGHT_TASKS = (*TASKS, "curve")
 HARDEST_SELECTION = {"task": "curve"}                 # splits/test.json, unchanged (audited, sewing-curve-v1)

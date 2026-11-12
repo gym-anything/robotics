@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/bench/panel-holes/drilling-tasks-v2/seed-0",
+  "name": "panel-holes",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "bench",
+    "task": "panel-holes",
+    "seed": 0,
+    "contract": "drilling-tasks-v2"
+  },
+  "description": "Drill four 6 mm holes through the enclosure cover at the four marks. The cover is strapped on a plywood backer; a 3 mm and a 6 mm drill are on the bench.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

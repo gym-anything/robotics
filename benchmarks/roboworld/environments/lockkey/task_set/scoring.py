@@ -3,6 +3,11 @@
 Success reuses unlock's geometry/contact predicates. Scoring uses distances,
 depth and angles, not a fraction of passed checks or a required action history.
 The one historical witness is the lock's irreversible release tick, as in unlock.
+
+Each task's success and progress are its verifier.py's verify (tasks/<task>/), which TaskProgress.update here and
+in scoring_v2.py (lockkey-tasks-v2) calls with its readings of the state; the verifier's KEY_ALWAYS_NEEDED and
+NEEDS_UNLOCK say when a lost key or a release without the key zeroes the progress, and its WITHDRAWAL_FROM_START
+measures the key's withdrawal from where the key starts.
 """
 
 import math
@@ -15,7 +20,7 @@ from lockkey.newton15.evaluation import (
     STAND_TILT_DEG, FAIL_SCORE_SCALE,
 )
 from lockkey.newton15.shackle import geometry_state
-from .catalogue import CONTRACT, validate
+from .catalogue import CONTRACT, task_verifier, validate
 
 
 def clip(value):
@@ -69,30 +74,18 @@ class TaskProgress(UnlockProgress):
         seated = base["key_seated_now"]
         insert = insertion(key, self.origin, self.entry_x, base["key_roll_error_deg"])
         back = stand_fit(key, self.start["key"])
-        seat_x = self.withdrawal_start_x if self.task == "remove-key" else SEAT_X
+        own = task_verifier(self.task)
+        seat_x = self.withdrawal_start_x if getattr(own, "WITHDRAWAL_FROM_START", False) else SEAT_X
         out = clip((key[0]-seat_x)/(self.entry_x-seat_x))
         stow = .3*out+.7*back
         turn = clip(plug_angle/RELEASE_DEG)
         chain = .8+.2*swing if unlocked else 0. if released else insert*(.5+.3*turn)
-        if self.task == "swing-open":
-            success, progress = opened and other_back, swing if unlocked else 0.
-        elif self.task == "turn-to-open":
-            success, progress = opened and other_back, clip((chain-.5)/.5)
-        elif self.task == "insert-key":
-            # Read the seat NOW; opening and subsequently removing the key is not insertion.
-            success, progress = seated and not held and other_back, insert
-        elif self.task == "return-key":
-            success, progress = key_back and other_back, back
-        elif self.task == "remove-key":
-            success, progress = key_back and opened and other_back, stow*swing if unlocked else 0.
-        elif self.task == "which-key":
-            success, progress = opened and other_back, chain
-        else:  # unlock-and-stow: returning the key before unlocking earns nothing.
-            success = unlocked and opened and key_back and other_back
-            progress = .6*chain + (.4*stow if unlocked else 0.)
-        key_needed = self.task in ("insert-key", "return-key", "remove-key", "unlock-and-stow") or not unlocked
+        success, progress = own.verify(seated=seated, held=held, key_back=key_back, other_back=other_back,
+                                       released=released, unlocked=unlocked, opened=opened, insert=insert,
+                                       turn=turn, swing=swing, back=back, out=out, stow=stow, chain=chain)
+        key_needed = own.KEY_ALWAYS_NEEDED or not unlocked
         lost = key_needed and self.off_bench(env, poses, key_body)
-        bad_release = self.task not in ("insert-key", "return-key") and released and not unlocked
+        bad_release = own.NEEDS_UNLOCK and released and not unlocked
         progress = 0. if lost or bad_release else clip(progress)*base["other_key_factor"]
         return {**base, "task_id": f"lockkey/{self.task}", "contract": CONTRACT,
                 "score": 1. if success else FAIL_SCORE_SCALE*progress,

@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/tack-and-weld/seed-0",
+  "name": "tack-and-weld",
+  "env_id": "welding",
+  "split": "train",
+  "selection": {
+    "preset": "steel-cell",
+    "task": "tack-and-weld"
+  },
+  "description": "The bracket stands loose on its layout on the clamped base plate. Tack it square to the plate at both ends of the near side, holding it in place while you tack, then let go and weld a continuous 1/4 inch fillet along the near side in the horizontal position, from end to end, and fill the crater. The spray-transfer schedule for 0.035 inch ER70S-6 wire with 90/10 gas is about 500 in/min (12.7 m/min) wire feed at 29 V.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

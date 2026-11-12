@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/bake/sauce-blend/contract-ingredient-mixing-tasks-v1/seed-0",
+  "name": "sauce-blend",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "bake",
+    "task": "sauce-blend",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v1"
+  },
+  "description": "The small bowl holds mayonnaise with a dollop of ketchup and a dollop of relish on it. Stir the sauce until it is evenly blended. Keep it in the bowl.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

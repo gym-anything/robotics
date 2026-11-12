@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/parcel/carrier-top/label-tasks-v2/seed-0",
+  "name": "carrier-top",
+  "env_id": "label-application",
+  "split": "train",
+  "selection": {
+    "preset": "parcel",
+    "task": "carrier-top",
+    "seed": 0,
+    "contract": "label-tasks-v2"
+  },
+  "description": "You are at a shipping pack bench. The desktop label printer has just printed and presented the shipping label for the sealed carton on the bench. Take the label from the printer and apply it to the carton's top, clear of the sealing tape along the seam and clear of the top's edges.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

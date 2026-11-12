@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/turn-to-open/lockkey-tasks-v2",
+  "name": "turn-to-open",
+  "env_id": "lockkey",
+  "split": "train",
+  "selection": {
+    "task": "turn-to-open",
+    "contract": "lockkey-tasks-v2"
+  },
+  "description": "The key from the near stand is already in the padlock on the chest. Unlock the padlock and swing the shackle open. Leave the other key on its stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

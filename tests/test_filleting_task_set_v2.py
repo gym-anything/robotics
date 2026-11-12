@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from filleting import layout as LY, variants as legacy
-from filleting.task import Evaluator, check
+from filleting.task import check
 from filleting import task_set_catalogue as v1
 # task_resolve is the catalogue's resolver entry point (benchmark.json "resolver"), which dispatches v2 selections
 from filleting.task_set_catalogue import task_resolve
@@ -298,7 +298,7 @@ def test_take_knife_success_is_the_original_right_hand_verdict(geometry):
     env.world.pinch["right"] = [20., 20.]
     advance(ev, 4.)
     result = ev.evaluate()
-    original, _ = Evaluator._eval_A0(ev)
+    original, _ = LY.task_verifier("A0").released_checks(ev)
     assert result["success"] and set(result["checks"]) == set(original) | {"time"}
     assert {k: c["passed"] for k, c in result["checks"].items()} == {k: c["passed"] for k, c in original.items()}
     # The left hand touching the knife fails the original not_touched_by_left_hand check.
@@ -485,17 +485,18 @@ def test_only_head_off_accepts_a_knife_put_down(task, monkeypatch):
     # The spec relaxes the knife rule for head-off only; the other cutting tasks keep their original checks.
     ev = cut_evaluator(task, monkeypatch)
     ev.env.world.cut.orig = ev.env.world.tissue.htets.copy()
-    original = getattr(Evaluator, f"_eval_{task}")
+    folder = LY.task_verifier(task)
+    original = folder.released_checks
     legacy_checks, _ = original(ev)
     assert "knife_not_dropped" not in legacy_checks       # none of these four has a knife check of its own
     assert set(legacy_checks) <= set(ev.evaluate()["checks"])
 
-    def with_knife_check(self):
-        checks, metrics = original(self)
+    def with_knife_check(e):
+        checks, metrics = original(e)
         checks["knife_not_dropped"] = check("knife_not_dropped", 20., 15., "mm", False)[1]
         return checks, metrics
 
-    monkeypatch.setattr(Evaluator, f"_eval_{task}", with_knife_check)
+    monkeypatch.setattr(folder, "released_checks", with_knife_check)
     monkeypatch.setattr(TaskSetV2Evaluator, "_knife_put_down", lambda self, *args: (True, "put down"))
     assert not ev.evaluate()["checks"]["knife_not_dropped"]["passed"]
 
@@ -628,17 +629,17 @@ def test_scale_monitor_requires_one_released_supported_piece(monkeypatch):
     ev.env.frags = {0: frag(.15, [0, 1, 2])}
     w.tissue.x.value[:] = [*LY.SCALE["center"], LY.TABLE["top_z"] + LY.SCALE["size"][2]]
     for _ in range(3):
-        ev._monitor_scale()
+        LY.task_verifier("B5")._monitor_scale(ev)
     assert ev.weighed == {(0, 1, 2)}
     ev.weighed.clear()
     w.tissue.x.value[:, 2] += .1
     for _ in range(3):
-        ev._monitor_scale()
+        LY.task_verifier("B5")._monitor_scale(ev)
     assert not ev.weighed
     w.tissue.x.value[:, 2] -= .1
     ev._robot_touch = lambda pts: np.ones(len(pts), bool)
     for _ in range(3):
-        ev._monitor_scale()
+        LY.task_verifier("B5")._monitor_scale(ev)
     assert not ev.weighed
 
 

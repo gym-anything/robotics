@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/front-m4/seed-0",
+  "name": "front-m4",
+  "env_id": "tighten-codex",
+  "split": "train",
+  "selection": {
+    "task": "front-m4",
+    "seed": 0
+  },
+  "description": "Re-seat the forward corner screw. The corner bracket's forward M4 screw into the post T-slot has worked loose. Everything else is tight and the rail is level. Tighten that screw with the yellow 3 mm/0.60 N m driver until it clicks. Leave the other screws tight, the rail level and the reference flag home with the sensor detecting it, after releasing the stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

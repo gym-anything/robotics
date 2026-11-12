@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "deposit-cans/v1/sort_cups/seed-0",
+  "name": "sort_cups",
+  "env_id": "deposit-cans",
+  "split": "train",
+  "selection": {
+    "variant": "sort_cups",
+    "seed": 0
+  },
+  "description": "Three reusable cups were left among the empty beverage cans on the return counter. Put each cup back on the reusable tray and deposit all the empty cans in the recycling bag. Leave the cans already in the bag where they are.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

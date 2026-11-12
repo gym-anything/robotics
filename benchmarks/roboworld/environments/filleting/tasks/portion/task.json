@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/salmon-side/portion/filleting-tasks-v2/seed-0",
+  "name": "portion",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "salmon-side",
+    "task": "portion",
+    "seed": 0,
+    "contract": "filleting-tasks-v2"
+  },
+  "description": "Cut the loin into 150 g portions with straight cuts and weigh them on the scale.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

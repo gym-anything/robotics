@@ -11,7 +11,10 @@ class DrillingScoreSemanticsTest(unittest.TestCase):
     """Pure-Python: score is the fraction of goal checks; success needs goals and constraints."""
 
     def test_score_counts_goals_only(self) -> None:
+        from unittest import mock
+
         from drilling import task as T
+        from gym_anything_robotics import task_folders
 
         class Stub(T.Evaluator):
             def __init__(self, checks):
@@ -20,16 +23,19 @@ class DrillingScoreSemanticsTest(unittest.TestCase):
             def common(self):
                 return []
 
-            def _press_drill(self):
-                return self._checks
+        # the task's checks are press-drill's verifier.py checks(ev)
+        press_drill = mock.patch.object(task_folders.verifier("drilling", "press-drill"), "checks",
+                                        lambda ev: ev._checks)
         goals = [T._check("hole", False), T._check("entry", False)]
         cons = [T._check("spindle stopped", True, kind="constraint"), T._check("quill up", True, kind="constraint")]
-        ev = Stub(goals + cons).evaluate()
+        with press_drill:
+            ev = Stub(goals + cons).evaluate()
         self.assertEqual(ev["score"], 0.)
         self.assertFalse(ev["success"])
         self.assertTrue(ev["constraints_ok"])
-        ev = Stub([T._check("hole", True), T._check("entry", True),
-                   T._check("spindle stopped", False, kind="constraint")]).evaluate()
+        with press_drill:
+            ev = Stub([T._check("hole", True), T._check("entry", True),
+                       T._check("spindle stopped", False, kind="constraint")]).evaluate()
         self.assertEqual(ev["score"], 1.)
         self.assertFalse(ev["success"])            # a broken constraint fails the task at full goal score
 

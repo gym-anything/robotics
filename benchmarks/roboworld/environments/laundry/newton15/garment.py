@@ -6,6 +6,7 @@ from ..garment_patterns import get_garment_construction
 from ..garment_meshing import compile_garment_pattern_mesh
 from ..garment_assembly import weld_garment_topology
 from .config import GARMENTS
+from gym_anything_robotics import task_folders
 
 
 def load(config):
@@ -25,9 +26,10 @@ def load(config):
 
 
 # Garments whose task starts from a lay the garment rests in (world-frame positions recorded after
-# the garment settled untouched). The shirt's authored P13 lay recoils within 0.07 s,
+# the garment settled untouched), and the task folder (tasks/<name>/) whose setup.py gives that lay.
+# The shirt's authored P13 lay recoils within 0.07 s,
 # so its task starts from that same shirt after it has come to rest untouched on the table.
-REST_STARTS = {"shirt": "shirt_sleeve_fold_rest_start.npz"}
+REST_STARTS = {"shirt": "sleeve_fold"}
 
 
 def rest_start(config, topology):
@@ -35,10 +37,4 @@ def rest_start(config, topology):
     name = REST_STARTS.get(config.garment)
     if name is None:
         return None
-    path = Path(__file__).resolve().parents[1]/"data/frames"/name
-    with np.load(path, allow_pickle=False) as saved:
-        if not np.array_equal(saved["physical_triangles"], topology.physical_triangles):
-            raise ValueError("At-rest start topology no longer matches constructed garment")
-        if float(saved["table_top_m"]) != config.table_top:
-            raise ValueError("At-rest start was recorded for a different tabletop height")
-        return saved["positions_m"].astype(np.float64)
+    return task_folders.setup("laundry", name).setup(config, topology)

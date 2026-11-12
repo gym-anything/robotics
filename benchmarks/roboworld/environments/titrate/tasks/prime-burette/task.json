@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/prime-burette/titration-tasks-v2/titration-n15-0000",
+  "name": "prime-burette",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "prime-burette",
+    "variation_id": 0,
+    "contract": "titration-tasks-v2"
+  },
+  "description": "Before titrating, prime the burette: run about 1 mL of base through the tip into the waste beaker, close the stopcock, and put the flask back under the burette. None of the priming base goes into the flask.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

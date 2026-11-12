@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/irrigation/expose-line/soil-tasks-v2/seed-0",
+  "name": "expose-line",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "expose-line",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+  },
+  "description": "Hand-dig to expose the marked irrigation lateral (purple marks, about 30 cm deep): uncover its crown over at least 15 cm of length without striking it, digging only inside the marked tolerance zone; put the spoil on the tarp.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

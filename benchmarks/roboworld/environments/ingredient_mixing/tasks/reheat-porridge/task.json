@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/hob/reheat-porridge/contract-ingredient-mixing-tasks-v2/seed-0",
+  "name": "reheat-porridge",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "hob",
+    "task": "reheat-porridge",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+  },
+  "description": "The saucepan on the hob holds cold cooked porridge; the hob is on. Stir until the porridge is hot all the way through (74 C, 165 F, everywhere), without letting it catch on the bottom. Then turn the hob off. Keep the porridge in the pan and the pan on the hob. A probe thermometer stands in the crock.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

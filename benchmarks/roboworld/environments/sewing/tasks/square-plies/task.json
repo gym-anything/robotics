@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "sewing/v1/sample-room/square-plies/sewing-tasks-v2/seed-0",
+  "name": "square-plies",
+  "env_id": "sewing",
+  "split": "train",
+  "selection": {
+    "preset": "sample-room",
+    "task": "square-plies",
+    "seed": 0,
+    "contract": "sewing-tasks-v2"
+  },
+  "description": "The top ply has slipped on the stack at the left of the table. Lay it back square on the bottom ply with the edges matching, and leave the stack flat on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

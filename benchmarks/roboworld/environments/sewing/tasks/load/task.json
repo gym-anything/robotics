@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "sewing/v1/sample-room/load/seed-0",
+  "name": "load",
+  "env_id": "sewing",
+  "split": "train",
+  "selection": {
+    "preset": "sample-room",
+    "task": "load",
+    "seed": 0,
+    "contract": "sewing-tasks-v1"
+  },
+  "description": "Lay the two muslin plies from the left of the table, edges aligned, under the raised presser foot so the needle will enter 10 mm from their right edges and 3-8 mm from their far ends, then lower the foot.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

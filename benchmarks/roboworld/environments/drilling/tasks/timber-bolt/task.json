@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/bench/timber-bolt/drilling-tasks-v2/seed-0",
+  "name": "timber-bolt",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "bench",
+    "task": "timber-bolt",
+    "seed": 0,
+    "contract": "drilling-tasks-v2"
+  },
+  "description": "Bore a 9/16-inch hole through both boards at the mark, square to their faces (within 1.2 degrees), and pass the 1/2-inch carriage bolt through by hand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

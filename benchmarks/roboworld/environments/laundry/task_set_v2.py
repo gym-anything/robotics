@@ -11,7 +11,7 @@ Differences from `laundry-tasks-v1` (fix round, render-checked on the GPU):
   garment"); the loader is environment code and stays as released. Both tasks stay
   registered and selectable under this contract, outside the eight.
 - Every start settles before its zero point is taken (`task_set_v2_env`).
-- `thirds_fold` counts cloth crossings, so a correct letter fold passes (`task_set_v2_goals`).
+- `thirds_fold` counts cloth crossings, so a correct letter fold passes (tasks/thirds_fold/verifier.py).
 - The ties are bunched on their free distal parts, crossing-free (`task_set_v2_presets`).
 The shirt keeps its original selection `{"garment": "shirt"}` and released evaluator.
 Importing or resolving never constructs a world.
@@ -21,7 +21,7 @@ from dataclasses import replace
 from .garment_task import GARMENT_TASK_SPECS, GarmentTaskSpec
 from .newton15.config import GARMENTS
 from .task_set import (DEFAULTS, FAILURE_FACTOR, SHIRT_CONTRACT, SUFFIX, TASKS as TASKS_V1, Task,
-                       V2_CONTRACT as CONTRACT)
+                       V2_CONTRACT as CONTRACT, task_goals)
 
 TASKS = TASKS_V1 + (
     # Swapped in for asymmetric/tie_untangle and jeans/leg_align_fold, which
@@ -70,13 +70,11 @@ def resolve(selection):
 def task_spec(entry, version):
     if version != CONTRACT:
         raise ValueError(f"task_set_v2 serves only contract {CONTRACT!r}")
-    from .task_set_v2_goals import (ContinuousGoal, FlatSpreadGoal, FaceDownGoal, ThirdsFoldGoal, RollGoal,
-                                    tee_half_fold_goals)
-    new = {("towel", "spread_flat"): lambda: (FlatSpreadGoal(),), ("tee", "turn_face_down"): lambda: (FaceDownGoal(),),
-           ("towel", "thirds_fold"): lambda: (ThirdsFoldGoal(),), ("towel", "roll"): lambda: (RollGoal(),),
-           ("tee", "half_fold"): tee_half_fold_goals}
-    if (entry.garment, entry.name) in new:
-        spec = GarmentTaskSpec(entry.name, entry.label, GARMENTS[entry.garment], new[entry.garment, entry.name](),
+    from .task_set_v2_goals import ContinuousGoal
+    # towel/spread_flat, tee/turn_face_down, towel/thirds_fold, towel/roll, tee/half_fold: tasks/<task>/verifier.py
+    goals = task_goals(entry, version)
+    if goals is not None:
+        spec = GarmentTaskSpec(entry.name, entry.label, GARMENTS[entry.garment], goals,
                                maximum_structural_strain=.20 if entry.garment == "towel" else .30)
     else:
         original = GARMENT_TASK_SPECS[(GARMENTS[entry.garment], entry.name)]

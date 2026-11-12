@@ -56,10 +56,8 @@ SINK_X = P.SINK["x"]                  # the sink unit beside the counter run (co
 FRIDGE_X = P.FRIDGE["x"]
 PINNED = ("barcode_scanning", "drilling", "wine_pouring", "gift_bags")     # packages whose pinned Poly Haven caches are used
 TEXTURES = dict(floor_tiles_06=2.0, beige_wall_002=2.0, white_oak_veneer=1.0)   # name -> tile size (m)
-RECIPE_FOR = {"dry-whisk": ("dry_mix",), "muffin-fold": ("dry_mix", "muffin_wet"), "pancake-whisk": ("pancake_dry", "pancake_wet"),
-              "pudding-whisk": ("pudding",), "cake-mixer": ("cake",), "sauce-blend": ("sauce",), "stir-sauce": ("stir_sauce",),
-              "reheat-porridge": ("porridge",), "stir-drink": ("lemonade",)}
-RECIPE_VARIANT = {"honey": ("sauce_honey",), "pet-meal": ("pet_meal",)}
+# the recipe card's parts of params.RECIPES: a benchmark task's are its setup.py RECIPE and VARIANT_RECIPE
+RECIPE_FOR = {"stir-drink": ("lemonade",)}
 
 
 def _pinned(kind, name):
@@ -264,7 +262,10 @@ def _recipe_map(folder, world):
     d.text((60, y), "Ingredients", font=font(48, True), fill=(150, 52, 40))
     y += 70
     scale = float(world.scene.layout.get("scale", 1.0))
-    for key in RECIPE_VARIANT.get(cfg.variant, RECIPE_FOR.get(cfg.task, ())):
+    own = T.task_setup(cfg.task)
+    keys = (getattr(own, "VARIANT_RECIPE", {}).get(cfg.variant, own.RECIPE) if own is not None else
+            RECIPE_FOR.get(cfg.task, ()))
+    for key in keys:
         for name, grams in P.RECIPES[key].items():
             unit = "ml" if name.endswith("_ml") else "g"
             label = name[:-3] if name.endswith("_ml") else name

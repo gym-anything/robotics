@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/therapy/melody/seed-0",
+  "name": "melody",
+  "env_id": "percussion",
+  "split": "test",
+  "selection": {
+    "preset": "therapy",
+    "task": "melody"
+  },
+  "description": "Play 'Hot Cross Buns' on the xylophone with the mallets at 85 beats per minute. The notes, each with its length in beats: E4 1, D4 1, C4 2, E4 1, D4 1, C4 2, C4 1/2, C4 1/2, C4 1/2, C4 1/2, D4 1/2, D4 1/2, D4 1/2, D4 1/2, E4 1, D4 1, C4 2.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

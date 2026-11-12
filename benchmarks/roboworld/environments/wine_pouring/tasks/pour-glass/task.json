@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/service/pour-glass/wine-tasks-v2/seed-0",
+  "name": "pour-glass",
+  "env_id": "wine-pouring",
+  "split": "train",
+  "selection": {
+    "preset": "service",
+    "task": "pour-glass",
+    "seed": 0,
+    "contract": "wine-tasks-v2"
+  },
+  "description": "Pour a 150 mL glass of red wine from the bottle on the coaster into the Bordeaux glass at spot 2, without spilling or leaving drips running down the bottle, then stand the bottle back on its coaster and leave the glass upright on its spot.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

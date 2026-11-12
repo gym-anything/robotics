@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/pre-rinse/pre-rinse-plates/surface-rinsing-tasks-v2/seed-0",
+  "name": "pre-rinse-plates",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "pre-rinse",
+    "task": "pre-rinse-plates",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+  },
+  "description": "Six plates soiled with dried tomato sauce stand in the peg rack on the pre-rinse sink. Mix the water to about 49 C (110-120 F), pre-rinse every plate with the pre-rinse spray valve until no sauce is visible on its face or rim, without spraying onto the clean dish table, then shut the water and hang the spray valve back up.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

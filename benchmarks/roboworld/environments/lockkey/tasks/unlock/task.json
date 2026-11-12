@@ -1,0 +1,18 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/unlock",
+  "name": "unlock",
+  "env_id": "lockkey",
+  "split": "test",
+  "selection": {},
+  "description": "Unlock the padlock on the chest with its key from the near (-Y) stand and swing the shackle open. Leave the other key on its stand. The chest lid does not need to be opened.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

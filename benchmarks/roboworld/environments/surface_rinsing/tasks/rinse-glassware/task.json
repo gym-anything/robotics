@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/pot-sink/rinse-glassware/surface-rinsing-tasks-v2/seed-0",
+  "name": "rinse-glassware",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "pot-sink",
+    "task": "rinse-glassware",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+  },
+  "description": "Six washed glasses (four 12 oz rocks glasses and two 16 oz mixing glasses) stand on the soiled (left) drainboard, still wet with detergent solution and suds. Rinse each one free of detergent inside and out under the swing faucet or in the rinse compartment, immerse it in the sanitizer compartment (right bowl) for at least 30 s, and set it mouth-down in the glass rack on the clean drainboard to air-dry. Do not chip or drop any glass; leave the faucet and handles closed and nothing in the hands.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

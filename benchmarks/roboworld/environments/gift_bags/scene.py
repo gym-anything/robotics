@@ -469,7 +469,10 @@ G1_LAYOUT = {
 
 
 def build(config):
+    """The scene spec of config's preset and task. A benchmark task's setup.py (tasks/<task>/) gets the spec last
+    (setup(spec, None): the start as released); a task-set contract's env adapter may change it further."""
     from . import g1 as G1
+    from .config import task_setup
     humanoid = G1.is_g1(config.robot)
     if humanoid and config.preset not in G1_LAYOUT:
         raise ValueError(f"the G1 is laid out for the {sorted(G1_LAYOUT)} presets only (scene.G1_LAYOUT); "
@@ -479,4 +482,7 @@ def build(config):
         spec.g1 = dict(G1_LAYOUT[config.preset])
         spec.mounts = {}                 # no pedestals: the humanoid stands on the floor
         spec.ready_pose = None           # the Franka hover pose does not apply; the G1 posture is spec.g1["arms"]
+    folder = task_setup(config.task)
+    if folder is not None:
+        folder.setup(spec, None)
     return spec

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/drain-burette/titration-tasks-v2/titration-n15-0000",
+  "name": "drain-burette",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "drain-burette",
+    "variation_id": 0,
+    "contract": "titration-tasks-v2"
+  },
+  "description": "The session is over. Drain all the base left in the burette into the waste beaker, keeping it out of the flask, and leave the burette empty with its stopcock open.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

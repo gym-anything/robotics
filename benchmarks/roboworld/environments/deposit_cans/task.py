@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 from .containment import BagVolume
 from .contact_evidence import ContactEvidence
-from .variants import TASKS_V2_CONTRACT,CONTRACT_CHOICES
+from .variants import TASKS_V2_CONTRACT,CONTRACT_CHOICES,task_verifier
 
 DESCRIPTION=('Deposit all designated empty beverage cans from the return counter and bussing tub '
     'into the recycling collection bag. Keep reusable items out of the recycling, prevent cans '
@@ -46,11 +46,20 @@ TASKS_CONTRACT='deposit-tasks-v1'   # the high_fill evaluator (single_can, empty
 # sort_waste, the paper cups' landfill credit, their bag/floor units and the landfill bin upright. sort_cups
 # uses it (its cups start on the right-hand counter row); single_can and empty_tub keep their own rule and
 # contract; reference uses it only when selected explicitly (its eight-task entry), else v1.
-TASKS_V2_VARIANTS=('lid_cans','sort_cups','sort_waste','tub_cups')
-CUPS_TASKS=('sort_cups','tub_cups')   # the reusable cups start off the tray: put back is credited, not charged
-# Default contract per variant (reference: TASKS_V2_CONTRACT on request, variants.CONTRACT_CHOICES).
-TASK_CONTRACTS={'reference':'v1','high_fill':HIGH_FILL_CONTRACT,
-    'single_can':TASKS_CONTRACT,'empty_tub':TASKS_CONTRACT,**{k:TASKS_V2_CONTRACT for k in TASKS_V2_VARIANTS}}
+# Default contract per variant (reference: TASKS_V2_CONTRACT on request, variants.CONTRACT_CHOICES): CONTRACT in
+# its task folder's verifier.py (tasks/<variant>/), in this order.
+TASK_CONTRACT_ORDER=('reference','high_fill','single_can','empty_tub','lid_cans','sort_cups','sort_waste','tub_cups')
+_TASK_CONTRACTS={}
+
+def task_contracts():
+    """variant -> its default contract, built once: the task folders' verifiers import this module."""
+    if not _TASK_CONTRACTS:_TASK_CONTRACTS.update((k,task_verifier(k).CONTRACT) for k in TASK_CONTRACT_ORDER)
+    return _TASK_CONTRACTS
+
+def __getattr__(name):
+    if name=='TASK_CONTRACTS':return task_contracts()
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
 COUNTER_TOP_X=(-.70,-.06);COUNTER_TOP_Y=(-.69,.69)   # return_counter box top, assembly.py
 TUB_REST_Z=.903                                        # tub origin is its base centre
 TUB_HALF=(.1945,.253)                                  # tub_geometry outer footprint half-extents
@@ -73,6 +82,7 @@ def description(variant,contract=None):
         contract=contract or CONTRACT_CHOICES[variant][0]
         if contract not in CONTRACT_CHOICES[variant]:raise ValueError(f'Unknown task contract {contract!r} for {variant}')
         return REFERENCE_DESCRIPTIONS[contract]
+    TASK_CONTRACTS=task_contracts()
     if contract is not None and contract!=TASK_CONTRACTS[variant]:raise ValueError(f'{variant} has only contract {TASK_CONTRACTS[variant]}')
     return DESCRIPTIONS[variant]
 
@@ -88,10 +98,8 @@ def task_contract(config):
             raise ValueError(f'Task contract {chosen!r} is not selectable for this inventory and scene revision')
         return chosen
     if config.scene_revision<7:return 'v1'
-    if name=='high_fill':return HIGH_FILL_CONTRACT
-    if name in ('single_can','empty_tub'):return TASKS_CONTRACT
-    if name in TASKS_V2_VARIANTS:return TASKS_V2_CONTRACT
-    return 'v1'
+    own=task_verifier(name)
+    return own.CONTRACT if own is not None else 'v1'
 
 def frustum_z_range(base,axis,base_radius,rim_radius,height):
     """Lowest and highest z of a cup's outer frustum from its base centre and unit axis, both in one frame."""
@@ -138,7 +146,8 @@ class Progress:
     def __init__(self,env):
         self.contract=task_contract(env.config);self.rest_history=[]
         from .variants import preset
-        self.cups_task=preset(env.config) in CUPS_TASKS
+        self.verifier=task_verifier(preset(env.config))
+        self.cups_task=bool(getattr(self.verifier,'CUPS_OFF_TRAY',False))
         # TASKS_V2_CONTRACT items whose mid-axis point is also classified against the deformed bag on every
         # update (one query with the can probes): the reusable cups of a cups task and the paper cups.
         # (body, base radius, rim radius, height); empty for every other contract.
@@ -173,6 +182,11 @@ class Progress:
             if self.integrity.initial_intersection else [])
         self.surface_path_checked_through=env.tick
     def update(self,e):
+        """The evaluation after a substep: a catalogue inventory's verifier.py (tasks/<variant>/) judges it,
+        evaluate_criteria any other."""
+        if self.verifier is None:return self.evaluate_criteria(e)
+        return self.verifier.verify(self,e)
+    def evaluate_criteria(self,e):
         p=e.state.particle_q.numpy();pv=e.state.particle_qd.numpy()
         if e.tick>self.surface_path_checked_through:
             if e.tick!=self.surface_path_checked_through+1:

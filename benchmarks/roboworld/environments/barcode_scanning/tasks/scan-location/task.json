@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/stockroom/scan-location/seed-0",
+  "name": "scan-location",
+  "env_id": "barcode-scanning",
+  "split": "train",
+  "selection": {
+    "preset": "stockroom",
+    "task": "scan-location"
+  },
+  "description": "Take the scanner from its cradle, scan the shelf location label for slot A03-3-B (the label text is printed above its barcode on the shelf beam), then return the scanner to its cradle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

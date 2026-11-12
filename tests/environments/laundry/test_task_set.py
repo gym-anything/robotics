@@ -13,11 +13,13 @@ import numpy as np
 
 from laundry.garment_task import GARMENT_TASK_SPECS, GarmentTaskEvaluator, TabletopFrame
 from laundry.task_set import (BY_NAME, CONTRACT, LEGACY, SHIRT_CONTRACT, TASKS, TASK_SET,
-                              TASK_SET_ORDER, make_evaluator, resolve, select, task_spec)
+                              TASK_SET_ORDER, make_evaluator, resolve, select, task_spec, task_verifier)
 from laundry.task_set_presets import accordion_curve, reach_report, start_positions
-from laundry.task_set_goals import three_ply_fraction
 from tests.environments.laundry.task_set_fixtures import recorded, half_fold, thirds_fold
 from tests.packages import PACKAGES
+
+# laundry-tasks-v1's ply count, in tasks/thirds_fold/verifier.py.
+three_ply_fraction = task_verifier("towel", "thirds_fold").three_ply_fraction_v1
 
 
 def evaluator(name, *, start=None):

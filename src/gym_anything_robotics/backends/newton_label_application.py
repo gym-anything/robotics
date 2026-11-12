@@ -16,8 +16,8 @@ from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
 POLICY_CAMERAS = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
-WRIST_CAMERA_TASKS = ("part-id-match", "tube-wrap", "gs1-case-side",     # wrist cameras on by default (see __init__)
-                      "smooth-corner", "finish-securing", "tube-label")
+# wrist cameras on by default (see __init__): these tasks, and a benchmark task whose setup.py sets WRIST_CAMERAS
+WRIST_CAMERA_TASKS = ("tube-wrap",)
 DIAGNOSTIC = ("room", "printer", "closeup", "scanner", "carton_top", "carton_side", "tube", "part")
 
 
@@ -43,7 +43,7 @@ def _session_folder():
 class NewtonLabelApplicationBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-fr3", preset="parcel", task=None, seed=0, device=None, config=None,
                  cameras=None, output_dir=None, renderer_options=None, recording=True):
-        from label_application.config import Config, TASKS
+        from label_application.config import Config, TASKS, task_setup
         from label_application.env import LabelEnv
         from label_application.kinematics import ArmKinematics
         from robots.catalog import ENVIRONMENTS
@@ -62,14 +62,10 @@ class NewtonLabelApplicationBackend(RoboticsBackend):
         self.config = Config(**values)
         if cameras is None:
             # per-task default: the overhead camera, plus the wrist cameras where the overhead view cannot show what the
-            # task asks the robot to look at: part-id-match, the plates' laser-marked part numbers and the label's
-            # printed one (~3 px per character overhead); tube-wrap, the manufacturer label's edge for 0-2 mm
-            # registration (the 13 mm tube is ~11 px across overhead); gs1-case-side, the long side faces (the
-            # robot-facing one is not visible overhead at all); tube-label as tube-wrap; smooth-corner and
-            # finish-securing, the close view of the lifted areas from the ready pose's hand above the label (a 4 x 6 in
-            # label is ~90 x 60 px overhead)
+            # task asks the robot to look at: tube-wrap, the manufacturer label's edge for 0-2 mm registration (the
+            # 13 mm tube is ~11 px across overhead); a benchmark task's setup.py WRIST_CAMERAS says what for its task
             cameras = ("bench_rgb",)
-            if self.config.task in WRIST_CAMERA_TASKS:
+            if self.config.task in WRIST_CAMERA_TASKS or getattr(task_setup(self.config.task), "WRIST_CAMERAS", False):
                 cameras += ("left_wrist_rgb",) if robot == "single-fr3" else ("left_wrist_rgb", "right_wrist_rgb")
         self.cameras = tuple(cameras)
         self.last_timing = {}                                  # per-operation timing breakdown

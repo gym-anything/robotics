@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/stockroom/count-key-quantity/seed-0",
+  "name": "count-key-quantity",
+  "env_id": "barcode-scanning",
+  "split": "train",
+  "selection": {
+    "preset": "stockroom",
+    "task": "count-key-quantity"
+  },
+  "description": "Cycle count slot A03-3-B (a slot runs from its location label to the next label on the right): scan the slot's location label, then for each different item scan one unit and key the number of units of that item in the slot on the keypad, then ENTER. Leave the stock faced on the shelf as you found it and return the scanner to its cradle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

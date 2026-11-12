@@ -6,6 +6,7 @@ import math
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy.ndimage import maximum_filter
+from gym_anything_robotics import task_folders
 from .config import COLORS
 from .stroke_font import GLYPHS
 
@@ -15,42 +16,18 @@ BRIDGE_INSTRUCTION = (
     "reference image shows the whole writing surface as seen from the front; draw the diagram where "
     "it appears and at the size shown."
 )
+PACKAGE = "whiteboard"
 
 
-@lru_cache(maxsize=1)
-def bridge_strokes():
-    """The bridge diagram as (element, colour, line weight, points), in drawing order.
+def task_setup(name):
+    """The benchmark task's setup.py (tasks/<name>/), or None. A native task's folder is named by its kind (bridge), a
+    task-set preset's by its name; the text kind is not a benchmark task."""
+    return task_folders.setup(PACKAGE, name) if task_folders.exists(PACKAGE, name) else None
 
-    Points are multiples of the task's width_m from its centre, along world +x
-    and +z. A person facing the board sees world +x on their left, so elements
-    are named as seen from the front. Coordinates, weights and order are the
-    ones the reference has always been drawn with; tests pin the raster.
-    """
-    def cable_y(x):
-        return float(0.09 + 0.18 * (x / 0.28) ** 2)
 
-    strokes = []
-    for side, x in (("right", -0.28), ("left", 0.28)):
-        strokes.append((f"{side} tower legs", "orange", "thick", ((x, -0.06), (x, 0.27))))
-        strokes.append((f"{side} tower legs", "orange", "thick", ((x - 0.035, -0.06), (x - 0.035, 0.25))))
-        strokes += [(f"{side} tower cross-bars", "orange", "normal", ((x - 0.035, y), (x, y))) for y in (0.02, 0.10, 0.18)]
-    strokes.append(("roadway", "black", "thick", ((-0.48, -0.02), (0.48, -0.02))))
-    strokes.append((
-        "main cable", "red", "normal",
-        tuple((float(x), cable_y(x)) for x in np.linspace(-0.28, 0.28, 150)),
-    ))
-    strokes.append(("right side-span cable", "red", "normal", ((-0.48, 0.0), (-0.28, 0.27))))
-    strokes.append(("left side-span cable", "red", "normal", ((0.28, 0.27), (0.48, 0.0))))
-    strokes += [
-        ("hangers", "red", "thin", ((float(x), -0.02), (float(x), cable_y(x))))
-        for x in np.linspace(-0.25, 0.25, 17)
-    ]
-    for name, y in (("upper water line", -0.11), ("middle water line", -0.15), ("lower water line", -0.19)):
-        strokes.append((
-            name, "blue", "normal",
-            tuple((float(x), float(y + 0.009 * math.sin(x * 45))) for x in np.linspace(-0.48, 0.48, 150)),
-        ))
-    return tuple(strokes)
+def task_verifier(name):
+    """The benchmark task's verifier.py (tasks/<name>/), or None (as task_setup)."""
+    return task_folders.verifier(PACKAGE, name) if task_folders.exists(PACKAGE, name) else None
 
 
 @lru_cache(maxsize=4)
@@ -121,14 +98,17 @@ class Task:
         """The picture handed to whoever does the job.
 
         Bridge: the board as seen from the front (texture columns grow with world
-        +x, which is the viewer's left). Text kind: unchanged texture orientation.
+        +x, which is the viewer's left; its setup.py). Text kind: unchanged texture orientation.
         """
-        image = self.reference(ink)
-        return np.ascontiguousarray(image[:, ::-1]) if self.kind == "bridge" else image
+        own = task_setup(self.kind)
+        if own is not None:
+            return own.reference_view(self, ink)
+        return self.reference(ink)
 
     def validate_board(self, board):
+        own = task_setup(self.kind)                 # the bridge's diagram height (its setup.py)
         half_height = (
-            0.30 if self.kind == "bridge" else 0.5 / (len(self.text) * 1.1 - 0.3)
+            own.HALF_HEIGHT if own is not None else 0.5 / (len(self.text) * 1.1 - 0.3)
         ) * self.width_m + 0.005
         if (
             abs(self.center_x) + self.width_m * 0.5 + 0.005 > board.writing_width / 2
@@ -164,22 +144,14 @@ class Task:
                     ]
                     draw.line(pixels, fill=palette["black"], width=line, joint="curve")
         else:
-            widths = {"thick": line * 2, "normal": line, "thin": max(1, line - 1)}
-            for _, color, weight, points in bridge_strokes():
-                draw.line(
-                    [point(x, y) for x, y in points],
-                    fill=palette[color],
-                    width=widths[weight],
-                    joint="curve",
-                )
+            task_setup(self.kind).diagram(draw, point, palette, line)     # the bridge (its setup.py)
         return np.asarray(image)
 
     def evaluate(self, ink):
-        """Bridge: registered-copy verifier (bridge_verifier.py). Text: overlap scorer below."""
-        if self.kind == "bridge":
-            from .bridge_verifier import evaluate_bridge
-
-            return evaluate_bridge(self, ink)
+        """Bridge: registered-copy verifier (its verifier.py, tasks/bridge/). Text: overlap scorer below."""
+        own = task_verifier(self.kind)
+        if own is not None:
+            return own.verify(self, ink)
         return self.overlap_evaluation(ink)
 
     def overlap_evaluation(self, ink):

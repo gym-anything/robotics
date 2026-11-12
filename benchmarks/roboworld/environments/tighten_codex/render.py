@@ -85,8 +85,8 @@ INDICATORS={"w4f_output_led":((.95,.72,.02),1.5)}
 def indicator_states(env):
     """Current on/off state of the exported indicator lamps (mixed only: the
     W4F's yellow output LED follows the evaluator's geometric optical ray)."""
-    from .task import uses_eight
-    if env.config.task!="mixed" and not uses_eight(env.config):
+    from .task import hands_off_rules
+    if not hands_off_rules(env.config):
         return {}
     return {"w4f_output_led":bool(env.evaluation["optical"]["detected"])}
 
@@ -215,8 +215,8 @@ def export(env, output):
             m.CreateSurfaceOutput().ConnectToSource(s.ConnectableAPI(),"surface")
             mats[mat]=m
         UsdShade.MaterialBindingAPI.Apply(g.GetPrim()).Bind(mats[mat])
-    from .task import uses_eight
-    if env.config.task=="mixed" or uses_eight(env.config):
+    from .task import hands_off_rules
+    if hands_off_rules(env.config):
         _mixed_cues(stage,env,mats)
     # Non-interactive room context remains behind the robot's reachable
     # workcell. It adds no collision proxy or hidden task affordance; the

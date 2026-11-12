@@ -13,14 +13,10 @@ Success predicates are evaluator.py's, byte-for-byte unchanged; measurements and
 """
 
 import copy
-import math
-
-import numpy as np
 
 from . import evaluator as E
-from . import params as P
-from .task import TIME_LIMIT_S
-from .task_progress import FAIL_SCALE, RULE, _front, clip, gained, measurements, ramp, unsecured, workmanship
+from .task import TIME_LIMIT_S, task_verifier
+from .task_progress import FAIL_SCALE, RULE, clip, measurements, workmanship
 from .task_set_v2 import CONTRACT, TASKS
 
 
@@ -33,22 +29,8 @@ def approach(distance, initial):
 
 
 def progress(task, now, initial):
-    a = approach(now["distance"], initial["distance"])
-    if task == "start-and-park" or (task == "load-trailer" and "quality" in now):
-        return a * (0.5 + 0.5 * now["quality"])
-    if task == "aisle-cruise":
-        return float(np.mean([*now["sections"], *now["crossings"], a * now["centre"], now["stop"]]))
-    if task == "drive-to-pallet":
-        moved = float(np.linalg.norm(np.array(now["pallet"]) - initial["pallet"]))
-        return a * (0.4 + 0.6 * now["quality"]) * ramp(moved, 0.02, 0.3)
-    s = gained(now["placement"], initial["placement"])
-    e = s * now["exit"]  # current placement, no required history or order of operations
-    if task == "put-away-rack":
-        h = approach(now["height_error"], initial["height_error"])
-        return 0.35 * a + 0.15 * h + 0.3 * s + 0.2 * e
-    if task == "load-trailer":
-        return 0.45 * a + 0.35 * s + 0.2 * e
-    return 0.5 * a + 0.3 * s + 0.2 * e
+    """task_progress.progress() with this approach: the task's verifier.py's progress(now, initial, approach)."""
+    return task_verifier(task).progress(now, initial, approach)
 
 
 class TaskProgress:
@@ -68,11 +50,10 @@ class TaskProgress:
         """Nothing to clear: the released backend's reset calls this; the adapter keeps no state beyond the baseline."""
 
     def entered_on_red(self, world, *, history=True):
-        if not unsecured(self.start):
-            return False
-        edge = world.scene.zones["doors"][self.start["target"]["door"]]["face_y"] - P.LEVELER["length"]
-        return _front(world) >= edge or (history and any(y + E.REACH_LOADED * math.sin(yaw) >= edge
-                                                       for _, _, y, yaw, _ in world.events.traj))
+        """Whether the truck went past an unsecured trailer's leveler: the task's verifier.py decides (load-trailer's
+        entered_on_red); no other task has a red signal."""
+        own = getattr(task_verifier(self.start["task"]), "entered_on_red", None)
+        return own is not None and own(world, self.start, history=history)
 
     def evaluate(self, world):
         fault = world.fault

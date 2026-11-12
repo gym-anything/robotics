@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/counter/open-bag/gift-bags-tasks-v2/seed-0",
+  "name": "open-bag",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "counter",
+    "task": "open-bag",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v2"
+  },
+  "description": "You are at the cash-wrap counter of a boutique. Take the top gift bag from the stack, open it, square its bottom and put one of the bottom boards in it. Leave the bag standing open on the dark rubber counter mat. Release everything when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

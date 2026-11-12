@@ -48,11 +48,14 @@ class LabelContractTest(unittest.TestCase):
         valid GS1 check digit), the old label inside the carrier zone and off the centred carrier-top spot, and a
         plate set whose label part number names exactly one plate."""
         from label_application import layouts as Lay
+        from gym_anything_robotics import task_folders
+        plates = task_folders.setup("label_application", "part-id-match").plates
+        canister_offset = task_folders.setup("label_application", "part-id-hdpe").canister_offset
         self.assertEqual(Lay.payload("carrier-top", 0), "961201950123456789")
         self.assertEqual(Lay.payload("tube-wrap", 0), "S2609230742")
         self.assertEqual(Lay.gs1_check_digit("10614141234567890"), "8")         # GS1 General Specifications example
         self.assertEqual(Lay.tube_roll(0), 0.)
-        self.assertEqual(Lay.canister_offset(0), (0., 0.))
+        self.assertEqual(canister_offset(0), (0., 0.))
         for seed in range(40):
             for task, n in (("carrier-top", 18), ("cover-old-label", 18), ("press-down", 18), ("gs1-case-side", 20),
                             ("tube-wrap", 11), ("part-id-hdpe", 19), ("part-id-match", 19),
@@ -64,7 +67,7 @@ class LabelContractTest(unittest.TestCase):
             v = np.abs(np.asarray(o["v"]))
             self.assertTrue(v.min() > .024 and v.max() < 6*.0254 - .005, o)
             self.assertGreaterEqual(abs(o["centre"][0]), .035)
-            pl = Lay.plates(seed)
+            pl = plates(seed)
             label_no = Lay.payload("part-id-match", seed).split("-", 1)[1].rsplit("-", 1)[0]
             self.assertEqual([k for k, num in enumerate(pl["part_numbers"]) if num == label_no], [pl["target"]])
 
@@ -136,7 +139,9 @@ class LabelContractTest(unittest.TestCase):
         """Contract progress-v2: gs1-case-side's and part-id-hdpe's registration factors are 1 wherever the
         placement check passes and fall linearly to 0 where the label would leave the face (the carton's base or top,
         the canister wall's end), at the vertical edge (symbol clearance 0) or at a diagonal label (45 deg)."""
-        from label_application.task import gs1_registration_factors as gs1, canister_registration_factors as can
+        from gym_anything_robotics import task_folders
+        gs1 = task_folders.verifier("label_application", "gs1-case-side").gs1_registration_factors
+        can = task_folders.verifier("label_application", "part-id-hdpe").canister_registration_factors
         H = .2032
         for b in (.026, .032, .038):                                   # the 32 +- 6 mm band
             self.assertEqual(gs1(b, .019, 5., .01, .16, H), (1., 1., 1.))

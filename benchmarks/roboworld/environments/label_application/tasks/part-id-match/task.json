@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/part/part-id-match/label-tasks-v2/seed-0",
+  "name": "part-id-match",
+  "env_id": "label-application",
+  "split": "train",
+  "selection": {
+    "preset": "part",
+    "task": "part-id-match",
+    "seed": 0,
+    "contract": "label-tasks-v2"
+  },
+  "description": "You are at a receiving bench. Three stainless-steel mounting plates from the same delivery lie on the bench, each laser-marked with its part number. The thermal-transfer printer has just printed and presented the polyester ID label for one of them. Take the label from the printer and apply it to the plate whose marked part number matches the one printed on the label, on its marked face, without covering the marking.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

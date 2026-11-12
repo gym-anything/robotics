@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/service/split-bottle/seed-0",
+  "name": "split-bottle",
+  "env_id": "wine-pouring",
+  "split": "test",
+  "selection": {
+    "preset": "service",
+    "task": "split-bottle"
+  },
+  "description": "Finish the bottle: share what is left in it equally between the guests' glasses at spot 1 (far left) and spot 2, without the bottle touching either glass, and stand the bottle back on its coaster.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

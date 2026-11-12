@@ -223,8 +223,9 @@ def warehouse(rng, reserved=frozenset()):
     L.zones["stop_lines"] = {"W0": dict(x=19.4, y=(26.0, 30.5)), "W1_end": dict(x=47.0, y=(26.0, 30.5)),
                              "west_end": dict(x=7.5, y=(26.0, 30.5))}
     L.line("stop_W1_end", (47.0, 26.0), (47.0, 30.5), 0.30, "white")
-    # the westward cruise's far line (aisle-cruise, task.CRUISE_DIRECTIONS): 1.9 m east of the parking bay's open end, so a
-    # truck stopped with its front wheels on it, heading west, keeps its fork tips (1.62 m ahead) out of the bay
+    # the westward cruise's far line (aisle-cruise, CRUISE_DIRECTIONS in tasks/aisle-cruise/setup.py): 1.9 m east of the
+    # parking bay's open end, so a truck stopped with its front wheels on it, heading west, keeps its fork tips (1.62 m
+    # ahead) out of the bay
     L.line("stop_west_end", (7.5, 26.0), (7.5, 30.5), 0.30, "white")
     # dock wall: four closed doors (visual) and dressing
     for i in range(4):
@@ -402,8 +403,9 @@ def yard(rng, reserved=frozenset()):
     L.line("apron_line", (hx - 1.5, hy), (hx + 1.5, hy), 0.15, "yellow")
     L.zones["drop_zone"] = dict(x=(14.0, 17.0), y=(5.0, 8.0))
     L.rect_lines("drop_zone", 14.0, 17.0, 5.0, 8.0, 0.10, "yellow")
-    # a second drop zone, the first mirrored about the ramp's centreline (ramp-down-loaded, task.DROP_ZONES): open asphalt
-    # west of the ramp foot, clear of its cones (x 7.7, y 3.5) and of the yard lane (its west line at x 8.0 there)
+    # a second drop zone, the first mirrored about the ramp's centreline (ramp-down-loaded, DROP_ZONES in
+    # tasks/ramp-down-loaded/setup.py): open asphalt west of the ramp foot, clear of its cones (x 7.7, y 3.5) and of the
+    # yard lane (its west line at x 8.0 there)
     L.zones["drop_zone_w"] = dict(x=(2 * x_r - 17.0, 2 * x_r - 14.0), y=(5.0, 8.0))
     L.rect_lines("drop_zone_w", 2 * x_r - 17.0, 2 * x_r - 14.0, 5.0, 8.0, 0.10, "yellow")
     L.extent = (-15.0, 45.0, -25.0, 25.0)

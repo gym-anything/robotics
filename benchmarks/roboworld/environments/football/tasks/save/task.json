@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/save",
+  "name": "save",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "save"
+  },
+  "description": "You are the goalkeeper, standing on your goal line. The ball machine on the penalty mark is about to shoot. Stop the shot from going in.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

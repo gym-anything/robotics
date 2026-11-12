@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/warehouse/start-and-park/forklift-tasks-v1/seed-0",
+  "name": "start-and-park",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "start-and-park",
+    "seed": 0,
+    "contract": "forklift-tasks-v1"
+  },
+  "description": "Start the truck, release the parking brake, drive to the truck parking bay at the west end of the main aisle and park it there inside the painted lines: forks fully lowered and tilted forward until their tips rest on the floor, direction lever in neutral, parking brake set, engine off and key turned off.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

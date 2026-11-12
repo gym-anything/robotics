@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/free-kick",
+  "name": "free-kick",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "free-kick"
+  },
+  "description": "Direct free kick from 24 metres, with a four-man training wall 9.15 metres in front of the ball. Score directly from the free kick.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/fillet-2f/seed-0",
+  "name": "fillet-2f",
+  "env_id": "welding",
+  "split": "test",
+  "selection": {
+    "task": "fillet-2f"
+  },
+  "description": "Weld a continuous 1/4 inch fillet along the near side of the tacked bracket in the horizontal position, from end to end, and fill the crater. The spray-transfer schedule for 0.035 inch ER70S-6 wire with 90/10 gas is about 500 in/min (12.7 m/min) wire feed at 29 V.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

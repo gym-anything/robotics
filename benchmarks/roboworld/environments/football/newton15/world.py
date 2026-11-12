@@ -223,7 +223,8 @@ class FootballWorld:
             evaluate_atmosphere(),
             WakeState(),
         )
-        # The task's verifier: goal's PitchAwareGoalDetector(require_kick=robot) for goal and free-kick (drills.py).
+        # The task's verifier: its folder's verify (tasks/<task>/verifier.py, through drills.make_verifier); goal's
+        # PitchAwareGoalDetector(require_kick=robot) for goal and free-kick.
         self.goal = make_verifier(self.config, self.layout)
         self.verifier_uses_robot_pose = bool(getattr(self.goal, "uses_robot_pose", False))
         if self.verifier_uses_robot_pose:
@@ -346,7 +347,8 @@ class FootballWorld:
 
     def robot_pose(self):
         """Pelvis position, the z component of the pelvis up axis and the midpoint of the two ankle-roll links, end
-        of tick, world frame: the robot state the trap verifier judges (drills.Trap). None without a robot."""
+        of tick, world frame: the robot state the trap verifier judges (Trap, tasks/trap/verifier.py). None without a
+        robot."""
         if not self.config.robot:
             return None
         pelvis = self.poses[self.body_ids["pelvis"]]

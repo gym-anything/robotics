@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/parcel/press-down/label-tasks-v2/seed-0",
+  "name": "press-down",
+  "env_id": "label-application",
+  "split": "train",
+  "selection": {
+    "preset": "parcel",
+    "task": "press-down",
+    "seed": 0,
+    "contract": "label-tasks-v2"
+  },
+  "description": "You are at a shipping pack bench. A co-worker has laid the shipping label in position on the sealed carton's top and left it only lightly tacked. Finish applying it: press it down where it lies.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

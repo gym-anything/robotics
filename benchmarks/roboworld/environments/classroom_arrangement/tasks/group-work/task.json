@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/group-work/seed-0",
+  "name": "group-work",
+  "env_id": "classroom-arrangement",
+  "split": "test",
+  "selection": {
+    "task": "group-work"
+  },
+  "description": "Group-work day: turn the two front rows (rows 1 and 2) into three pods of four, one for each pair of desks and the pair behind it. In each pod the pair nearer the board faces the pair behind it, and the four desks meet front edge to front edge on the pod's floor dots. Give each desk a chair on the outside of the pod, facing it and pulled out ready to sit. Leave a 0.915 m (36 in) wide route clear from the door to the back of the room, and leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

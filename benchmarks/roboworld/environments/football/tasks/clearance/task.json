@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/clearance",
+  "name": "clearance",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "clearance"
+  },
+  "description": "The ball is loose in your own penalty area and you are facing upfield. Clear it: kick it out of the penalty area.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

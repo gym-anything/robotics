@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "barcode-scanning/v1/counter/checkout-counter/seed-0",
+  "name": "checkout-counter",
+  "env_id": "barcode-scanning",
+  "split": "train",
+  "selection": {
+    "preset": "counter",
+    "task": "checkout-counter"
+  },
+  "description": "Ring up the customer's items set out on the counter: present each item's barcode to the scanner standing in its cradle so each is scanned once, and put each scanned item in the bagging tote.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

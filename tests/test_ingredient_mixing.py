@@ -874,7 +874,8 @@ class Discovery(unittest.TestCase):
     def test_stir_sauce_progress_is_of_the_outcome(self):
         """stir-sauce's partial score: nothing for an untouched or a merely switched-off pan, rising with the cooking,
         falling with burnt-on area and spilt sauce, and the hob's switch worth something only over a cooked sauce."""
-        from ingredient_mixing.task import cook_progress, TASKS
+        from ingredient_mixing.task import TASKS, task_verifier
+        cook_progress = task_verifier("stir-sauce").cook_progress
         bottom = 181.46
         p = lambda **k: cook_progress(**{**dict(cooked=1.0, spilt=0.0, burnt_cm2=0.0, bottom_cm2=bottom, pan_in_place=True,
                                                 hob_off=True, cooked_ok=True), **k})["progress"]
@@ -924,9 +925,10 @@ class Discovery(unittest.TestCase):
         clear of the vessel, the crock and the mixer's stand; the room's tables hold together."""
         from ingredient_mixing import params as P
         from ingredient_mixing.config import TASKS
+        from ingredient_mixing.task import task_setup
         for preset, names in TASKS.items():
             for t in names:
-                props = P.PROPS[t]
+                props = task_setup(t).PROPS
                 self.assertGreaterEqual(len(props), 3)
                 for kind, dx, y, yaw in props:
                     self.assertIn(kind, P.PROP)
@@ -1030,7 +1032,8 @@ class Materials(unittest.TestCase):
 
     def test_gelatinisation_is_arrhenius(self):
         from ingredient_mixing.materials import gel_rate, GAS_R
-        from ingredient_mixing.task import STARCH
+        from ingredient_mixing.task import task_setup
+        STARCH = task_setup("stir-sauce").STARCH
         self.assertLess(gel_rate(STARCH, 50.0), 1e-3)                            # nothing well below the onset
         self.assertGreater(gel_rate(STARCH, 90.0), 0.05)                         # seconds near a simmer
         r70, r80 = gel_rate(STARCH, 70.0), gel_rate(STARCH, 80.0)
@@ -1079,7 +1082,8 @@ class Drawing(unittest.TestCase):
         # would be drawn sRGB (0.82, 0.27, 0.27)
         import numpy as np
         from ingredient_mixing import render as R, task as T
-        recipe = dict(pastes=(T.MAYO, T.KETCHUP, T.RELISH))
+        sauce = T.task_setup("sauce-blend")
+        recipe = dict(pastes=(sauce.MAYO, sauce.KETCHUP, sauce.RELISH))
         rgb, _ = R.paste_colors(recipe)
         blend = R.kubelka_munk(rgb, np.array([[2.0, 1.0, 0.0]]), R.paste_scatter(recipe))[0].astype(float)**(1/2.2)
         alike = R.kubelka_munk(rgb, np.array([[2.0, 1.0, 0.0]]))[0].astype(float)**(1/2.2)
@@ -1501,7 +1505,8 @@ class Backend(unittest.TestCase):
         self.assertFalse(any(n.startswith("prop_") for n in names))              # what stands on the counter is not static:
         w = self.backend.env.world                                               # each is a free body with its pack's mass
         props = [n for n in w.scene.bodies if n.startswith("prop_")]
-        self.assertEqual(len(props), len(P.PROPS["sauce-blend"]))
+        from ingredient_mixing.task import task_setup
+        self.assertEqual(len(props), len(task_setup("sauce-blend").PROPS))
         mjm = w.solver.mj_model
         for pr in w.scene.prop_list:
             self.assertAlmostEqual(float(mjm.body_mass[w._newton_to_mj[pr["body"]]]), P.PROP[pr["kind"]]["mass"], places=5)

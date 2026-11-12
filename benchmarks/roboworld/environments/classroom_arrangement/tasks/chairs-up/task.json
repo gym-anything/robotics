@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/chairs-up/classroom-tasks-v2/seed-0",
+  "name": "chairs-up",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "chairs-up",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+  },
+  "description": "The cleaners come tonight. Put the six chairs of row 4 up on the row's desks, upside down: seat on the desk top, legs up, the backrest hanging over the student side of the desk. Leave the desks on their dots. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

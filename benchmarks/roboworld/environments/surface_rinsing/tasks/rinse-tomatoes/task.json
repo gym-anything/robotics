@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/prep-sink/rinse-tomatoes/surface-rinsing-tasks-v2/seed-0",
+  "name": "rinse-tomatoes",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "prep-sink",
+    "task": "rinse-tomatoes",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+  },
+  "description": "The colander on the prep-sink drainboard holds fifteen dusty cherry tomatoes. Rinse them under running water until none carries visible soil, without losing any, turning them so every side is rinsed, then set the colander in the clean bowl on the work table to drain and close the faucet.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/service/carry-glass/seed-0",
+  "name": "carry-glass",
+  "env_id": "wine-pouring",
+  "split": "train",
+  "selection": {
+    "preset": "service",
+    "task": "carry-glass",
+    "seed": 0,
+    "contract": "wine-tasks-v1"
+  },
+  "description": "Carry the glass of red wine (150 mL) to spot 3 without spilling and leave it upright on the spot.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

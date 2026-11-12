@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/centre-flask/titration-tasks-v2/titration-n15-0000",
+  "name": "centre-flask",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "centre-flask",
+    "variation_id": 0,
+    "contract": "titration-tasks-v2"
+  },
+  "description": "The flask has been nudged off-centre on the stirrer: the burette tip no longer points into its mouth. Move the flask back under the burette tip, without spilling any of it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

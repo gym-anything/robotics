@@ -33,6 +33,12 @@ def v2_verifiers():
     return importlib.import_module("surface_rinsing.task_set_v2_evaluator")
 
 
+def plates_verifier():
+    v2_verifiers()
+    from gym_anything_robotics import task_folders
+    return task_folders.verifier("surface_rinsing", PLATES)
+
+
 def reading_v2(task):
     m = reading(task)
     if task == PLATES:
@@ -132,9 +138,10 @@ class ScoringV2Tests(unittest.TestCase):
         # the spec keeps "Mix the water to about 49 C (110-120 F)" with a spray_temperature gate and a grade
         self.assertEqual(V2.TASKS[PLATES]["instruction"], K.LEGACY_TASKS[PLATES]["instruction"])
         self.assertIn("49 C (110-120 F)", V2.instruction(V2.resolve(task=PLATES, contract=V2.CONTRACT)))
-        self.assertEqual(V2.SPRAY_BAND_C, (40.5, 51.5))
+        F = plates_verifier()
+        self.assertEqual(F.SPRAY_BAND_C, (40.5, 51.5))
         for mean, grade in ((None, 0.), (40.5, 1.), (49., 1.), (51.5, 1.), (55., .65), (60., .15), (30.5, 0.), (65., 0.)):
-            self.assertAlmostEqual(V2.temperature_grade(mean), grade)
+            self.assertAlmostEqual(F.temperature_grade(mean), grade)
         m = reading_v2(PLATES)
         ev = evaluator_v2(PLATES, m)
         complete_v2(PLATES, m)
@@ -143,10 +150,10 @@ class ScoringV2Tests(unittest.TestCase):
             c = ev.criteria(m)
             self.assertEqual(c["spray_temperature"]["passed"], passed, mean)
             value, rw = ev._score(c, m)
-            self.assertEqual(rw["terms"]["temperature_grade"], V2.temperature_grade(mean))
+            self.assertEqual(rw["terms"]["temperature_grade"], F.temperature_grade(mean))
             self.assertEqual(rw["contract"], V2.CONTRACT)
             # all other gates pass: success at a band temperature, else 0.9 x progress x grade
-            self.assertAlmostEqual(value, 1. if passed else .9*V2.temperature_grade(mean))
+            self.assertAlmostEqual(value, 1. if passed else .9*F.temperature_grade(mean))
 
     def test_spray_tracker_is_flow_weighted_every_tick_frozen_in_settle_and_checkpointed(self):
         E = v2_verifiers()

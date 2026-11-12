@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/remove-key/lockkey-tasks-v2",
+  "name": "remove-key",
+  "env_id": "lockkey",
+  "split": "train",
+  "selection": {
+    "task": "remove-key",
+    "contract": "lockkey-tasks-v2"
+  },
+  "description": "The padlock on the chest is open with its key still in it. Take the key out and put it back on its stand on the near (-Y) side. Leave the shackle open and the other key on its stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

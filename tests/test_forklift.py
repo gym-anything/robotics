@@ -51,7 +51,7 @@ def test_registry_launch_and_aliases():
 def test_catalogue_matches_the_task_table():
     from gym_anything_robotics import tasks
     from forklift import evaluator as E
-    from forklift.task import DIFFICULTY, INSTRUCTIONS, TIME_LIMIT_S
+    from forklift.task import DIFFICULTY, INSTRUCTIONS, TIME_LIMIT_S, task_verifier
     root = PACKAGES
     raw = json.loads((root/"forklift"/"benchmark.json").read_text(), parse_constant=lambda c: pytest.fail(c))
     assert tasks.catalog("forklift") == raw
@@ -67,7 +67,8 @@ def test_catalogue_matches_the_task_table():
         assert set(table) == set(names)
     for t in names:
         assert INSTRUCTIONS[t].strip() and 0 < TIME_LIMIT_S[t] <= 600
-        assert callable(getattr(E, "_" + t.replace("-", "_"))), t       # every task has its evaluator
+        own = task_verifier(t)          # every task has its evaluator (a benchmark task's: its verifier.py's verify)
+        assert callable(own.verify if own else getattr(E, "_" + t.replace("-", "_"))), t
     assert tasks.resolve("forklift").task_id == raw["default_task_id"] == "forklift/v1/warehouse/start-and-park/seed-0"
 
 

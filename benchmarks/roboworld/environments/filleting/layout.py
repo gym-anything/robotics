@@ -6,6 +6,8 @@ the floor directly below the middle of the table's front edge.
 Every value carries a provenance note: read (manufacturer/standard read), literature, estimate, authored.
 """
 
+from functools import lru_cache
+
 import numpy as np
 
 # ------------------------------------------------------------------------------------------------ room
@@ -46,15 +48,9 @@ BOWL = dict(diameter=0.240, depth=0.080, center=(0.52, 0.60))
 # cannot lie in it; and only the knife hand reaches the bowl while only the holding hand can pinch a fillet. Here the
 # left (holding) arm reaches every point 60 mm inside the rim at six hand yaws and the right arm does not (kinematics
 # only).
+# The tasks whose scene has it name it in their props (task_props).
 FRAME_PAN = dict(size=(0.325, 0.265, 0.100), center=(-0.5675, 0.1425), rim=0.012, taper=0.018, wall=0.0008,
-                 tasks=("A3",), presets=("A",))
-# fillet-whole-fish (A3) only: the perforated fillet tray stands on the holding-arm side, where the stock ice pan stands
-# on the common bench, 325 mm along x, so the only hand that can pinch a fillet (the left: the right fingers carry the
-# knife-handle inserts) can lay both fillets flat side by side. At the common position no side-by-side set-down point
-# solves for the left arm; here every point does (kinematics only). The stock ice pan takes the tray's common place,
-# right of the board. Their geometry is unchanged.
-FILLET_TRAY_CENTER_OF_TASK = {"A3": (-0.505, 0.42)}
-ICE_PAN_CENTER_OF_TASK = {"A3": (0.605, 0.30)}
+                 presets=("A",))
 # bench knife block at the right end of the board; knives handle up. 200 mm tall so the 173 mm fillet blade fits
 # handle-up (a 120 mm block cannot hold it); clear of the bowl
 KNIFE_BLOCK = dict(size=(0.10, 0.16, 0.20), center=(0.33, 0.60),
@@ -98,14 +94,61 @@ def yaw_quat(deg):
     return np.array([0., 0., np.sin(a), np.cos(a)])            # xyzw
 
 
+# ------------------------------------------------------------------------------------------------ task folders
+# A benchmark task's own code is in its folder, tasks/<name>/ (gym_anything_robotics.task_folders), named by its slug
+# (task_set_catalogue.TASK_SLUG); its setup.py's setup() gives the choices its start makes (task_start).
+PACKAGE = "filleting"
+
+
+@lru_cache(maxsize=None)
+def task_folder(task):
+    """The folder name (tasks/<name>/) of a benchmark task code, or None for a task outside the benchmark."""
+    from gym_anything_robotics import task_folders
+    from .task_set_catalogue import TASK_SLUG
+    name = TASK_SLUG.get(task) if isinstance(task, str) else None
+    return name if name is not None and task_folders.exists(PACKAGE, name) else None
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<name>/), or None for a task outside the benchmark."""
+    from gym_anything_robotics import task_folders
+    name = task_folder(task)
+    return task_folders.setup(PACKAGE, name) if name is not None else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<name>/), or None for a task outside the benchmark."""
+    from gym_anything_robotics import task_folders
+    name = task_folder(task)
+    return task_folders.verifier(PACKAGE, name) if name is not None else None
+
+
+def task_start(task=None):
+    """The choices a task's start makes, from setup() in a benchmark task's setup.py ({} for any other task):
+      knife              where the knife starts when the selection names no start (world.World)
+      collision_profile  the deployment's collision profile when the selection names none (variants.collision_profile)
+      bench              {layout name: centre xy} of bench items the task's scene places elsewhere (fillet_tray,
+                         ice_pan_center)
+      props              layout names of the bench props only this task's scene has (task_props)
+      scene, knife_start the task is built in another task's scene with this knife start
+                         (task_set_catalogue.start_options)"""
+    folder = task_setup(task)
+    return folder.setup() if folder is not None else {}
+
+
+def task_props(task=None):
+    """Layout names of the bench props only a task's scene has (its setup.py's props; fillet-whole-fish: FRAME_PAN)."""
+    return tuple(task_start(task).get("props", ()))
+
+
 def ice_pan_center(task=None):
-    """The ice pan's centre in a task's scene (ICE_PAN_CENTER_OF_TASK)."""
-    return tuple(ICE_PAN_CENTER_OF_TASK.get(task, ICE_PAN["center"]))
+    """The ice pan's centre in a task's scene (where its setup.py's bench puts it)."""
+    return tuple(task_start(task).get("bench", {}).get("ICE_PAN", ICE_PAN["center"]))
 
 
 def fillet_tray(task=None):
-    """The fillet tray's spec in a task's scene (FILLET_TRAY at FILLET_TRAY_CENTER_OF_TASK)."""
-    return dict(FILLET_TRAY, center=tuple(FILLET_TRAY_CENTER_OF_TASK.get(task, FILLET_TRAY["center"])))
+    """The fillet tray's spec in a task's scene (FILLET_TRAY, where its setup.py's bench puts it)."""
+    return dict(FILLET_TRAY, center=tuple(task_start(task).get("bench", {}).get("FILLET_TRAY", FILLET_TRAY["center"])))
 
 
 def task_spec(name, task=None):

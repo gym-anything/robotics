@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/home/lift-lid/gift-bags-tasks-v1/seed-0",
+  "name": "lift-lid",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "home",
+    "task": "lift-lid",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v1"
+  },
+  "description": "A gift box stands on the dining table. Take the lid off the box and put it down on the table. Do not lift or tip the box's base while doing it, and leave the photo frame inside the base. Release the lid.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, fields
 
+from gym_anything_robotics import task_folders
 from . import params as P
 
 LEGACY_CONTRACT = "v1"
@@ -43,6 +44,19 @@ VARIANT_TASKS = {"upright": ("inject", "vial-to-pad"), "adapter": ("draw-dose",)
                  "vacuum-vial": ("draw-dose",), "subcut": ("inject",), "blocked": ("flush-lock",),
                  "clamp-open": TASKS["iv-lock"], "g22": ("flush-lock", "slow-push"), "g18": TASKS["iv-lock"],
                  "short": ("slow-push",)}
+
+PACKAGE = "syringe_handling"
+
+
+def task_setup(task):
+    """The task's setup.py (tasks/<task>/): what it puts on the counter and how its start differs
+    (scene.task_layout)."""
+    return task_folders.setup(PACKAGE, task)
+
+
+def task_verifier(task):
+    """The task's verifier.py (tasks/<task>/): its criteria and score (task.evaluate)."""
+    return task_folders.verifier(PACKAGE, task)
 
 
 @dataclass

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/push-in-chairs/classroom-tasks-v1/seed-0",
+  "name": "push-in-chairs",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "push-in-chairs",
+    "seed": 0,
+    "contract": "classroom-tasks-v1"
+  },
+  "description": "Class is over and the six chairs of row 2 were left pulled out. Push each chair in under a desk in the row, straight, so the walkway behind the row is clear. Do not move the desks. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

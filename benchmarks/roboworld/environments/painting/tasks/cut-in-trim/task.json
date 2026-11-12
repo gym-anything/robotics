@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/wall/cut-in-trim/painting-tasks-v2/seed-0",
+  "name": "cut-in-trim",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "wall",
+    "task": "cut-in-trim",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+  },
+  "description": "With the angled sash brush, cut in along the left side of the window casing and around the outlet plate, a band at least 40 mm wide, without paint on the casing or the plate. The wall already has its first coat of this colour (dry); this is the second, finish coat.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

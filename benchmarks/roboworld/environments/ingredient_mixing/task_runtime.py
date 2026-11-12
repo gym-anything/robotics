@@ -9,6 +9,7 @@ from functools import wraps
 
 from .env import MixEnv
 from . import scoring as S
+from .task import task_verifier
 
 
 class TaskEnv(MixEnv):
@@ -16,8 +17,9 @@ class TaskEnv(MixEnv):
         super()._build()
         self.spec = S.task_spec(self.config)
         S.capture_start(self)
-        if S.enabled(self.config) and self.config.task == "reheat-porridge" and self.info is not None:
-            install_hot_recorder(self.world.heat)
+        install = getattr(task_verifier(self.config.task), "install", None)
+        if S.enabled(self.config) and install is not None and self.info is not None:
+            install(self)
         # The physical start snapshot already exists. Attach only judging metadata, without duplicating its
         # potentially large continuum buffers or advancing the world after hand-over.
         self._save_judging(self._initial)
@@ -41,9 +43,9 @@ class TaskEnv(MixEnv):
             super().restore(snap)
             if S.enabled(self.config) and self.info is not None:
                 self.info["task_baseline"] = copy.deepcopy(judging["baseline"])
-                if self.config.task == "reheat-porridge":
-                    self.world.heat.task_baseline = copy.deepcopy(judging["baseline"])
-                    self.world.heat.hot_record = copy.deepcopy(judging["hot_record"])
+                restore = getattr(task_verifier(self.config.task), "restore", None)
+                if restore is not None:
+                    restore(self, judging)
 
     def evaluate(self):
         with self.lock:

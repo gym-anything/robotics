@@ -13,59 +13,34 @@ import threading
 from pathlib import Path
 import numpy as np
 
-from .config import Config, REPAIR_TASKS, START_CREDIT_TASKS
+from .config import Config, START_CREDIT_TASKS, task_setup
 from .world import World
 from .task import Evaluator, INSTRUCTIONS
 from . import artwork
 
 from . import layouts
 
-PAYLOADS = layouts.PAYLOADS          # seed-0 payloads; layouts.payload(task, seed) for every seed
+# seed-0 payloads of the tasks outside the benchmark (a benchmark task's: its setup.py PAYLOAD); layouts.payload(task,
+# seed) for every task and seed
+PAYLOADS = layouts.PAYLOADS
 
 
 def prepare_start(world):
-    """The task's constructed start state before the settle: press-down's laid label; the ladder's repair rungs'
-    partly applied label and ready pose (ladder.py). Other tasks start from the printer's presented label."""
-    if world.config.task == "press-down":
-        lay_label_on_carton(world)
-        return {}
-    if world.config.task in REPAIR_TASKS:
-        from . import ladder
-        return ladder.build_start(world)
-    return {}
+    """The task's constructed start state before the settle: a benchmark task's setup.py setup(world) (press-down's
+    laid label; the ladder's repair rungs' partly applied label and ready pose, ladder.py). The tasks outside the
+    benchmark start from the printer's presented label."""
+    folder = task_setup(world.config.task)
+    return folder.setup(world) if folder is not None else {}
 
 
 def make_art(config, folder):
     payload = layouts.payload(config.task, config.seed)
     if config.preset == "parcel":
-        return artwork.shipping_label(folder, payload, gs1=config.task == "gs1-case-side", seed=config.seed)
+        gs1 = getattr(task_setup(config.task), "GS1_LABEL", False)       # the task's setup.py (gs1-case-side)
+        return artwork.shipping_label(folder, payload, gs1=gs1, seed=config.seed)
     if config.preset == "specimen":
         return artwork.specimen_label(folder, payload, seed=config.seed)
     return artwork.part_label(folder, payload, seed=config.seed)
-
-
-def lay_label_on_carton(world):
-    """press-down START STATE (constructed, not a robot action): the label as a co-worker left it -- laid flat,
-    adhesive down and untensioned, on the carton top at the seeded position inside the carrier zone of the flap
-    half toward the robots (layouts.laid_label), touching, so it tacks on under its own physics during the
-    settle. Nothing holds it afterwards. Same placement as the assisted demos' fixture (demos/assisted_apply.place)."""
-    lab = world.label
-    g = world.scene.task_geometry["carton"]
-    lay = world.scene.task_geometry["laid_label"]
-    p, R = world.body_pose("carton")
-    (uc, vc), yaw = lay["centre"], lay["yaw"]
-    c, s_ = np.cos(yaw), np.sin(yaw)
-    md = R @ np.array([c, s_, 0.])                  # label length (6 in) along the carton
-    cd = R @ np.array([-s_, c, 0.])
-    centre = p + R @ np.array([uc, vc, g["H"]/2])
-    n = np.cross(md, cd)
-    X = lab.X
-    lab.x = (centre[None, :] + (X[:, 0:1] - lab.length/2)*md[None, :] + (X[:, 1:2] - lab.width/2)*cd[None, :]
-             + n[None, :]*(.5*lab.stock.thickness))
-    lab.v[:] = 0.
-    lab.bond[:] = -1; lab.phi[:] = 0.; lab.damage[:] = 0.; lab.gas[:] = 0.
-    lab.theta_rest[:] = 0.
-    world.label_history.clear()
 
 
 class LabelEnv:

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/bench/press-blind/drilling-tasks-v2/seed-0",
+  "name": "press-blind",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "bench",
+    "task": "press-blind",
+    "seed": 0,
+    "contract": "drilling-tasks-v2"
+  },
+  "description": "Drill the M8 tap-drill hole at the punched mark in the aluminium block to 15 mm full-diameter depth. Do not drill through. Leave the spindle stopped and the quill up.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

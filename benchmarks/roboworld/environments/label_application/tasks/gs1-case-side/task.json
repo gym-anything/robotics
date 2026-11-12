@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/parcel/gs1-case-side/label-tasks-v2/seed-0",
+  "name": "gs1-case-side",
+  "env_id": "label-application",
+  "split": "train",
+  "selection": {
+    "preset": "parcel",
+    "task": "gs1-case-side",
+    "seed": 0,
+    "contract": "label-tasks-v2"
+  },
+  "description": "You are at a shipping pack bench. The desktop label printer has just printed and presented the GS1 logistic label for the sealed carton on the bench. Take the label from the printer and apply it to one of the carton's long sides where GS1 places it on a case: the bottom of the SSCC barcode 32 mm above the carton's base, and the barcode, including its quiet zones, at least 19 mm from either vertical edge of that side.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

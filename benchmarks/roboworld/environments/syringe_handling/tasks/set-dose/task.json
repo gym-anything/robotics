@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/injection/set-dose/contract-syringe-tasks-v2/seed-0",
+  "name": "set-dose",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "injection",
+    "task": "set-dose",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+  },
+  "description": "The 3 mL syringe on the tray (orange 25 G needle, sheathed) holds too much blue medication and an air bubble. Leave it holding 2.5 mL of medication and no air. What you expel goes into the kidney basin. Do not put the sheath back on by hand and do not let the bare needle touch anything.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

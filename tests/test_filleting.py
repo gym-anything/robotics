@@ -43,7 +43,7 @@ class CatalogueTest(unittest.TestCase):
 
     def test_supported_tasks_resolve_and_round_trip(self):
         """Of the 13 tasks, the 11 this build supports resolve and round-trip, each with an evaluator."""
-        from filleting.task import INSTRUCTIONS, PRESET_OF, TIME_LIMIT_S, Evaluator
+        from filleting.task import INSTRUCTIONS, PRESET_OF, TIME_LIMIT_S, has_evaluator
         from filleting.variants import TASK_SLUG, UNSUPPORTED
         self.assertEqual(len(INSTRUCTIONS), 13)
         self.assertEqual(set(UNSUPPORTED), {"B1", "B4"})
@@ -52,7 +52,7 @@ class CatalogueTest(unittest.TestCase):
         self.assertEqual(set(TASK_SLUG), set(INSTRUCTIONS))
         self.assertEqual(set(TIME_LIMIT_S), set(INSTRUCTIONS))
         for code in supported:
-            self.assertTrue(hasattr(Evaluator, f"_eval_{code}"), code)
+            self.assertTrue(has_evaluator(code), code)
         ids = set()
         for code, instruction in supported.items():
             preset = PRESET_OF[code]

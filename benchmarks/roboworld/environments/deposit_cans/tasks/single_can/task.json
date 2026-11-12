@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "deposit-cans/v1/single_can/seed-0",
+  "name": "single_can",
+  "env_id": "deposit-cans",
+  "split": "train",
+  "selection": {
+    "variant": "single_can",
+    "seed": 0
+  },
+  "description": "A guest left an empty beverage can on the return counter. Put it in the recycling bag. Leave the reusable cups on their tray and the cans already in the bag where they are.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

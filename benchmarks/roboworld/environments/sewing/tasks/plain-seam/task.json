@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "sewing/v1/sample-room/plain-seam/sewing-tasks-v2/seed-0",
+  "name": "plain-seam",
+  "env_id": "sewing",
+  "split": "train",
+  "selection": {
+    "preset": "sample-room",
+    "task": "plain-seam",
+    "seed": 0,
+    "contract": "sewing-tasks-v2"
+  },
+  "description": "Join the two plies with a plain seam 10 mm from their right edges along the whole length. Backtack three or four stitches at both ends, trim the threads and let go of the work.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

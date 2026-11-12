@@ -17,8 +17,8 @@ import numpy as np
 
 from . import layout as LY
 from .world import World, Config
-from .task import (Evaluator, INSTRUCTIONS, TIME_LIMIT_S, WORKPIECE_OF, WORKPIECE_OF_TASK, RECEPTACLES_OF_TASK,
-                   STOP_AT_TIME_LIMIT, PROGRESS_SCORED, EDGE_REACH_M, near_boxes, edge_distance)
+from .task import (Evaluator, INSTRUCTIONS, TIME_LIMIT_S, WORKPIECE_OF, WORKPIECE_OF_TASK, EDGE_REACH_M, near_boxes,
+                   edge_distance)
 
 
 class FilletingEnv:
@@ -40,8 +40,9 @@ class FilletingEnv:
         self._settle()
         self.initial = self.checkpoint()
         self.evaluator = Evaluator(self)
-        if c.task in PROGRESS_SCORED:
-            self.evaluator.prime()                 # the progress measure's starting connection counts, from this state
+        prime = getattr(LY.task_verifier(c.task), "prime", None)
+        if prime is not None:
+            prime(self.evaluator)                  # the progress measure's starting connection counts, from this state
 
     # ------------------------------------------------------------------ histories
     def _reset_histories(self):
@@ -59,10 +60,11 @@ class FilletingEnv:
         # check judges (a node of an attached sliver ringing on a cut face is not a thrown piece)
         self.piece_speed_max = (0., None, None)
         self._piece_lab = None                     # (node -> fragment labels, crack faces count, sim time) for that
-        # the same, over pieces whose centroid is outside the task's product receptacles (task.RECEPTACLES_OF_TASK; plan
-        # footprints): a product let go into its receptacle falls faster than the thrown-tissue limit from rim height,
-        # and is not thrown. Recorded only for those tasks
-        specs = [LY.task_spec(n, self.config.task) for n in RECEPTACLES_OF_TASK.get(self.config.task, ())]
+        # the same, over pieces whose centroid is outside the task's product receptacles (RECEPTACLES in its
+        # verifier.py; plan footprints): a product let go into its receptacle falls faster than the thrown-tissue limit
+        # from rim height, and is not thrown. Recorded only for those tasks
+        specs = [LY.task_spec(n, self.config.task)
+                 for n in getattr(LY.task_verifier(self.config.task), "RECEPTACLES", ())]
         self._receptacles = [(*s["center"], s["size"][0]/2, s["size"][1]/2) for s in specs]
         self.piece_speed_max_outside = (0., None, None)
         # per-tet worst compression recorded only while the knife's EDGE is farther than EDGE_REACH_M from the tet: the
@@ -315,7 +317,7 @@ class FilletingEnv:
         with self.lock:
             if self.world.fault:
                 raise RuntimeError(self.world.fault)
-            if self.config.task in STOP_AT_TIME_LIMIT:
+            if getattr(LY.task_verifier(self.config.task), "STOP_AT_TIME_LIMIT", False):
                 # the episode ends at its time limit: an action crossing it runs only to the limit, later ones run no
                 # tick, so the evaluated state is the state within the budget (the runner never stops on time and a
                 # policy is not shown `terminated`)

@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/pass-square",
+  "name": "pass-square",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "pass-square"
+  },
+  "description": "Pass the ball into the square marked by the four discs ahead of you on your left, so that it stops inside it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

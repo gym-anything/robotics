@@ -1,4 +1,7 @@
 """Work instructions and pure task recipes; no physics import at discovery time."""
+from functools import lru_cache
+
+from gym_anything_robotics import task_folders
 
 TASKS={
  "sensor":("Secure the staged W4F replacement sensor",
@@ -57,6 +60,30 @@ def contract_for(task, selected=""):
 
 def uses_eight(config):
     return contract_for(config.task, getattr(config, "task_contract", "")) in (EIGHT_CONTRACT, V2_CONTRACT)
+
+
+@lru_cache(None)
+def folders():
+    """The task folders (tasks/<task>/): one per task, all eight benchmark tasks."""
+    return task_folders.names("tighten_codex")
+
+
+def task_setup(task):
+    """The task's setup.py (tasks/<task>/), or None for a name that is not a task."""
+    return task_folders.setup("tighten_codex", task) if task in folders() else None
+
+
+def task_verifier(task):
+    """The task's verifier.py (tasks/<task>/), or None for a name that is not a task."""
+    return task_folders.verifier("tighten_codex", task) if task in folders() else None
+
+
+def hands_off_rules(config):
+    """Whether the episode is tracked and judged by mixed's hands-off rules: a click of the screw's own preset driver
+    that later hands-off readings below the floor or a back-rotation void, retention over the last 10 hands-off
+    readings, nothing robot-held on the work, the spot centre on the flag (TightenEnv) and the output-LED cue (render).
+    A task's verifier.py sets HANDS_OFF_RULES (mixed); the eight-task contracts use them for every task."""
+    return getattr(task_verifier(config.task), "HANDS_OFF_RULES", False) or uses_eight(config)
 
 
 def instruction(config):

@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "whiteboard/whiteboard-tasks-v2/recap-and-tidy",
+  "name": "recap-and-tidy",
+  "env_id": "whiteboard",
+  "split": "train",
+  "selection": {
+    "task": "recap-and-tidy",
+    "contract": "whiteboard-tasks-v2"
+  },
+  "description": "Put the caps back on the three open markers and leave all six capped markers resting in the tray. Leave the board clean.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,12 +1,13 @@
-"""Task-only adapter over the immutable evaluator/physics modules."""
-import copy
-import math
-import numpy as np
+"""Task-only adapter over the immutable evaluator/physics modules.
 
-from .. import params as P
-from ..task import Evaluator as LegacyEvaluator, gauges
-from .catalogue import CONTRACT, NEW_TASK
-from .sanitizer import GlassTracker
+A task's own parts come from its folder (tasks/<task>/verifier.py): its trackers (task_set_trackers), its task-set
+measures (task_set_measure) and what it adds to the gates (task_set_criteria); its progress is task_set/scoring.py's.
+"""
+import copy
+
+from ..layout import task_verifier
+from ..task import Evaluator as LegacyEvaluator
+from .catalogue import CONTRACT
 from .scoring import score
 
 
@@ -26,11 +27,9 @@ class Evaluator(LegacyEvaluator):
                 for key in ("valve", "lever"):
                     if fixture.get(key) is not None and w._mj_body.get(fixture[key], -1) >= 0:
                         self.movable[int(w._mj_body[fixture[key]])] = n
-        if self.task == "rinse-glassware":
-            self.glasses = {n: GlassTracker(env, n) for n in self.items if n.startswith("glass_") and n != "glass_rack"}
-            # Seed pre-contact carry-in before the first 10 ms sample.
-            for tracker in self.glasses.values():
-                tracker.sample(self)
+        trackers = getattr(task_verifier(self.task), "task_set_trackers", None)
+        if trackers is not None:                    # rinse-glassware's GlassTrackers (its verifier.py)
+            trackers(self, env)
         self.start = copy.deepcopy(self.measure())
 
     def _track(self, world):
@@ -67,22 +66,10 @@ class Evaluator(LegacyEvaluator):
 
     def measure(self):
         m = super().measure()
-        ws, w = self.env.water, self.env.world
         data = dict(held=self.held())
-        if self.task == NEW_TASK:
-            data["waste_rad"] = {n: float(w.joint_value(f["joint"])[0]) for n, f in ws.wastes.items()}
-            data["drained_L"] = {n: float(ws.pools.pools[ws.pools.index[n]].drained)*1e3
-                                 for n in ("wash", "rinse", "sanitize")}
-        elif self.task == "flush-floor":
-            ch = ws.static_charts["bay_floor"]
-            cells = np.arange(ch.first, ch.first + ch.count)
-            a, pos, nrm = ws.surf.area[cells], ws.surf.pos[cells], ws.surf.nrm[cells]
-            f = self._fields()
-            data["floor_gauges"] = (gauges(pos, a, f["soil"][cells] + f["sus"][cells], nrm)*1e5).tolist()
-            _, inv = np.unique(np.floor((pos + 0.005*nrm)/0.01).astype(np.int64), axis=0, return_inverse=True)
-            data["floor_areas"] = np.bincount(inv.ravel(), weights=a).tolist()
-        elif self.task == "rinse-garbage-can":
-            data["can_soap_limit_ug"] = float(ws.surf.area[ws.item_cells["can"]].sum())*P.CRITERIA["surf_per_item"]/0.085*1e9
+        own = getattr(task_verifier(self.task), "task_set_measure", None)
+        if own is not None:                         # the task's own task-set measures (its verifier.py)
+            own(self, data)
         elif self.glasses:
             data["sanitizer"] = {n: t.snapshot() for n, t in self.glasses.items()}
         m["task_set"] = data
@@ -94,17 +81,9 @@ class Evaluator(LegacyEvaluator):
         def gate(name, ok, detail):
             criteria[name] = dict(passed=bool(ok), detail=detail)
 
-        if self.task == "rinse-sponge":
-            gate("sponge_on_ledge", self._on_ledge("sponge", compartments=True), m["items"]["sponge"]["position"])
-        elif self.task == NEW_TASK:
-            gate("drained", m["pools"]["wash"]["volume_L"] <= 0.5, m["pools"]["wash"])
-            q = m["task_set"]["waste_rad"]
-            gate("waste_closed", all(abs(q[n]) <= math.radians(5) for n in ("wash", "rinse", "sanitize")), q)
-            changes = {n: dict(volume_change_L=m["pools"][n]["volume_L"] - self.start["pools"][n]["volume_L"],
-                               drained_L=m["task_set"]["drained_L"][n] - self.start["task_set"]["drained_L"][n])
-                       for n in ("rinse", "sanitize")}
-            gate("others_kept", all(abs(v["volume_change_L"]) <= 1.0 and v["drained_L"] <= 1.0 for v in changes.values()), changes)
-            gate("floor_dry", m["contamination"]["floor_water_mL"] <= 50.0, m["contamination"])
+        own = getattr(task_verifier(self.task), "task_set_criteria", None)
+        if own is not None:                         # what the task-set contracts add to the task's gates
+            own(self, m, gate)
         return criteria
 
     def _score(self, criteria, m):

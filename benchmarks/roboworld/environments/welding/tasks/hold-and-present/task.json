@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/hold-and-present/seed-0",
+  "name": "hold-and-present",
+  "env_id": "welding",
+  "split": "train",
+  "selection": {
+    "preset": "steel-cell",
+    "task": "hold-and-present"
+  },
+  "description": "Get the joint ready for the first tack. With the hand, grip the bracket by its top edge and hold it upright and square on its layout; with the welding torch, come to the start of the near-side seam (the end on the robots' right, which is the right end in the bench camera's image) ready to weld: wire pointing at the root of the joint, 45 degree work angle, 5 to 10 degree push angle, 3/4 inch (19 mm) contact tip to work. Do not strike an arc; the nozzle must not touch the parts (touching them with the wire to find the seam is fine). Finish with the hand still holding the bracket and the torch in place.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

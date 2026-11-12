@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "concrete-finishing/v1/b012/pad-trowel/concrete-tasks-v2/seed-0",
+  "name": "pad-trowel",
+  "env_id": "concrete-finishing",
+  "split": "train",
+  "selection": {
+    "preset": "b012",
+    "task": "pad-trowel",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+  },
+  "description": "Steel-trowel the pad smooth and hard. Tools back on the cart when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

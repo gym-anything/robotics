@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "concrete-finishing/v1/b012/pad-finish/seed-0",
+  "name": "pad-finish",
+  "env_id": "concrete-finishing",
+  "split": "test",
+  "selection": {
+    "task": "pad-finish"
+  },
+  "description": "The pad was just struck off. Finish it with tooled edges and a smooth, hard steel-trowel finish. Tools back on the cart when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

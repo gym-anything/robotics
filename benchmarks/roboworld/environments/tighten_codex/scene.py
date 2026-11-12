@@ -7,6 +7,8 @@ inside the coupled rigid solve; no policy action may set a screw coordinate.
 import math
 from pathlib import Path
 import numpy as np
+from .presets import flag_home
+from .task import task_setup
 
 
 def build(config, robot_setup="tighten-fr3"):
@@ -25,6 +27,8 @@ def build(config, robot_setup="tighten-fr3"):
     b.rigid_gap = config.contact_gap_m
     materials = {}
     items = {}
+    # The task's setup.py (tasks/<task>/): RAIL_SLOT_OFFSET_M and its props in this scene (guard, home_stop).
+    start = task_setup(config.task)
     cfg = lambda mu=.45, density=2700, ke=2e6, kd=150., rolling_mu=0.: newton.ModelBuilder.ShapeConfig(
         mu=mu, density=density, ke=ke, kd=kd, gap=config.contact_gap_m,
         mu_torsional=0., mu_rolling=rolling_mu)
@@ -223,8 +227,8 @@ def build(config, robot_setup="tighten-fr3"):
         # construction settle confirms it rather than dropping the rail.
         q0=b.joint_q_start[rail_root]
         b.joint_q[q0+2]=.0371
-    if config.task=="support":
-        b.joint_q[b.joint_q_start[rail_root]]=.0015
+    if hasattr(start, "RAIL_SLOT_OFFSET_M"):
+        b.joint_q[b.joint_q_start[rail_root]]=start.RAIL_SLOT_OFFSET_M
     assembly_joints.append(rail_root)
     rail_cfg=alu
     box("horizontal_profile_top", (0, 0, .0085), (.14, .010, .0015), "aluminum", rail,
@@ -377,14 +381,8 @@ def build(config, robot_setup="tighten-fr3"):
         "robot_dark",q=overhead_q)
     box("overview_camera_lens", (0,.3322,2.2016), (.005,.003,.005),
         "red_lens",q=overhead_q)
-    if config.task=="access":
-        # Guard panel behind the corner and a bent lower return lip beside
-        # the upward M4 corridor. Its nearest corner is 5.41 mm from the
-        # top-M4 axis: 2.24 mm radial clearance for the 3.17 mm shaft.
-        box("removable_access_guard", (.075,.1245,1.064),
-            (.050,.002,.042), "safety_yellow")
-        box("removable_access_guard_return_lip", (.075,.1065,1.059),
-            (.050,.002,.009), "safety_yellow")
+    if hasattr(start, "guard"):
+        start.guard(box)
 
     def screw(name, xyz, axis, diameter, pitch, head_d, head_h, af, limit_nm,
               parent=-1, parent_origin=(0.,0.,0.), shank_length=None):
@@ -675,7 +673,7 @@ def build(config, robot_setup="tighten-fr3"):
                                           else "M4_driver"))=="M3_driver")
     parked=guided_m3 and config.fixture_dual_driver
     b.joint_q[b.joint_q_start[flag_joint]]=(.10 if guided_m3 and not parked else
-                                            -.0035 if config.task=="aim" else 0.)
+                                            flag_home(config))
     box("white_alignment_flag",(0,.005,.149),(.005,.001,.022),"paper",flag)
     box("flag_stand",(0,0,0),(.004,.004,.1535),"steel",flag)
     box("flag_foot",(0,0,-.149),(.020,.025,.005),"steel",flag)
@@ -1011,21 +1009,9 @@ def build(config, robot_setup="tighten-fr3"):
         if not fit["converged"]:
             raise RuntimeError("Assisted hand starting pose is unreachable")
         for index,value in zip(indexes,fit["joints"]):b.joint_q[index]=value
-    if config.task=="mixed":
-        # Task prop (added last so every existing shape keeps its index): a
-        # steel home stop with a damped bumper face on the worktop at the
-        # track's return end. Sliding the flag back until its foot meets the
-        # stop leaves it 0.1 mm past its home, where the sensor sees it;
-        # without it the only return-side stop was the slide's -6 mm limit,
-        # where the beam misses. The flag's own joint, limits, damping and
-        # friction are unchanged. Contact gains of this prop only: Newton's
-        # force-space mapping scales the pair's mean ke/kd by the 0.16 kg
-        # carriage's body_invweight0 x (1 - dmax) = 2.09 x 0.05; with the
-        # default 2e6/150 the pair had a 128 ms time constant and damping
-        # ratio 0.017 and threw the flag back out of the beam (measured).
-        # These give 4 dt and a damping ratio of ~1.
-        box("flag_home_stop",(flag_x-.020-.0001-.004,-.063,.785),(.004,.010,.005),"robot_dark",
-            shape_cfg=cfg(mu=.45,ke=2.5e7,kd=4.6e4))
+    if hasattr(start, "home_stop"):
+        # Task prop, added last so every existing shape keeps its index.
+        start.home_stop(box, flag_x, cfg)
     for i in range(b.shape_count):
         if i not in materials:
             materials[i] = "robot_white"

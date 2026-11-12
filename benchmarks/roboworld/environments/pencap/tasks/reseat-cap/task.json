@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/reseat-cap/pencap-tasks-v2",
+  "name": "reseat-cap",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "reseat-cap",
+    "contract": "pencap-tasks-v2"
+  },
+  "description": "The cap is only partly on the yellow pen. Press it on until it snaps fully into place, then leave the capped pen still, whether held or set down.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -24,6 +24,26 @@ soil_stub.ORIGIN_BLOCK, soil_stub.ORIGIN_PILE = 0, 1
 with patch.dict(sys.modules, {"soil_excavation.soil": soil_stub}):
     from soil_excavation import task as legacy
     from soil_excavation import task_set as E
+# The task folders' verifiers (tasks/<task>/verifier.py, layout.task_verifier) import these modules by name: load
+# each against the copies, and while this module's tests run, the copies find those folders through their layout.
+with patch.dict(sys.modules, {"soil_excavation.soil": soil_stub, "soil_excavation.task": legacy,
+                              "soil_excavation.task_set": E}):
+    for name in [name for name in sys.modules if name.startswith(L.PACKAGE + ".tasks.")]:
+        del sys.modules[name]                    # put back with the rest of sys.modules
+    FOLDERS = {task: L.task_verifier(task) for task in C.EIGHT_TASKS}
+LAYOUT = ModuleType(L.__name__)
+vars(LAYOUT).update(vars(L), task_verifier=FOLDERS.get)
+COPIES_LAYOUT = [patch.object(legacy, "L", LAYOUT), patch.object(E, "L", LAYOUT)]
+
+
+def setUpModule():
+    for p in COPIES_LAYOUT:
+        p.start()
+
+
+def tearDownModule():
+    for p in COPIES_LAYOUT:
+        p.stop()
 
 ROOT = PACKAGES
 
@@ -88,8 +108,8 @@ def fixture(task, contract=C.CONTRACT):
                body_pose=lambda name: (positions[name], rotations[name]))
     env = NS(spec=spec, world=world, lock=threading.RLock())
     env.evaluator = legacy.Evaluator(env)
-    with patch.object(E, "Ledger", return_value=ledger), patch.object(E, "tool_held", return_value={"left": True, "right": True}), \
-         patch.object(legacy, "tool_held", return_value={"left": True, "right": True}):
+    with patch.object(E, "Ledger", return_value=ledger), \
+         patch.object(FOLDERS[task], "tool_held", return_value={"left": True, "right": True}, create=True):
         E.install(env, contract)
     return env, ledger, positions, rotations
 
@@ -163,8 +183,9 @@ class CatalogueTests(unittest.TestCase):
 class JudgementTests(unittest.TestCase):
     def evaluate(self, fixture, held=True, final=True):
         env, ledger, _, _ = fixture
-        with patch.object(E, "Ledger", return_value=ledger), patch.object(E, "tool_held", return_value={"left": held, "right": held}), \
-             patch.object(legacy, "tool_held", return_value={"left": held, "right": held}):
+        folder = FOLDERS[env.spec["task"]]
+        with patch.object(E, "Ledger", return_value=ledger), \
+             patch.object(folder, "tool_held", return_value={"left": held, "right": held}, create=True):
             return env.evaluator.evaluate() if final else env.evaluator.progress()
 
     def test_all_revised_untouched_starts_are_zero_and_layouts_unchanged(self):
@@ -275,9 +296,9 @@ class JudgementTests(unittest.TestCase):
         # A cylinder's radial extent matters when tilted horizontally.
         part = f[0].world.scene.parts["auger"][0]
         r = Rotation.from_euler("y", 90, degrees=True).as_matrix()
-        self.assertAlmostEqual(E.part_lowest_z(part, [0, 0, .1], r), .08)
+        self.assertAlmostEqual(FOLDERS["auger-holes"].part_lowest_z(part, [0, 0, .1], r), .08)
         part.kind = "capsule"
-        self.assertAlmostEqual(E.part_lowest_z(part, [0, 0, .1], np.eye(3)), .03)
+        self.assertAlmostEqual(FOLDERS["auger-holes"].part_lowest_z(part, [0, 0, .1], np.eye(3)), .03)
 
     def test_exposure_rewards_approach_but_roof_strikes_and_wrong_spoil_fail(self):
         f = fixture("expose-line")
@@ -313,8 +334,9 @@ class JudgementTests(unittest.TestCase):
     def test_set_post_verifier_and_advisory_delegated_without_rescaling(self):
         env, ledger, _, _ = fixture("set-post", C.POST_CONTRACT)
         original = env.evaluator.legacy
+        post = FOLDERS["set-post"]
         for p in (0., .3, .8, 1.):
-            with patch.object(legacy, "Ledger", return_value=ledger), patch.object(original, "_set_post", return_value=(
+            with patch.object(legacy, "Ledger", return_value=ledger), patch.object(post, "_set_post", return_value=(
                     [legacy.crit("post_support", 1., False, "fixture")], [], dict(score=min(p, .99), fields=dict(progress=p)))):
                 result = env.evaluator.evaluate()
                 self.assertEqual(result["score"], min(p, .99))
@@ -323,7 +345,7 @@ class JudgementTests(unittest.TestCase):
                 self.assertEqual({k: v for k, v in result.items() if k != "task_contract"}, original.evaluate())
         with patch.object(original, "progress", return_value=dict(score=.25, succeeded=False, verdict_pending=True)):
             self.assertEqual(env.evaluator.progress()["score"], .25)
-        with patch.object(legacy, "Ledger", return_value=ledger), patch.object(original, "_set_post", return_value=(
+        with patch.object(legacy, "Ledger", return_value=ledger), patch.object(post, "_set_post", return_value=(
                 [legacy.crit("post_support", 0., True, "fixture")], [], dict(score=.99))):
             self.assertEqual(env.evaluator.evaluate()["score"], 1.)
         with patch.object(original, "evaluate", side_effect=legacy.VerdictUnavailable("fault")):

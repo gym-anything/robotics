@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/bed/spit-to-tarp/soil-tasks-v2/seed-0",
+  "name": "spit-to-tarp",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "spit-to-tarp",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+  },
+  "description": "Dig a spadeful of soil from the bed at the white mark and dump it on the blue tarp on the walkway without spilling it elsewhere.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

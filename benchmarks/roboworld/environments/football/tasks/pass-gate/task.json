@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "football/pass-gate",
+  "name": "pass-gate",
+  "env_id": "football",
+  "split": "train",
+  "selection": {
+    "task": "pass-gate"
+  },
+  "description": "Pass the ball along the ground between the two orange markers to your front right.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

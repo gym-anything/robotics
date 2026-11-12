@@ -4,12 +4,15 @@ The stockroom shelf holds retail overstock and store supplies faced the way a st
 the aisle, so GS1's back-panel barcodes face away. Ground truth for every task (which
 units are in the target slot, their GTINs, which symbol belongs to which unit) comes from here and the
 scene's label registry, never from rendered pixels.
+
+Each task stocks its scene in its folder (tasks/<task>/setup.py): its setup(scene), which the scene calls after the
+preset's fixtures, calls stock_stockroom or stock_counter here with its own parts, or stocks the library desk itself.
 """
 
 import math
 import numpy as np
 from .catalog import SKUS
-from . import params as P
+from .config import task_setup
 
 # reachable count locations: deck index 1..3 (0.57, 1.03, 1.45 m) of the centre bay
 TARGET_SLOTS = ("A03-3-B", "A03-3-A", "A03-3-C", "A03-2-B", "A03-4-B")
@@ -22,12 +25,15 @@ DECK_ASSORTMENT = {
 
 
 def target_slot(config):
-    if config.task in ("hold-scanner",):
+    """The slot the instruction names, from the seed; None for a task whose setup.py sets NAMES_SLOT = False."""
+    if not getattr(task_setup(config.task), "NAMES_SLOT", True):
         return None
     return TARGET_SLOTS[config.seed % len(TARGET_SLOTS)] if config.seed else "A03-3-B"
 
 
-def stock_stockroom(scene):
+def stock_stockroom(scene, counted=None):
+    """The stockroom shelf, for a stockroom task's setup.py: shipping cases in the neighbouring bays, the centre bay's
+    slots from DECK_ASSORTMENT; counted(deck, rng), from a counting task's setup.py, gives the counted slot's stock."""
     rng = scene.rng
     c = scene.c
     target = target_slot(c)
@@ -47,8 +53,8 @@ def stock_stockroom(scene):
             scene.items[name] = dict(body=body, sku=None, name="shipping case", slot=code)
             continue
         options = DECK_ASSORTMENT[s["deck"]]
-        if code == target and c.task in ("count-by-scanning", "count-key-quantity"):
-            entries = _target_entries(s["deck"], rng, c.task)
+        if code == target and counted is not None:
+            entries = counted(s["deck"], rng)
         else:
             k = s["slot"] % len(options) if len(options) > 1 else 0
             sku, facings, depth = options[(k + int(rng.integers(0, len(options)))) % len(options)]
@@ -62,7 +68,7 @@ def stock_stockroom(scene):
         scene.task_meta.update(truth=truth)
 
 
-def _target_entries(deck, rng, task):
+def _target_entries(deck, rng):
     """Stock drawn for the counted slot: two or three SKUs, several units deep (the back rows stay hidden).
     Scene.planogram places them left to right and skips what no longer fits (and everything after it), so a counted
     slot holds one or two of them: on deck 2 cereal and soup, cereal only or soup only (the 6-pack and the tomato paste
@@ -75,13 +81,13 @@ def _target_entries(deck, rng, task):
         pool = [("K05", 2, 2), ("K04", 2, 2)]
     idx = rng.permutation(len(pool))[:min(len(pool), 3 if deck == 2 else 2)]
     chosen = [pool[i] for i in sorted(idx)]
-    if task == "count-key-quantity":
-        chosen = [(s, f, max(d, 3)) for s, f, d in chosen]
     return chosen
 
 
-def stock_counter(scene):
-    """Customer's hand basket on the counter's left, bagging tote on the right."""
+def stock_counter(scene, set_out=None, extra=None):
+    """Customer's hand basket on the counter's left, bagging tote on the right, for a checkout task's setup.py:
+    set_out(scene, z, by) sets the items out on the counter instead (checkout-counter), extra(scene, z) adds to the
+    counter after the basket (checkout-bulky's case); z is the counter top's height."""
     from .scene import quat_axis_angle
     rng = scene.rng
     z = scene.fixtures["counter"]["top"]
@@ -89,8 +95,8 @@ def stock_counter(scene):
     # left arm, the bagging tote in front of the right one, the scanner's cradle between them (a layout at
     # x = +-0.50 m, 0.30 m in puts the basket ~1 m from the right arm and the tote as far from the left)
     bx, by = -.34, .24
-    if scene.c.task == "checkout-counter":
-        return _counter_items(scene, z, by)
+    if set_out is not None:
+        return set_out(scene, z, by)
     basket = _open_box(scene, "basket", (bx, by, z), (.43, .30, .20), "basket_blue", wall=.004, mass=.6)
     tote = _open_box(scene, "bag_tote", (.34, by, z), (.40, .30, .18), "tote_grey", wall=.004, mass=.9)
     items = ["K03", "K01", "K02", "K04", "K05", "K09", "K10"]
@@ -156,112 +162,10 @@ def stock_counter(scene):
         name = f"basket_{sku_id}_{k}"
         scene.add_item(name, sku_id, pos, rot=q)
         scene.items[name].update(container="basket")
-    if scene.c.task == "checkout-bulky":
-        # the 24-pack at the counter's end beyond the tote, its barcode side (catalogue "left") turned to the robots;
-        # footprint 279 x 406 mm, 20 mm clear of the tote (0.14..0.54 m). The first layout put it at (0.35, 0.44), on
-        # top of the tote: the settle threw the tote 1.2 m onto the floor (adversarial evaluator tests)
-        name = "water_case"
-        scene.add_item(name, "K11", (.70, .30, z + SKUS["K11"].dims[2]/2 + .0005), yaw=math.pi/2 + float(rng.normal(0, .02)))
-        scene.items[name].update(container="counter")
+    if extra is not None:
+        extra(scene, z)
     scene.task_meta = dict(truth={it["sku"]: sum(1 for j in scene.items.values() if j.get("sku") == it["sku"])
                                   for it in scene.items.values() if it.get("sku")})
-
-
-COUNTER_SPREAD = dict(x=(-.66, -.12), y=(.06, .36), gap=.055)   # m: where the customer sets the items out, and their spacing
-
-
-def _counter_items(scene, z, by):
-    """checkout-counter: the customer's items set out on the counter, standing as they stand on a shelf, at random
-    spots and turns left of the scanner, at least COUNTER_SPREAD["gap"] apart (the group's checkout row 087: "merchandise
-    resting on counter unscanned"; in the basket no offered robot has a grasp). The same
-    items as the basket tasks; the bagging tote as in checkout-present."""
-    from .scene import quat_axis_angle
-    rng = scene.rng
-    _open_box(scene, "bag_tote", (.34, by, z), (.40, .30, .18), "tote_grey", wall=.004, mass=.9)
-    items = ["K03", "K01", "K02", "K04", "K05", "K09", "K10"]
-    rng.shuffle(items)
-    items = items[:5 + scene.c.seed % 3]
-    S = COUNTER_SPREAD
-
-    def outline(sku_id, x, y, yaw):
-        sku = SKUS[sku_id]
-        if sku.shape == "box":
-            w, d, _ = sku.dims
-            u = np.linspace(-.5, .5, 9)
-            loc = np.array([(a*w, b*d) for a in u for b in (-.5, .5)] + [(a*w, b*d) for a in (-.5, .5) for b in u])
-        else:
-            r = sku.dims[0]
-            a = np.linspace(0, 2*math.pi, 24, endpoint=False)
-            loc = np.c_[r*np.cos(a), r*np.sin(a)]
-        c, s = math.cos(yaw), math.sin(yaw)
-        return loc @ np.array([[c, s], [-s, c]]) + (x, y)
-    def layout():
-        placed, poses = [], []
-        for sku_id in items:
-            for _ in range(600):
-                x, y, yaw = rng.uniform(*S["x"]), rng.uniform(*S["y"]), rng.uniform(-math.pi, math.pi)
-                pts = outline(sku_id, x, y, yaw)
-                if pts[:, 0].min() < S["x"][0] - .06 or pts[:, 0].max() > S["x"][1] or pts[:, 1].min() < S["y"][0] - .04 \
-                        or pts[:, 1].max() > S["y"][1] + .04:
-                    continue
-                if all(np.min(np.linalg.norm(pts[:, None, :] - q[None, :, :], axis=2)) >= S["gap"] for q in placed):
-                    placed.append(pts); poses.append((x, y, yaw))
-                    break
-            else:
-                return None                                       # no room left: lay the whole counter out again
-        return poses
-    for _ in range(40):
-        poses = layout()
-        if poses:
-            break
-    else:
-        raise RuntimeError(f"no counter layout for {items} (seed {scene.c.seed})")
-    for k, (sku_id, (x, y, yaw)) in enumerate(zip(items, poses)):
-        sku = SKUS[sku_id]
-        h = sku.dims[2] if sku.shape == "box" else sku.dims[1]
-        name = f"counter_{sku_id}_{k}"
-        scene.add_item(name, sku_id, (x, y, z + h/2 + .0005), rot=quat_axis_angle((0, 0, 1), yaw))
-        scene.items[name].update(container="counter")
-    scene.task_meta = dict(truth={it["sku"]: sum(1 for j in scene.items.values() if j.get("sku") == it["sku"])
-                                  for it in scene.items.values() if it.get("sku")})
-
-
-def stock_library(scene):
-    from .scene import quat_axis_angle
-    rng = scene.rng
-    z = scene.fixtures["counter"]["top"]
-    _open_box(scene, "returns_bin", (.34, .24, z), (.40, .32, .16), "tote_grey", wall=.004, mass=.9)
-    books = ["K12", "K13", "K12", "K13", "K12"][:3 + scene.c.seed % 3]
-    zz = z
-    from .artwork import Symbol, render_symbol
-    for k, sku_id in enumerate(books):
-        s = SKUS[sku_id]
-        w, d, h = s.dims
-        # where the library put its item label (seeded): on the back cover near the top, or inside the front cover;
-        # returned books come back in either orientation -- the ones labelled inside lie
-        # front cover up here, so the cover has to be opened to reach the label
-        inside = (k + scene.c.seed) % 3 == 1
-        yaw = float(rng.normal(0, .08)) + (math.pi if k % 2 else 0.)
-        flip = -math.pi/2 if inside else math.pi/2          # -90: front (-y) up; +90: back (+y) up
-        q = _qmul(quat_axis_angle((0, 0, 1), yaw), quat_axis_angle((1, 0, 0), flip))
-        name = f"book_{k}"
-        body, cover = scene.add_book(name, sku_id, (-.30 + float(rng.normal(0, .01)), .24, zz + d/2 + .0005), q)
-        item_no = library_item_number(1234, 5000 + 37*k + scene.c.seed)
-        scene.items[name].update(container="stack", library_id=item_no, label_inside_cover=inside)
-        sym = Symbol("Codabar", f"A{item_no}B", .25, bar_height_mm=8.5, hri=True)
-        _, w_mm, h_mm = render_symbol(sym, 2)
-        size = (w_mm/1e3 + .004, h_mm/1e3 + .0055)
-        if inside:
-            # inner face of the front board (cover frame: hinge at the origin, board along +x, inner face +y)
-            centre = (w - .012 - w_mm/2e3, P.book_cover(SKUS[sku_id])[0]/2, h/2 - .018 - h_mm/2e3)
-            scene.label(f"{name}_library", cover, sym, centre, (0, 1, 0), (0, 0, 1), size, "matte", kind="library",
-                        item=name, text=item_no)
-        else:
-            centre = (w/2 - .012 - w_mm/2e3, d/2, h/2 - .018 - h_mm/2e3)
-            scene.label(f"{name}_library", body, sym, centre, (0, 1, 0), (0, 0, 1), size, "film", kind="library",
-                        item=name, text=item_no)
-        zz += d + .001
-    scene.task_meta = dict(truth={})
 
 
 def _qmul(a, b):

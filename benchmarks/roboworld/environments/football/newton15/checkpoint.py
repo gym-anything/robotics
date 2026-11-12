@@ -72,7 +72,7 @@ def decode(value):
 def fingerprint(w):
     h = hashlib.sha256(repr(asdict(w.config)).encode())
     root = Path(__file__).parents[1]
-    for path in sorted([*root.glob("*.py"), *Path(__file__).parent.glob("*.py")]):
+    for path in sorted([*root.glob("*.py"), *Path(__file__).parent.glob("*.py"), *root.glob("tasks/*/*.py")]):
         h.update(path.name.encode())
         h.update(path.read_bytes())
     return h.hexdigest()

@@ -130,8 +130,7 @@ def score_fixture(task):
     ev.registration = lambda placed, on_target: dict(factor=reader.registration)
     ev._item_off_bench = lambda: reader.off_bench
     ev.stage = lambda *args: {}  # diagnostics only
-    for name in ("carrier_top", "press_down", "repair_rung", "gs1_case_side", "part_id_hdpe", "part_id_match", "tube_label"):
-        setattr(ev, "_place_" + name, lambda on_target: dict(checks={"fixture_placement": reader.placement}, metrics={}))
+    ev.placement = lambda on_target: dict(checks={"fixture_placement": reader.placement}, metrics={})
     reference = 1. - np.exp(-(100000. + materials.P_TACK) / surface.p_rough)
     if task in START_CREDIT_TASKS:
         lab.bond[:] = 0

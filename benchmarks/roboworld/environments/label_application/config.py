@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass, field, asdict
 
+from gym_anything_robotics import task_folders
+
 PRESETS = ("parcel", "specimen", "part")
 TASKS = {
     "parcel": ("carrier-top", "gs1-case-side", "cover-old-label", "press-down", "smooth-corner", "finish-securing"),
@@ -18,8 +20,8 @@ RETIRED_TASKS = {"part-id-steel": "retired; replaced by part-id-match (preset pa
 # task._place_repair_rung). tube-label is tube-wrap's job, seed for seed (same bench, tube, label and checks, its
 # barcode crease read over the episode), under its own description and the progress reward: ten task ids, nine
 # distinct jobs. tube-label also checks two requirements its instruction states and tube-wrap's checks do not (the
-# label over the manufacturer's label; the patient's name toward the cap, task._place_tube_label) and is scored by
-# the take-and-apply progress rule (task.REWARD_CONTRACTS): still tube-wrap's job, held to its stricter reading.
+# label over the manufacturer's label; the patient's name toward the cap, tasks/tube-label/verifier.py) and is scored
+# by the take-and-apply progress rule (task.REWARD_CONTRACTS): still tube-wrap's job, held to its stricter reading.
 LADDER_TASKS = ("smooth-corner", "finish-securing", "tube-label")
 REPAIR_TASKS = ("smooth-corner", "finish-securing")
 # The other seven tasks are scored by the progress reward too (task.REWARD_CONTRACTS). Tasks whose label starts on
@@ -33,6 +35,23 @@ def base_task(task):
     """The task whose bench layout, label stock and readers a task shares (itself if none). tube-label also shares
     tube-wrap's placement rules; the repair rungs use carrier-top's (task._place_repair_rung)."""
     return BASE_TASK.get(task, task)
+
+
+PACKAGE = "label_application"
+
+
+def task_setup(task):
+    """A benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark (cover-old-label,
+    tube-wrap)."""
+    has_folder = isinstance(task, str) and task_folders.exists(PACKAGE, task)
+    return task_folders.setup(PACKAGE, task) if has_folder else None
+
+
+def task_verifier(task):
+    """A benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark (cover-old-label,
+    tube-wrap)."""
+    has_folder = isinstance(task, str) and task_folders.exists(PACKAGE, task)
+    return task_folders.verifier(PACKAGE, task) if has_folder else None
 
 
 @dataclass(frozen=True)

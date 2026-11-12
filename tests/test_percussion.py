@@ -62,8 +62,8 @@ class Discovery(unittest.TestCase):
                 self.assertGreater(len(instruction(Config(preset=p, task=t, seed=5))), 40)
 
     def test_echo_stimulus_onsets(self):
-        from percussion.task import echo_stimulus
-        sig, on = echo_stimulus(dict(rhythm=[1, 0.5, 0.5, 2], bpm=90))
+        from percussion.layout import task_setup
+        sig, on = task_setup("echo").echo_stimulus(dict(rhythm=[1, 0.5, 0.5, 2], bpm=90))
         self.assertEqual(len(on), 4)
         self.assertAlmostEqual(on[1], 60/90, places=6)
         self.assertGreater(abs(sig).max(), 1.0)                       # 94 dB SPL peak at 1 m

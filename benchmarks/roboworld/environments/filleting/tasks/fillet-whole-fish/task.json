@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/trout/fillet-whole-fish/seed-0",
+  "name": "fillet-whole-fish",
+  "env_id": "filleting",
+  "split": "test",
+  "selection": {
+    "preset": "trout",
+    "task": "fillet-whole-fish"
+  },
+  "description": "Fillet both sides with no rib bones left in the fillets, and put the fillets skin-down in the perforated fillet tray and the frame and head in the empty pan.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

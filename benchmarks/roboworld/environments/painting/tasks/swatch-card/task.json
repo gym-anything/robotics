@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/craft/swatch-card/painting-tasks-v2/seed-0",
+  "name": "swatch-card",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "craft",
+    "task": "swatch-card",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+  },
+  "description": "Paint the pencilled 50 mm square on the watercolour paper solid with the blue acrylic from the palette.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

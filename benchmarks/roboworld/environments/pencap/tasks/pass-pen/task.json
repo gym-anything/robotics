@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/pass-pen/pencap-tasks-v2",
+  "name": "pass-pen",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "pass-pen",
+    "contract": "pencap-tasks-v2"
+  },
+  "description": "Lay the yellow pen on the notebook.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

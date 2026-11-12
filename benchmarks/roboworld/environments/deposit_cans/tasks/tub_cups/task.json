@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "deposit-cans/v1/tub_cups/seed-0",
+  "name": "tub_cups",
+  "env_id": "deposit-cans",
+  "split": "train",
+  "selection": {
+    "variant": "tub_cups",
+    "seed": 0
+  },
+  "description": "The bussing tub came back with three reusable cups among the empty cans. Put the cups back on the reusable tray, deposit all the cans in the recycling bag, and put the empty tub back on the counter. Leave the cans already in the bag where they are.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -9,14 +9,16 @@ from scipy.spatial.transform import Rotation
 
 from whiteboard.config import Board, Config, MaterialPriors
 from whiteboard.ink import InkSurface
-from whiteboard.tasks import BRIDGE_INSTRUCTION
+from whiteboard.tasks import BRIDGE_INSTRUCTION, task_setup
 from whiteboard.task_set.catalogue import (
     CONTRACT, CatalogueTask, NAMES, SELECTIONS, preset_config, raster, resolve,
 )
-from whiteboard.task_set.presets import seed_board, tool_poses, OPEN_COLORS
+from whiteboard.task_set.presets import seed_board, tool_poses
 from whiteboard.task_set.mechanical import bounds, tool_geometry, tray_measure
 from whiteboard.task_set.verifier import evaluate
 from tests.packages import PACKAGES
+
+OPEN_COLORS = task_setup("recap-and-tidy").OPEN_COLORS
 
 ROOT = PACKAGES
 

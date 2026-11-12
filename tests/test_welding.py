@@ -50,7 +50,7 @@ class CatalogueTest(unittest.TestCase):
             self.assertEqual(tasks.catalog(alias)["environment_id"], "welding")
 
     def test_tasks_resolve_and_round_trip(self):
-        from welding.task import INSTRUCTIONS, NEEDS_HAND, START_STATE, TASKS, TIME_LIMIT_S, Evaluator
+        from welding.task import INSTRUCTIONS, NEEDS_HAND, START_STATE, TASKS, TIME_LIMIT_S, Evaluator, task_verifier
         from welding.variations import COUNT
         catalog = tasks.catalog("welding")
         self.assertEqual(catalog["count"], len(TASKS)*COUNT)
@@ -61,7 +61,8 @@ class CatalogueTest(unittest.TestCase):
         ids = set()
         for task, code in TASKS.items():
             name = task.replace("-", "_")
-            self.assertTrue(hasattr(Evaluator, "_eval_" + name) or hasattr(Evaluator, "judge_" + name), task)
+            self.assertTrue(hasattr(Evaluator, "_eval_" + name) or hasattr(Evaluator, "judge_" + name)
+                            or callable(getattr(task_verifier(task), "verify", None)), task)
             for selection in ({"task": task, "seed": 7}, {"task": code, "seed": 7},
                               {"preset": "steel-cell", "task": task, "seed": 7}):
                 with self.subTest(selection=selection):
@@ -490,7 +491,8 @@ class EightTaskSetTest(unittest.TestCase):
             prev = p(d)
 
     def test_set_up_gun_progress(self):
-        from welding.task import setup_progress
+        from welding.task import task_verifier
+        setup_progress = task_verifier("set-up-gun").setup_progress
         start = dict(wfs_m_min=6.4, voltage_v=20., stickout_m=6.35e-3)
         r = lambda wfs, v, s, start=start, faulted=False: setup_progress(wfs, v, s, start, faulted)
         self.assertEqual(r(6.4, 20., 6.35e-3)["progress"], 0.)
@@ -520,7 +522,9 @@ class EightTaskSetTest(unittest.TestCase):
 
     def test_fit_up_errors_displacement_and_progress(self):
         import math
-        from welding.task import FITUP_SEED0, fitup_displacement, fitup_progress
+        from welding.task import task_setup, task_verifier
+        S, V = task_setup("fit-up-bracket"), task_verifier("fit-up-bracket")
+        FITUP_SEED0, fitup_displacement, fitup_progress = S.FITUP_SEED0, S.fitup_displacement, V.fitup_progress
         e = self._fitup()
         self.assertAlmostEqual(e["root_edge_mm"], 0., places=9)
         self.assertAlmostEqual(self._fitup(shift=(0., .025, 0.))["root_edge_mm"], 25.)
@@ -549,23 +553,24 @@ class EightTaskSetTest(unittest.TestCase):
         self.assertEqual(tack_progress(tacks[:1], True, .2, .3, False, 1.)["progress"], .75)
 
     def test_half_fillet(self):
-        from welding.task import FAIL_SCORE_SCALE
+        from welding.task import FAIL_SCORE_SCALE, task_verifier
         start = _tacked_start()
         ev = _task_evaluator("half-fillet", start)
-        base = ev.judge_half_fillet(start)
+        judge = task_verifier("half-fillet").judge_half_fillet
+        base = judge(ev, start)
         self.assertEqual((base["success"], base["score"]), (False, 0.))
-        done = ev.judge_half_fillet(_fillet_rows([(.25, 79.75, lambda x: 100. + x)], over=start))
+        done = judge(ev, _fillet_rows([(.25, 79.75, lambda x: 100. + x)], over=start))
         self.assertTrue(done["success"], _failed(done))             # the second tack's unfilled crater is the fixture's
-        crater = ev.judge_half_fillet(_fillet_rows([(.25, 79.75, lambda x: 100. + x)], over=start,
-                                                   sizes=[(75.25, 79.75, 4.5)]))
+        crater = judge(ev, _fillet_rows([(.25, 79.75, lambda x: 100. + x)], over=start,
+                                        sizes=[(75.25, 79.75, 4.5)]))
         self.assertEqual(_failed(crater), ["crater_filled"])
         self.assertAlmostEqual(crater["score"], FAIL_SCORE_SCALE*crater["progress"])
         self.assertTrue(0. < crater["progress"] < 1.)
-        over = ev.judge_half_fillet(_fillet_rows([(.25, 109.75, lambda x: 100. + x)], over=start))
+        over = judge(ev, _fillet_rows([(.25, 109.75, lambda x: 100. + x)], over=start))
         self.assertEqual(_failed(over), ["left_half_unwelded"])
         prev = -1.
         for x1 in (20., 40., 60., 75.):
-            p = ev.judge_half_fillet(_fillet_rows([(.25, x1, lambda x: 100. + x)], over=start))["progress"]
+            p = judge(ev, _fillet_rows([(.25, x1, lambda x: 100. + x)], over=start))["progress"]
             self.assertGreater(p, prev)
             prev = p
 
@@ -611,20 +616,24 @@ class EightTaskSetTest(unittest.TestCase):
     def test_tack_and_weld(self):
         bare = _fillet_rows([])
         ev = _task_evaluator("tack-and-weld", bare)
+        from welding.task import task_verifier
+        judge = task_verifier("tack-and-weld").judge_tack_and_weld
         ok = dict(bond_active=True, square_deg=.2, offset_mm=.3, hand_touching=False)
-        self.assertEqual(ev.judge_tack_and_weld(bare, **ok)["score"], 0.)
+        self.assertEqual(judge(ev, bare, **ok)["score"], 0.)
         weld = _fillet_rows([(.25, 149.75, lambda x: x)])
-        done = ev.judge_tack_and_weld(weld, **ok)
+        done = judge(ev, weld, **ok)
         self.assertTrue(done["success"], _failed(done))
-        held = ev.judge_tack_and_weld(weld, **dict(ok, hand_touching=True))
+        held = judge(ev, weld, **dict(ok, hand_touching=True))
         self.assertEqual(_failed(held), ["hand_off"])
         self.assertAlmostEqual(held["progress"], .5*done["progress"])
-        skew = ev.judge_tack_and_weld(weld, **dict(ok, square_deg=1.5))
+        skew = judge(ev, weld, **dict(ok, square_deg=1.5))
         self.assertEqual(_failed(skew), ["square"])
         self.assertAlmostEqual(skew["reward"]["alignment"], .5)
 
     def test_hold_and_present(self):
-        from welding.task import Evaluator, hold_present_progress
+        from welding.task import Evaluator, task_verifier
+        V = task_verifier("hold-and-present")
+        hold_present_progress = V.hold_present_progress
         self.assertEqual(hold_present_progress(0., False, 0., .03)["progress"], 0.)          # untouched loose start
         self.assertEqual(hold_present_progress(1., True, .06, .07)["progress"], 1.)
         self.assertEqual(hold_present_progress(1., False, .06, .07)["progress"], .5)         # presented, not held
@@ -638,8 +647,8 @@ class EightTaskSetTest(unittest.TestCase):
             world = SimpleNamespace(scene=SimpleNamespace(bodies={"bracket": 5}), hand_arms=("left",),
                                     model=SimpleNamespace(body_label=bodies), hand_bodies=lambda: [1, 2, 3, 4],
                                     bodies_touch=lambda body, others: bool(others & touching))
-            return Evaluator(SimpleNamespace(config=SimpleNamespace(task="hold-and-present"),
-                                             world=world))._fingers_on_bracket()
+            return V._fingers_on_bracket(Evaluator(SimpleNamespace(config=SimpleNamespace(task="hold-and-present"),
+                                                                   world=world)))
         self.assertEqual(fingers({3, 4}), [True, True])
         self.assertEqual(fingers({3}), [True, False])
         self.assertEqual(fingers({2}), [False, False])
@@ -647,20 +656,22 @@ class EightTaskSetTest(unittest.TestCase):
     def test_set_up_and_weld(self):
         start = _tacked_start()
         ev = _task_evaluator("set-up-and-weld", start)
+        from welding.task import task_verifier
+        judge = task_verifier("set-up-and-weld").judge_set_up_and_weld
         weld = _fillet_rows([(.25, 149.75, lambda x: x + 100.)], over=start)
-        self.assertEqual(ev.judge_set_up_and_weld(start, wfs_m_min=6.4, voltage_v=20.)["score"], 0.)
-        done = ev.judge_set_up_and_weld(weld, wfs_m_min=12.7, voltage_v=29.)
+        self.assertEqual(judge(ev, start, wfs_m_min=6.4, voltage_v=20.)["score"], 0.)
+        done = judge(ev, weld, wfs_m_min=12.7, voltage_v=29.)
         self.assertTrue(done["success"], _failed(done))
         self.assertEqual(done["score"], 1.)
-        left = ev.judge_set_up_and_weld(weld, wfs_m_min=6.4, voltage_v=20.)
+        left = judge(ev, weld, wfs_m_min=6.4, voltage_v=20.)
         self.assertEqual(_failed(left), ["source_at_procedure"])
         self.assertLess(left["score"], 1.)
         # the same weld and progress as fillet-2f judges them
         fillet = _fillet_judge(weld, start)
         self.assertEqual(fillet["success"], True)
         self.assertAlmostEqual(left["progress"], fillet["progress"])
-        self.assertTrue(ev.judge_set_up_and_weld(weld, wfs_m_min=12.95, voltage_v=28.6)["success"])
-        self.assertFalse(ev.judge_set_up_and_weld(weld, wfs_m_min=13.1, voltage_v=29.)["success"])
+        self.assertTrue(judge(ev, weld, wfs_m_min=12.95, voltage_v=28.6)["success"])
+        self.assertFalse(judge(ev, weld, wfs_m_min=13.1, voltage_v=29.)["success"])
 
     def test_fillet_progress_unchanged_without_eligibility(self):
         from welding.task import fillet_progress
@@ -980,11 +991,12 @@ def _fillet_rows(runs, size=6.6, legs=None, sizes=(), edits=(), over=None):
 
 
 def _fillet_judge(rows, start=None):
-    """The fillet-2f evaluation of constructed rows (task.Evaluator.judge_fillet), progress net of `start` if given."""
-    from welding.task import Evaluator, fillet_progress
+    """The fillet-2f evaluation of constructed rows (tasks/fillet-2f/verifier.py judge_fillet), progress net of `start`
+    if given."""
+    from welding.task import Evaluator, fillet_progress, task_verifier
     ev = Evaluator(SimpleNamespace(config=SimpleNamespace(task="fillet-2f"), world=SimpleNamespace(process=None)))
     ev.start_raw_progress = fillet_progress(start)["raw"] if start is not None else None
-    return ev.judge_fillet(rows)
+    return task_verifier("fillet-2f").judge_fillet(ev, rows)
 
 
 def _stub_backend(task="fillet-2f"):

@@ -23,17 +23,19 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from drilling import catalogue as V1, materials as M, params as P, task_set_v2 as C, variants
-from drilling.catalogue_evaluator import area_depth_share
 from drilling.task_set_v2_evaluator import TaskSetV2Evaluator, configure_environment
 from drilling.config import Config
 from drilling.holes import Hole
 from drilling.concrete import ConcreteFields
 from drilling.layout import WALL_REGION, bench_layout, wall_layout
 from drilling.task import Evaluator, INSTRUCTIONS, _check
+from gym_anything_robotics import task_folders
 
 from tests.packages import PACKAGES, REPO
 
 ROOT = PACKAGES
+area_depth_share = task_folders.verifier("drilling", "panel-holes").area_depth_share
+lower_mark = task_folders.verifier("drilling", "timber-bolt").lower_mark
 # the bench tasks under the new contract: the set's six plus the prepared alternate, match-bolt
 BENCH = tuple(t for t in C.TASKS[:-1] if t not in C.WALL) + C.ALTERNATES
 
@@ -265,7 +267,7 @@ class EvaluatorTests(unittest.TestCase):
         env.evaluator.task = "ledger-anchor"
         env.evaluator.instruction = INSTRUCTIONS["ledger-anchor"]
         report = ([_check("audited predicate", False)], dict(progress=0.37, scoring="audited progress v3"))
-        with patch.object(Evaluator, "_ledger_anchor", return_value=report):
+        with patch.object(task_folders.verifier("drilling", "ledger-anchor"), "checks", return_value=report):
             self.assertEqual(env.evaluator.evaluate(), Evaluator.evaluate(env.evaluator))
             self.assertAlmostEqual(env.evaluator.evaluate()["score"], 0.333)
             self.assertNotIn("contract", env.evaluator.evaluate())
@@ -440,7 +442,7 @@ class EvaluatorTests(unittest.TestCase):
         rot = Rotation.from_euler("y", -1., degrees=True)
         top.a = rot.apply([0., 0., -1.])
         bottom.a = top.a.copy()
-        bottom.p0 = env.evaluator._timber_lower_mark(top)
+        bottom.p0 = lower_mark(env.evaluator, top)
         # The bolt follows the same slightly tilted hole, not a forced vertical path.
         p0, r0 = env.poses["board0"]
         env.poses["carriage_bolt"] = (p0 + r0 @ (bottom.p0 + bottom.a*0.040),

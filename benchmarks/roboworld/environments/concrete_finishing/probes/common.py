@@ -23,7 +23,8 @@ STAMP_EXTRA = ("gym_anything_robotics/backends/newton_concrete_finishing.py", "c
                "robots/models/mobile-fr3-single/robot.json", "robots/rigs/finish-mobile-fr3-duo.json",
                "robots/rigs/finish-mobile-fr3-single.json")
 PHYSICS = ("paste.py", "materials.py", "transfer.py", "coupling.py", "world.py", "scene.py", "tools.py", "layout.py", "params.py",
-           "env.py", "task.py")
+           "env.py", "task.py") \
+    + tuple(sorted(str(p.relative_to(PKG)) for p in PKG.glob("tasks/*/*.py")))     # each task's start and criteria
 RUN_ID = uuid.uuid4().hex[:12]
 
 

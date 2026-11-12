@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/pentatonic/pentatonic-setup/seed-0",
+  "name": "pentatonic-setup",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "pentatonic",
+    "task": "pentatonic-setup"
+  },
+  "description": "Set the xylophone up for pentatonic play: lift the F4, B4 and F5 bars off their pins and lay them flat in the accessory tray; leave every other bar seated on its pins.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -4,6 +4,9 @@ The original five garment selections and GARMENT_TASK_SPECS remain untouched.
 New task logic lives outside the simulation, reset loader and original evaluator.
 """
 from dataclasses import dataclass, replace
+from functools import lru_cache
+
+from gym_anything_robotics import task_folders
 
 from .garment_task import GARMENT_TASK_SPECS, GarmentTaskSpec
 from .newton15.config import GARMENTS
@@ -56,6 +59,49 @@ TASK_SET = tuple(
 )
 
 
+PACKAGE = "laundry"
+
+
+@lru_cache(None)
+def folder_names():
+    """(garment, task) -> the benchmark task's folder (tasks/<name>/), from each folder's task.json selection; a
+    garment-only selection is the garment's default task. half_fold is the towel's, tee_half_fold the tee's."""
+    names = {}
+    for name in task_folders.names(PACKAGE):
+        selection = task_folders.load(PACKAGE, name)["selection"]
+        names[selection["garment"], selection.get("task", DEFAULTS[selection["garment"]])] = name
+    return names
+
+
+def task_setup(garment, task):
+    """The garment's task's setup.py (tasks/<name>/), or None for a task outside the benchmark."""
+    name = folder_names().get((garment, task))
+    return None if name is None else task_folders.setup(PACKAGE, name)
+
+
+def task_verifier(garment, task):
+    """The garment's task's verifier.py (tasks/<name>/), or None for a task outside the benchmark."""
+    name = folder_names().get((garment, task))
+    return None if name is None else task_folders.verifier(PACKAGE, name)
+
+
+def task_goals(entry, version):
+    """A benchmark task's own goals under a task-set contract (goals(version) in its verifier.py), or None for a task
+    that keeps its released goals, scored with continuous credit."""
+    goals = getattr(task_verifier(entry.garment, entry.name), "goals", None)
+    return None if goals is None else goals(version)
+
+
+def verify(task, positions_m, velocities_m_s, **evidence):
+    """An episode state judged by a bound evaluator (GarmentTaskEvaluator or a task-set StartRelativeEvaluator): by
+    verify in its task's verifier.py for a benchmark task, else by the evaluator itself."""
+    garment = next(g for g, construction in GARMENTS.items() if construction == task.spec.construction_id)
+    folder = task_verifier(garment, task.spec.id)
+    if folder is not None:
+        return folder.verify(task, positions_m, velocities_m_s, **evidence)
+    return task.evaluate(positions_m, velocities_m_s, **evidence)
+
+
 def select(garment="towel", task=None, contract=None):
     """Backend selection, preserving Config's original garment validation/coercion."""
     if garment not in GARMENTS:
@@ -93,11 +139,11 @@ def resolve(selection):
 def task_spec(entry, version):
     if version != CONTRACT:
         return GARMENT_TASK_SPECS[(GARMENTS[entry.garment], entry.name)]
-    from .task_set_goals import ContinuousGoal, FlatSpreadGoal, FaceDownGoal, ThirdsFoldGoal
-    new = {"spread_flat": FlatSpreadGoal, "turn_face_down": FaceDownGoal, "thirds_fold": ThirdsFoldGoal}
-    if entry.name in new:
+    from .task_set_goals import ContinuousGoal
+    goals = task_goals(entry, version)        # spread_flat, turn_face_down, thirds_fold: tasks/<task>/verifier.py
+    if goals is not None:
         spec = GarmentTaskSpec(entry.name, entry.label, GARMENTS[entry.garment],
-                               (new[entry.name](),), maximum_structural_strain=.20 if entry.garment == "towel" else .30)
+                               goals, maximum_structural_strain=.20 if entry.garment == "towel" else .30)
     else:
         original = GARMENT_TASK_SPECS[(GARMENTS[entry.garment], entry.name)]
         spec = replace(original, label=entry.label, goals=tuple(ContinuousGoal(g) for g in original.goals))

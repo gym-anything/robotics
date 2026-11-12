@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/gait/steady-beat/seed-0",
+  "name": "steady-beat",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "gait",
+    "task": "steady-beat"
+  },
+  "description": "Keep a steady beat on the drum with the drumsticks at the client's walking cadence of 110 beats per minute for 32 beats, then 10% faster (121 BPM) for 16 beats.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

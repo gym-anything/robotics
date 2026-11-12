@@ -4,15 +4,15 @@ from scipy.spatial.transform import Rotation
 
 from whiteboard.config import COLORS
 from whiteboard.geometry import tools
+from whiteboard.tasks import task_setup
 from .catalogue import raster
 
-OPEN_COLORS = ("black", "red", "blue")
 CAP_SEATED_M = .0555
-CAP_START_OFFSET_M = .075
 
 
 def tool_poses(config, task):
     poses = {}
+    start_offset = getattr(task_setup(task.name), "cap_offset", None)      # caps that start open (its setup.py)
     for i, color in enumerate(config.layout.marker_order):
         # Two rows on the existing 80 mm tray, 35 mm apart; no added holder.
         x = -.40 + (i % 3) * .22
@@ -20,7 +20,7 @@ def tool_poses(config, task):
         z = config.board.bottom - .015 + .011
         quat = Rotation.from_euler("y", np.pi / 2).as_quat()
         poses[f"marker_{color}"] = np.r_[x, y, z, quat]
-        offset = CAP_SEATED_M + (CAP_START_OFFSET_M if task.name == "recap-and-tidy" and color in OPEN_COLORS else 0)
+        offset = CAP_SEATED_M + (start_offset(color) if start_offset is not None else 0)
         poses[f"cap_{color}"] = np.r_[x + offset, y, z, quat]
     eraser = next(obj for obj in tools(config) if obj.name == "eraser")
     poses["eraser"] = np.r_[eraser.position, eraser.rotation]
@@ -68,11 +68,10 @@ def apply_start(env, task):
     env._needs_sync = True
     env._previous_contacts.clear()
     env._pad_contact_state = None
-    # Rigid translations leave seated caps' constitutive state unchanged.
-    # Only separated caps lose their former contact warm start/deformation.
-    if task.name == "recap-and-tidy":
-        for color in OPEN_COLORS:
-            env.deformations.pop(f"cap_{color}", None)
+    # Caps the start separates lose their former contact state (the task's separate_caps, its setup.py).
+    separate = getattr(task_setup(task.name), "separate_caps", None)
+    if separate is not None:
+        separate(env)
     record = seed_board(env.ink, task)
     env._initial = env.snapshot()
     env.trace.event("task_start_props", 0, task_id=task.task_id, contract=task.contract,

@@ -18,7 +18,7 @@ import numpy as np
 
 from . import params as P
 from .catalogue import INSTRUCTIONS
-from .scoring import FAILED, PIGMENT_SHARE, TaskProgress, clip, paper_colour, uniformity_area
+from .scoring import FAILED, PIGMENT_SHARE, TaskProgress, clip, paper_colour
 from .task import Evaluator
 from .task_set_v2 import CONTRACT
 
@@ -31,17 +31,9 @@ class TaskSetV2Progress(TaskProgress):
 
     def reward(self, checks, settled):
         e = self.e
-        if self.task == "load-roller":
-            roller = e.paint.applicators["roller"]
-            load = clip(roller.load_mass()/0.050)
-            volume = roller.s.sum(axis=0) + roller.v
-            # A partially wetted nap cell earns partial credit before crossing
-            # the spread verdict's 20%-of-capacity threshold.
-            spread = clip(float(np.clip(volume/(0.2*P.ROLLER["sat"]*roller.C0), 0.0, 1.0).mean())/0.8)
-            seconds = (e.env.world.tick - getattr(e, "_last_drip_tick", -10**9))*P.DT
-            hold = float(checks["held_above_tray"]["ok"])*clip(seconds/10.0)
-            progress = load*spread*(0.6 + 0.4*hold)
-            detail = dict(load=load, spread=spread, hold=hold)
+        own = getattr(e.folder, "progress", None)
+        if own is not None:
+            progress, detail = own(e, checks)                 # the task's own progress (load-roller)
         else:
             ch, m = self.chart, self.mask
             rem = self._remaining()
@@ -58,9 +50,8 @@ class TaskSetV2Progress(TaskProgress):
                 defects["runs"] = max(0.0, float(((ch.flowed > C["run_flow"]) & m).sum())*ch.area - C["run_area"])
                 protected, _ = e._protected(trim_sinks=True)
                 defects["damage"] = C["damage_weight"]*max(0.0, protected - E["protected_area"])
-                if self.task == "roll-strip":
-                    defects["uniformity"] = uniformity_area(e)
-                    quality = 0.9 + 0.1*float(checks["roller_in_tray"]["ok"])
+                if hasattr(e.folder, "quality"):
+                    quality = e.folder.quality(e, checks, defects)      # the task's own terms (roll-strip)
             elif self.key == "paper":
                 over = float(((ch.projected_dft() > 3e-6) & e.targets["outside"]).sum())*ch.area
                 defects["overrun"] = max(0.0, over - 0.5e-4)
@@ -112,13 +103,13 @@ class TaskSetV2Evaluator(Evaluator):
         checks, t, ch = out["checks"], self.task, self.paint.charts
         if "paper" in self.targets:
             pch, m = ch["paper"], self.targets["paper"]
-            thr = E["stroke_dft"] if t == "brush-stroke" else E["stencil_hide_dft"]
+            thr = getattr(self.folder, "COVER_DFT", E["stencil_hide_dft"])
             wanted, share = paper_colour(pch, t)
             cov = float(((wanted[m] >= thr) & (share[m] >= PIGMENT_SHARE)).mean())
             checks["coverage"] = dict(value=round(cov, 4), limit=0.95, ok=cov >= 0.95,
-                                      paint="cadmium_red" if t == "brush-stroke" else "ultramarine",
+                                      paint=getattr(self.folder, "ACRYLIC", "ultramarine"),
                                       min_pigment_share=PIGMENT_SHARE)
-        if self.spec["preset"] == "wall" and t != "load-roller":
+        if self.spec["preset"] == "wall" and getattr(self.folder, "FILM_CHECKS", True):
             a, det = self._protected(trim_sinks=True)
             checks["protected"] = dict(area_cm2=round(a*1e4, 3), limit_cm2=E["protected_area"]*1e4,
                                        detail_cm2={k: round(v*1e4, 3) for k, v in det.items()},

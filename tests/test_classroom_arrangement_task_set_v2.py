@@ -206,7 +206,7 @@ class FixTests(unittest.TestCase):
         self.assertEqual(Config(**row["backend_options"]).contract, LEGACY)
         env = fixture("group-work", contract=LEGACY)
         motion, window = env.window_motion()
-        self.assertEqual(env.evaluator.evaluate(), env.evaluator.by_place(motion, window))
+        self.assertEqual(env.evaluator.evaluate(), L.task_verifier("group-work").by_place(env.evaluator, motion, window))
 
 
 class ReleasedEvaluationTestsUnderV2(released.EvaluationTests):

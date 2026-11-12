@@ -6,52 +6,23 @@ liquid in flight, glassware released and upright where it belongs.
 """
 
 import math
+from types import SimpleNamespace
+
 import numpy as np
 
 from . import params as P
+from .layout import task_verifier
 
 LINED_WINDOW_ML = (175.0, 185.0)   # UK SI 1988/120 reg. 14: a 175 mL measure may not be short (the line's capacity is
                                    # the meniscus at the line); up to 10 mL over is accepted
 SPOT_NAMES = {1: "spot 1 (far left)", 2: "spot 2", 3: "spot 3", 4: "spot 4 (far right)"}
 WINE_NAMES = {"red_wine": "red wine", "white_wine": "white wine", "rose_wine": "rose wine", "water": "water"}
-# split-bottle verifier documentation. The instruction states the job ("finish
-# the bottle", "equally", "the guests' glasses", the bottle never touching a glass); these are how it is scored:
-#   shared            both glasses hold wine and differ by at most share_tol = 10 % of the fuller glass (layout goal):
-#                     about a 2-3.6 mm level difference in the PURE glasses over the seeded 250-450 mL
-#   bottle_emptied    at most leave_max = 15 mL left in the bottle (the residue that clings inside a drained bottle)
-#   targets_on_spots  spots k and k+1 each hold one of the two glasses (within P.SPOT_RADIUS_M, the lit ring), either
-#                     glass on either spot: they are identical, and lifting a glass to pour into it is allowed
-#   no_spill          wine outside the bottle and the two glasses - bar, floor, robot, in flight and the coaster dish
-#                     (wine drained into the dish is neither spilt nor served otherwise) - at most P.SPILL_TOL_ML
-#   never_touched_glass  the bottle never touches either glass: every physics tick, any bottle-glass contact force
-#                     (above TOUCH_FLOOR_N, a round-off guard; touch_rule). Contacts are generated up to 2 mm before the
-#                     collision hulls meet and carry exactly 0 N until they do (every such tick in the evaluator cases
-#                     read 0.0); the lightest real touch seen was 1.5 mN. The collision hulls follow the drawn
-#                     glassware to within about 2 mm: up to 1.8 mm inside the PURE bowl at its widest, up to 0.5-0.6 mm
-#                     outside at the PURE rim's top edge and the LEONOR lip's rounded corner. So a contact can register
-#                     with the drawn outlines about 1 mm apart at the rim, and a graze at the bowl's widest can overlap
-#                     them by up to about 1.8 mm first; either way the simulated bodies really touch. (Every other bottle
-#                     task counts presses above 0.5 N at every 10th tick: a clink's force lasts about 8 ms and a resting
-#                     touch sits at 0.02-0.5 N, so both could pass that rule.)
-#   and the common checks: drip film on the bottle, bottle upright on its coaster, glasses upright, arms still 2 s and
-#   released, wine at rest.
-# The final verdict (backend evaluate(): gar verify, GET /v1/evaluation, the benchmark runner) is Evaluator.verify(): a
-# state not yet at rest is advanced on a branch with the robot holding its last command until `settled` holds (at most
-# SETTLE_HOLD_MAX_S), evaluated there, and the live state restored, so a correct finish read promptly gets full credit.
-# Success and the checks come from the held state; a FAILED verdict's progress is the
-# smaller of the progress at the request and after the hold, so the hold can reveal damage (a bottle that falls, a glass
-# the arm's run-on knocks, wine poured onto the bar) but never adds service: a bottle frozen mid-pour keeps pouring on
-# the branch, and that wine was not served by the agent. The branch is a simulated
-# continuation: the GPU liquid is not bitwise repeatable, so its settle statistics vary in the last digits between calls
-# on one state (every verdict observed was identical). It restores, beyond env.checkpoint(), the bookkeeping that
-# checkpoint does not hold (VERIFY_EXTRA_STATE), so the episode continues as if never read. The per-command step reward
-# stays the instantaneous evaluate(): at an episode's last command it can read 0.9 where the verdict is 1.0.
 # Reward contract "split-progress-v1": score = 1 on success, else FAIL_SCORE_SCALE x progress, from the
-# evaluated state only (no order, route or intermediate milestone): progress = S x E (split_progress). Every other task
+# evaluated state only (no order, route or intermediate milestone): progress = S x E (split_progress in
+# tasks/split-bottle/verifier.py, with the rest of split-bottle's checks and their documentation). Every other task
 # scores the fraction of its checks met; every split-bottle evaluation also reports it as reward.mean_of_checks.
 SPLIT_REWARD_CONTRACT = "split-progress-v1"
 FAIL_SCORE_SCALE = .9          # a failed state scores 0.9 x progress: every failure stays below every success
-TOUCH_FLOOR_N = 1e-6           # split-bottle: any bottle-glass contact force above round-off is a touch
 SETTLE_HOLD_MAX_S = 3.0        # split-bottle's verified read: the arm runs on ~0.3 s past its command, then 2 s still
                                # (only a final command of ~2 rad or more on a joint in under ~0.3 s outruns it; such
                                # a scene is not at rest at the cap and is judged as it is then)
@@ -105,26 +76,9 @@ VERIFY_EXTRA_STATE = (_verify_extra_state, _restore_extra_state)
 
 
 def touch_rule(task):
-    """(ticks between samples, force threshold N) of the bottle-glass touch monitor (env.act)."""
-    return (1, TOUCH_FLOOR_N) if task == "split-bottle" else (10, P.CONTACT_FORCE_TOL_N)
-
-
-def split_progress(v0, va, vb, upright_a, upright_b, lost, leave_max_ml):
-    """split-bottle progress from the final state. T = (v0 - leave_max)/2 is each guest's share of the finished bottle
-    (v0: the bottle's wine at reset). S = (min(va, T') + min(vb, T'))/2T' credits the wine in each glass up to its
-    share T' = max(T, W/2), counted while that glass stands upright: wine beyond the finished-bottle share (up to
-    leave_max) is credited only while the glasses stay equal (with T alone, a 122.5/137.5 mL split of a 260 mL bottle
-    would fail `shared` at progress 1.0). E = W/(W + lost) is the fraction of the wine that left
-    the bottle and reached a glass (W: wine in the two glasses; lost: everywhere else outside the bottle, coaster dish
-    included; wine in flight counts as lost until it lands, so mid-pour readings are diagnostic). Wine still in the
-    bottle costs only its share; spilt wine also costs E."""
-    T = .5*(v0 - leave_max_ml)
-    W = max(0., va + vb)
-    Tc = max(T, .5*W)
-    served = (min(va, Tc) if upright_a else 0.) + (min(vb, Tc) if upright_b else 0.)
-    S = max(0., served)/(2*Tc) if Tc > 0 else 0.
-    E = W/(W + lost) if W + lost > 0 else 1.
-    return dict(progress=S*E, served_share=S, unspilled_fraction=E, share_mL=T, credited_share_mL=Tc)
+    """(ticks between samples, force threshold N) of the bottle-glass touch monitor (env.act): every 10th tick above
+    params.CONTACT_FORCE_TOL_N, unless the task's verifier.py sets its own TOUCH_RULE (split-bottle)."""
+    return getattr(task_verifier(task), "TOUCH_RULE", (10, P.CONTACT_FORCE_TOL_N))
 
 
 INSTRUCTIONS = {
@@ -169,15 +123,42 @@ def instruction(config, meta=None):
                                             spot_b=SPOT_NAMES.get(spot_b, ""))
 
 
+class Reading(SimpleNamespace):
+    """What Evaluator.evaluate_checks has read of the state, for a task's checks(e, x) and its other hooks: env, w (the
+    world), lay (the layout), g (its goal), inv (the inventory), c (its containers), checks (the dict the task adds its
+    checks to), vol(name, liquid=None) (mL in a container), spilled and lost (mL; a task may set lost: split-bottle
+    counts the coaster dish), src (the source's name) and src_liq (its liquid). A task's checks may leave more on it
+    for its later hooks (fill_checks: got)."""
+
+
+def fill_checks(e, x):
+    """The checks of the five fill tasks (pour-glass, taste-pour, refill-glass, water-tumbler, lined-measure; their
+    verifier.py passes this to Evaluator.evaluate_checks under every contract): the target's volume of the source's
+    liquid within the goal's volume +- tol (a goal at an etched line: LINED_WINDOW_ML), the target upright and on its
+    spot."""
+    env, g, checks, vol, src_liq = x.env, x.g, x.checks, x.vol, x.src_liq
+    t = g["target"]
+    target_ml = (g["volume"] if "volume" in g else env.geometry(t).volume_below(env.geometry(t).lines[g["line"]]))*1e6
+    got = vol(t, src_liq)
+    if "line" in g:
+        checks["volume"] = LINED_WINDOW_ML[0] <= got <= LINED_WINDOW_ML[1]
+    else:
+        checks["volume"] = abs(got - target_ml) <= g["tol"]*1e6
+    checks["target_upright"] = e._upright(t) <= P.GLASS_UPRIGHT_DEG
+    if g.get("spot"):
+        checks["target_on_spot"] = float(np.linalg.norm(e._xy(t)[0] - np.asarray(P.DELIVERY_SPOTS[g["spot"]]))) <= P.SPOT_RADIUS_M
+    e.meta.update(target_mL=target_ml, got_mL=got)
+    x.got = got
+
+
 class Evaluator:
     def __init__(self, env):
         self.env = env
         self.meta = {}
-        # split-bottle's reward needs the bottle's wine at reset (built after the fill; reset() restores that state)
-        self.source_initial_mL = None
-        if env.config.task == "split-bottle":
-            src = next(i["name"] for i in env.layout["items"] if i.get("role") == "source")
-            self.source_initial_mL = env.inventory()["containers"].get(src, {}).get("total", 0.)
+        self.source_initial_mL = None       # split-bottle's bottle at reset (its verifier.py: start)
+        start = getattr(task_verifier(env.config.task), "start", None)
+        if start is not None:               # what the task's verifier.py reads of the state at reset
+            start(self)
 
     def _upright(self, name):
         _, R = self.env.world.body_pose(name)
@@ -188,6 +169,18 @@ class Evaluator:
         return np.asarray(p[:2]), float(p[2])
 
     def evaluate(self):
+        """The evaluation of the current state. A benchmark task's verify(e) (tasks/<task>/verifier.py) decides: it
+        passes its checks to evaluate_checks. tasting-flight's and decant-carafe's checks are in evaluate_checks."""
+        folder = task_verifier(self.env.config.task)
+        if folder is not None:
+            return folder.verify(self)
+        return self.evaluate_checks()
+
+    def evaluate_checks(self, task_checks=None, finish=None, **contract_hooks):
+        """The evaluation under the released contracts (wine-checks-v1, split-progress-v1). task_checks(e, x) adds the
+        task's own checks to x.checks (x: Reading); finish(e, x, out, success, score) completes the report
+        (split-bottle's reward). The keywords are a task's hooks for the task-set contracts
+        (task_contracts.Evaluator.evaluate_checks); this evaluation does not use them."""
         env = self.env
         w = env.world
         lay = env.layout
@@ -218,37 +211,11 @@ class Evaluator:
         checks["released"] = not any(robot_contact.values())
         liquid_of = lambda name: next((i.get("liquid") for i in lay["items"] if i["name"] == name), None)
         src_liq = liquid_of(src) if src else None
-        if task in ("pour-glass", "taste-pour", "refill-glass", "water-tumbler", "lined-measure"):
-            t = g["target"]
-            target_ml = (g["volume"] if "volume" in g else env.geometry(t).volume_below(env.geometry(t).lines[g["line"]]))*1e6
-            got = vol(t, src_liq)
-            if "line" in g:
-                checks["volume"] = LINED_WINDOW_ML[0] <= got <= LINED_WINDOW_ML[1]
-            else:
-                checks["volume"] = abs(got - target_ml) <= g["tol"]*1e6
-            checks["target_upright"] = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-            if g.get("spot"):
-                checks["target_on_spot"] = float(np.linalg.norm(self._xy(t)[0] - np.asarray(P.DELIVERY_SPOTS[g["spot"]]))) <= P.SPOT_RADIUS_M
-            self.meta.update(target_mL=target_ml, got_mL=got)
-        elif task == "split-bottle":
-            a, b = g["targets"]
-            va, vb = vol(a, src_liq), vol(b, src_liq)
-            up = [self._upright(n) <= P.GLASS_UPRIGHT_DEG for n in (a, b)]
-            checks["shared"] = min(va, vb) > 0 and abs(va - vb) <= g["share_tol"]*max(va, vb)
-            checks["bottle_emptied"] = vol(src) <= g["leave_max"]*1e6
-            checks["targets_upright"] = all(up)
-            ka, kb = (next(i["spot"] for i in lay["items"] if i["name"] == n) for n in (a, b))
-            on = lambda n, k: float(np.linalg.norm(self._xy(n)[0] - np.asarray(P.DELIVERY_SPOTS[k]))) <= P.SPOT_RADIUS_M
-            checks["targets_on_spots"] = (on(a, ka) and on(b, kb)) or (on(a, kb) and on(b, ka))
-            lost = spilled + vol("coaster")
-            split = split_progress(self.source_initial_mL or 0., va, vb, up[0], up[1], lost, g["leave_max"]*1e6)
-            self.meta.update(a_mL=va, b_mL=vb, left_mL=vol(src), coaster_mL=vol("coaster"), lost_mL=lost,
-                             robot_still_s=env.robot_still_s())
-        elif task == "carry-glass":
-            t = g["target"]
-            checks["kept"] = vol(t) >= g["keep"]*1e6 - P.SPILL_TOL_ML - 0.5
-            checks["target_upright"] = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-            checks["target_on_spot"] = float(np.linalg.norm(self._xy(t)[0] - np.asarray(P.DELIVERY_SPOTS[g["deliver_spot"]]))) <= P.SPOT_RADIUS_M
+        x = Reading(env=env, w=w, lay=lay, g=g, inv=inv, c=c, checks=checks, vol=vol, spilled=spilled, lost=lost,
+                    src=src, src_liq=src_liq)
+        if task_checks is not None:         # a benchmark task's own checks (its verifier.py)
+            task_checks(self, x)
+            lost = x.lost
         elif task == "tasting-flight":
             got = {n: vol(n, src_liq) for n in g["targets"]}
             checks["volumes"] = all(abs(v - g["volume"]*1e6) <= g["tol"]*1e6 for v in got.values())
@@ -258,12 +225,6 @@ class Evaluator:
             checks["bottle_emptied"] = vol(src) <= g["leave_max"]*1e6
             checks["target_upright"] = self._upright(g["target"]) <= P.GLASS_UPRIGHT_DEG
             self.meta.update(carafe_mL=vol(g["target"]), left_mL=vol(src))
-        elif task == "dump-and-pour":
-            t = g["target"]
-            checks["old_dumped"] = vol(t, g["old"]) <= g["old_max"]*1e6
-            checks["volume"] = abs(vol(t, g["fresh"]) - g["volume"]*1e6) <= g["tol"]*1e6
-            checks["target_upright"] = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-            self.meta.update(fresh_mL=vol(t, g["fresh"]), old_mL=vol(t, g["old"]), dump_mL=vol(g["dump"]))
         checks["no_spill"] = lost <= P.SPILL_TOL_ML
         if src:
             film = inv["film"].get(src, 0.)
@@ -286,70 +247,15 @@ class Evaluator:
                    meta={k: (round(v, 3) if isinstance(v, float) else v) for k, v in self.meta.items()},
                    inventory_mL=dict(containers={k: {kk: round(vv, 2) for kk, vv in v.items()} for k, v in c.items()},
                                      spilled=round(spilled, 2), film={k: round(v, 2) for k, v in inv["film"].items()}))
-        if task == "split-bottle":
-            progress = 0. if w.fault else split["progress"]
-            out["score"] = 1. if success else FAIL_SCORE_SCALE*progress
-            out["reward"] = dict(contract=SPLIT_REWARD_CONTRACT, progress=round(progress, 4),
-                                 served_share=round(split["served_share"], 4),
-                                 unspilled_fraction=round(split["unspilled_fraction"], 4),
-                                 share_mL=round(split["share_mL"], 3),
-                                 credited_share_mL=round(split["credited_share_mL"], 3),
-                                 bottle_initial_mL=round(self.source_initial_mL or 0., 3), mean_of_checks=score)
+        if finish is not None:              # the task's own report terms (its verifier.py)
+            finish(self, x, out, success, score)
         return out
 
     def verify(self):
-        """The final verdict (the backend's evaluate(): gar verify, GET /v1/evaluation, the benchmark runner). Every task
-        but split-bottle: evaluate(), unchanged. split-bottle: a state not yet at rest is judged once it is at rest. On a
-        branch the world is advanced with the robot holding its last command (env.act({}): joint and grip targets
-        unchanged; the motion generator finishes its run-on) until `settled` holds or SETTLE_HOLD_MAX_S has passed, the
-        state is evaluated there, and the live state is restored (env.checkpoint/env.restore, as reset() uses). A state
-        the hold changes is judged as it ends up: a bottle still in the hand stays held and fails `released`, wine in
-        flight lands where it lands, a touch during the hold counts. A failed verdict's progress is the smaller of the
-        progress at the request and after the hold: the hold may reveal damage, never add service. The bookkeeping
-        env.checkpoint() does not hold is restored too (VERIFY_EXTRA_STATE). A faulted branch returns the live state's
-        evaluation marked read.infrastructure_fault. The step reward stays the
-        instantaneous evaluate(). Precedent: surface_rinsing/task.py's settle branch."""
-        env = self.env
-        ev = self.evaluate()
-        if env.config.task != "split-bottle":
-            return ev
-        read = dict(settle_hold_s=0., stopped="already at rest", robot_still_s_at_request=round(env.robot_still_s(), 3),
-                    infrastructure_fault=None)
-        if not ev["checks"].get("settled") and not env.world.fault:
-            at_request = ev
-            snap, callback = env.checkpoint(), env.trace_callback
-            save, restore_extra = VERIFY_EXTRA_STATE
-            extra = save(env)
-            env.trace_callback = None                 # branch ticks are not part of any recorded action trace
-            held, chunk, read["stopped"] = 0., 100, "time limit"
-            try:
-                while held < SETTLE_HOLD_MAX_S - 1e-9:
-                    env.act({}, ticks=chunk)
-                    held += chunk*env.config.rigid_dt
-                    if env.world.fault:
-                        raise RuntimeError(env.world.fault)
-                    if env.robot_still_s() >= P.SETTLE_STILL_S and self.evaluate()["checks"]["settled"]:
-                        read["stopped"] = "settled"
-                        break
-                ev = self.evaluate()
-            except (RuntimeError, FloatingPointError) as exc:
-                read["stopped"] = f"branch faulted: {exc}"
-                read["infrastructure_fault"] = str(exc)
-            finally:
-                env.trace_callback = callback
-                env.restore(snap)
-                restore_extra(env, extra)
-            read["settle_hold_s"] = round(held, 3)
-            if read["infrastructure_fault"]:
-                ev = at_request                       # the live state as it is (it fails `settled`): not a task verdict
-            elif not ev["success"]:
-                p_req, p_hold = at_request["reward"]["progress"], ev["reward"]["progress"]
-                read.update(progress_at_request=p_req, progress_after_hold=p_hold,
-                            bottle_mL_at_request=at_request["meta"]["left_mL"], bottle_mL_after_hold=ev["meta"]["left_mL"])
-                if p_req < p_hold:
-                    ev["reward"].update(progress=p_req, progress_source="request")
-                    ev["score"] = at_request["score"]  # FAIL_SCORE_SCALE x the request's progress (it failed `settled`)
-                else:
-                    ev["reward"]["progress_source"] = "after_hold"
-        ev["read"] = read
-        return ev
+        """The final verdict (the backend's evaluate(): gar verify, GET /v1/evaluation, the benchmark runner):
+        evaluate(), unless the task's verifier.py reads its final verdict itself (final_verdict: split-bottle's settled
+        read)."""
+        final = getattr(task_verifier(self.env.config.task), "final_verdict", None)
+        if final is not None:
+            return final(self)
+        return self.evaluate()

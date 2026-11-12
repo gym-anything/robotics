@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/bed/penetrate-marked/soil-tasks-v1/seed-0",
+  "name": "penetrate-marked",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "penetrate-marked",
+    "seed": 0,
+    "contract": "soil-tasks-v1"
+  },
+  "description": "Push the spade blade straight down into the bed at the white paint mark, at least 15 cm deep, with both hands on the spade.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

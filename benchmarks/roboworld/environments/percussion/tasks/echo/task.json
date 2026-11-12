@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/assessment/echo/seed-0",
+  "name": "echo",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "assessment",
+    "task": "echo"
+  },
+  "description": "Listen: the loudspeaker plays a short rhythm on a woodblock starting at 1.0 s. Echo the same rhythm on the drum with a drumstick, starting within two beats after it ends.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

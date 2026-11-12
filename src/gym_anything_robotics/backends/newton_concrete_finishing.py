@@ -292,12 +292,12 @@ class NewtonConcreteFinishingBackend(NewtonSweepingBackend):
         notes.pop("debris", None)
         c = self.config
         site = c.site()
-        from concrete_finishing.layout import TASK_SETUP
+        from concrete_finishing.layout import station
         words = dict(mag_float="the magnesium float", wood_float="the wood float", trowel="the steel trowel",
                      darby="the darby", edger="the edger", margin_trowel="the margin trowel", jointer="the jointer",
                      sealant_tool="the sealant tool", joint_knife="the joint knife", putty_knife="the putty knife",
                      penetrometer="the pocket penetrometer")
-        names = [words.get(n, n.replace("_", " ")) for n, *_ in TASK_SETUP[c.task]["tools"]]
+        names = [words.get(n, n.replace("_", " ")) for n, *_ in station(c.task)["tools"]]
         listing = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
         notes.update({
             "cameras": f"Ideal pinhole RGB, {self.options['engine']} renderer. Software uses the exported USD room, catalog visual meshes, diffuse textures and exact paste surfaces with local lighting; Isaac uses the authored RTX materials. No depth/noise model.",

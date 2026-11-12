@@ -1,5 +1,6 @@
 """Task selection: preset / task / seed -> the world configuration (resolving a task never starts physics)."""
 
+from . import layout as LY
 from .task import INSTRUCTIONS, PRESET_OF, WORKPIECE_OF, WORKPIECE_OF_TASK
 
 # designed but not supported by this build: the physics cannot yet represent the job faithfully
@@ -22,8 +23,16 @@ SINGLE_ARM_TASKS = ("A0",)
 PANDA_TASKS = ("A0",)
 # cutting tasks run with libfranka's contact-task collision thresholds (world.Config.collision_profile 'contact'):
 # every robot cutting demonstration and every runtime measurement used them; the default 10/20 N m thresholds stop an
-# arm pressing a knife into meat
-CONTACT_TASKS = ("A1", "A2", "A3", "A4", "B2", "B3", "B5", "C1", "C2", "C3")
+# arm pressing a knife into meat. These are the cutting tasks outside the benchmark; a benchmark cutting task's start
+# names the profile in its setup.py (collision_profile)
+CONTACT_TASKS = ("A2", "A4", "B2", "C2")
+
+
+def collision_profile(task):
+    """The collision profile a task's start sets when the selection names none: the one its setup.py names (a
+    benchmark task, layout.task_start), 'contact' for the other cutting tasks (CONTACT_TASKS), else None (Config's
+    default)."""
+    return LY.task_start(task).get("collision_profile", "contact" if task in CONTACT_TASKS else None)
 
 
 def check_robot(robot, task):

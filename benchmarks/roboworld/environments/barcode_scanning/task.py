@@ -20,8 +20,10 @@ Thresholds are authored. A wrong outcome is a valid result; a non-finite state
 is a backend fault (world.fault), never an evaluation.
 
 Every task scores 1 when every check passes, else 0.9 x progress, and reports its scoring contract
-(evaluation["contract"], CONTRACTS). The seven tasks other than count-by-scanning take their progress from scoring.py.
-count-by-scanning has its own checks and score:
+(evaluation["contract"], CONTRACT in its verifier.py). Evaluator.evaluate checks what every task shares and calls the
+task's verify (tasks/<task>/verifier.py) for the rest. The seven tasks other than count-by-scanning take their progress
+from scoring.py and their verifier.py. count-by-scanning has its own checks and score (its verifier.py), and its stock
+rules are count-key-quantity's too (Evaluator._shelf):
   bookings     only reads the host booked into a count are judged (rep["booked_location"]): a read the host refused
                ("scan location first") and a location-label read book nothing. The slot's own count is judged, not
                which location label was read last. A misread fails only if the record holds data from it: a booked
@@ -58,7 +60,7 @@ from scipy.spatial.transform import Rotation
 from . import params as P
 from . import scoring as S
 from .catalog import SKUS
-from .scoring import DISTURBED_COST, NOT_RETURNED, FAILED     # count-by-scanning's score constants (module docstring)
+from .config import task_verifier
 
 INSTRUCTIONS = {
     "hold-scanner": "Take the barcode scanner out of its cradle on the cart tray, hold it steady for 5 seconds, "
@@ -90,27 +92,13 @@ def instruction(config, meta):
     return INSTRUCTIONS[config.task].format(slot=(meta or {}).get("target_slot") or "")
 
 
-# count-by-scanning: authored tolerances and score constants (module docstring)
+# count-by-scanning's stock rules, which count-key-quantity shares: authored tolerances (module docstring)
 SLOT_TOL_M = .02        # a unit's centre within its slot +-20 mm
 REST_TOL_M = .005       # its lowest point within 5 mm of the deck it stands on (resting, not held above it or stacked)
 UPRIGHT_DEG = 15.
 FACED_DEG = 30.         # front panel / label front within 30 deg of the aisle (cans spawn within about 26 deg, 3 sigma)
 FRONTED_TOL_M = .04     # a facing lane's front-most unit at most 40 mm behind where the lane's front face was found
 TURNED_DEG = 30.        # stock outside the counted slot turned at most 30 deg from its found heading (or faced, FACED_DEG)
-ISBN_FORMATS = ("EAN13", "UPCA")    # library-checkin: a book's ISBN symbologies (its library label is Codabar)
-
-# The scoring contract each task's evaluation reports (evaluation["contract"]).
-CONTRACTS = {
-    "count-by-scanning": "count-by-scanning-v1",
-    "hold-scanner": "hold-scanner-v1",
-    "scan-location": "scan-location-v1",
-    "count-key-quantity": "count-key-quantity-v1",
-    "checkout-present": "checkout-present-v1",
-    "checkout-bulky": "checkout-bulky-v1",
-    "checkout-counter": "checkout-counter-v1",
-    "library-checkin": "library-checkin-v1",
-}
-
 
 class Evaluator:
     def __init__(self, env):
@@ -245,70 +233,6 @@ class Evaluator:
                                 front_y_m=None if front is None else round(front, 4)))
         return out
 
-    def _count_by_scanning(self, q, rec, reads, checks, metrics):
-        """count-by-scanning (module docstring): the count booked under the slot's location from each unit's own
-        symbol, the shelf left as found, the scanner back; score = 1 on success, else FAILED x progress."""
-        from .catalog import sku_gtin14
-        sc = self.world.scene
-        target = self.meta.get("target_slot")
-        want = {sku_gtin14(SKUS[k]): n for k, n in self.meta.get("truth", {}).items()}
-        got = dict((rec.get("location_counts") or {}).get(target, {}))
-        metrics["record"], metrics["truth"] = got, want
-        checks["record_matches"] = got == want
-        units = [n for n, it in sc.items.items() if it.get("slot") == target and it.get("sku")]
-        # bookings only: a read the host refused and a location label book nothing (device.HostApp.on_scan)
-        per_unit, foreign, hits, errors = {}, [], set(), []
-        for r in reads:
-            loc = r.get("booked_location")
-            if not loc:
-                continue
-            a = r.get("attribution") or {}
-            mine = a.get("kind") == "product" and a.get("item") in units
-            if mine:
-                per_unit[a["item"]] = per_unit.get(a["item"], 0) + 1
-            else:
-                foreign.append(a.get("label"))
-            if mine and loc == target and not a.get("misread") and a["item"] not in hits:
-                hits.add(a["item"])
-            else:
-                errors.append(dict(label=a.get("label"), location=loc, misread=bool(a.get("misread"))))
-        metrics["unit_reads"], metrics["foreign_reads"] = per_unit, foreign
-        checks["each_unit_once"] = all(per_unit.get(u, 0) == 1 for u in units) and not foreign
-        # misreads the record holds data from: a booked misread, or a misread location label whose code a booking was
-        # made under before any correct read of that code in the same stretch (consecutive location reads setting one
-        # code). A refused read, a stray misread of the code already correctly active, or a misread label re-scanned
-        # before anything was booked leaves nothing in the record. An unbacked stretch of the counted slot's code costs
-        # one error (its bookings would otherwise be hits); bookings under another code are errors already.
-        in_record, stretch = {i for i, r in enumerate(reads) if r.get("booked_location")
-                              and (r.get("attribution") or {}).get("misread")}, None
-        for i, r in enumerate(reads):
-            code = r.get("sets_location")
-            if code:
-                if stretch is None or stretch["code"] != code:
-                    stretch = dict(code=code, backed=False, misread=[], charged=False)
-                if (r.get("attribution") or {}).get("misread"):
-                    stretch["misread"].append(i)
-                else:
-                    stretch["backed"] = True
-            elif r.get("booked_location") and stretch is not None and not stretch["backed"]:
-                in_record.update(stretch["misread"])                 # unbacked: every read in the stretch misread
-                if stretch["code"] == target and not stretch["charged"]:
-                    stretch["charged"] = True
-                    errors.append(dict(label=(reads[stretch["misread"][0]].get("attribution") or {}).get("label"),
-                                       location=target, misread=True))
-        metrics["misreads_in_record"] = len(in_record)
-        checks["no_misreads"] = not in_record
-        disturbed = self._shelf(q, target, units, checks, metrics)
-        # progress: the count booked, less wrong bookings and what is left disturbed, by any route
-        returned = checks["scanner_seated"] and checks["no_key_pressed"]
-        progress = max(0., len(hits) - len(errors) - DISTURBED_COST*len(disturbed))/max(1, len(units)) \
-            * (1. if returned else NOT_RETURNED)
-        metrics.update(units=len(units), hits=sorted(hits), errors=errors, disturbed=disturbed, scanner_returned=bool(returned))
-        ok = all(checks.values())
-        return dict(success=bool(ok), score=1. if ok else FAILED*progress, progress=float(progress),
-                    contract=CONTRACTS["count-by-scanning"], checks={k: bool(v) for k, v in checks.items()},
-                    metrics=metrics)
-
     def _shelf(self, q, target, units, checks, metrics):
         """The shelf against count-by-scanning's stock rules (module docstring), for the counted slot `target` holding
         `units`: sets stock_faced_in_slot, no_foreign_units_in_slot and neighbouring_stock_undisturbed (with their
@@ -360,38 +284,9 @@ class Evaluator:
         disturbed += [f"lane {u['lane']}" for u in unfronted + others_unfronted if not set(u["units"]) & bad]
         return disturbed
 
-    def _count_key_quantity(self, q, rec, reads, checks, metrics, returned):
-        """count-key-quantity: the quantities the host holds under the slot's location equal the truth,
-        nothing keyed under any other location, the shelf by count-by-scanning's stock rules, the scanner back."""
-        from .catalog import sku_gtin14
-        sc = self.world.scene
-        target = self.meta.get("target_slot")
-        want = {sku_gtin14(SKUS[k]): n for k, n in self.meta.get("truth", {}).items()}
-        counts = rec.get("location_counts") or {}
-        got = dict(counts.get(target, {}))
-        metrics["record"], metrics["truth"] = got, want
-        checks["record_matches"] = got == want
-        # quantities keyed under another location are wrong data in the record (the counted slot's own quantities are
-        # judged, not which location label was read last, as in count-by-scanning)
-        elsewhere = {loc: dict(c) for loc, c in counts.items() if loc != target and c}
-        metrics["counts_under_other_locations"] = elsewhere
-        checks["no_counts_under_other_locations"] = not elsewhere
-        units = [n for n, it in sc.items.items() if it.get("slot") == target and it.get("sku")]
-        disturbed = self._shelf(q, target, units, checks, metrics)
-        # which scan each saved quantity was keyed for: the host's entries replayed beside the reads' attribution
-        scans, booked = S.key_bookings(rec["entries"], [r.get("attribution") or {} for r in reads], sc.slots.keys())
-        if {loc: {c: v[0] for c, v in d.items()} for loc, d in booked.items()} != counts:
-            raise RuntimeError(f"count-key-quantity: the replayed entries {booked} disagree with the host record "
-                               f"{counts}")
-        scanned = {code for loc, code, a in scans if loc == target and not a.get("misread")}
-        errors = [dict(location=loc, code=code, misread=bool(a.get("misread"))) for loc, d in booked.items()
-                  for code, (_, a) in d.items() if loc != target or code not in want or a.get("misread")]
-        credits = [S.quantity_credit(g in scanned, got.get(g, 0), n) for g, n in want.items()]
-        metrics.update(products=len(want), scanned=sorted(scanned), errors=errors, units=len(units),
-                       disturbed=disturbed)
-        return self._done(checks, metrics, S.item_progress(credits, len(errors), len(disturbed), returned))
-
     def evaluate(self):
+        """The checks every task shares (nothing on the floor, the scanner seated and released, no key down, no read
+        unexplained or misread), then the task's verify (tasks/<task>/verifier.py): its own checks and its score."""
         env, w = self.env, self.world
         c = env.config
         q = w.state.body_q.numpy()
@@ -401,7 +296,6 @@ class Evaluator:
         metrics["reads"] = len(reads)
         metrics["frames"] = len(env.frames)
         metrics["time_s"] = w.sim_time
-        target = self.meta.get("target_slot")
         free = {n: it["body"] for n, it in w.scene.items.items()}
         free["scanner"] = w.scene.bodies["scanner"]
         on_floor = [n for n, b in free.items() if self._lowest_z(q[b], b) < .015]
@@ -418,92 +312,66 @@ class Evaluator:
         # a record holding a misread did not get its data from the label it claims, even if the number happens to be
         # the one the task wanted
         checks["no_misreads"] = metrics["misreads"] == 0
-        hist = getattr(env, "history", {}) or {}
-        if c.task == "count-by-scanning":
-            return self._count_by_scanning(q, rec, reads, checks, metrics)
-        # the other seven: progress from scoring.py, by any route
+        folder = task_verifier(c.task)
+        if folder is None:
+            raise ValueError(f"No evaluator for task {c.task!r}")
+        return folder.verify(self, q, rec, reads, checks, metrics)
+
+    def _returned(self, checks, metrics):
+        """The seven tasks other than count-by-scanning (progress from scoring.py, by any route): the scanner back,
+        seated and released with no key down; recorded as metrics["scanner_returned"]."""
         returned = checks["scanner_seated"] and checks["no_key_pressed"]
         metrics["scanner_returned"] = bool(returned)
-        att = [dict(r.get("attribution") or {}, format=r["format"]) for r in reads]
-        if c.task == "hold-scanner":
-            steady = float(hist.get("max_steady_out_s", 0.))
-            checks["no_reads"] = len(reads) == 0
-            metrics["steady_hold_s"] = round(steady, 3)
-            checks["held_steady_5s"] = steady >= S.HOLD_S
-            return self._done(checks, metrics, S.hold_progress(steady, returned, len(reads), len(on_floor)))
-        if c.task == "scan-location":
-            checks["location_recorded"] = rec["location"] == target
-            # a read of another slot's location label, or one that made another slot's code the location (a
-            # second read of the right label changes nothing in the record and is not a workmanship error)
-            label = f"loc_{target}"
-            wrong = [a.get("label") for r, a in zip(reads, att) if r.get("sets_location") not in (None, target)
-                     or (a.get("kind") == "location" and a.get("label") != label)]
-            metrics["wrong_location_reads"] = wrong
-            checks["no_wrong_location_read"] = not wrong
-            hit = checks["location_recorded"] and any(a.get("label") == label and not a.get("misread") for a in att)
-            metrics["location_hit"] = bool(hit)
-            return self._done(checks, metrics, S.location_progress(hit, returned, len(wrong), len(on_floor)))
-        if c.task == "count-key-quantity":
-            return self._count_key_quantity(q, rec, reads, checks, metrics, returned)
-        if c.task in ("checkout-present", "checkout-bulky", "checkout-counter"):
-            from .catalog import sku_gtin14
-            items = {n: it for n, it in w.scene.items.items() if it.get("sku")}
-            want = sorted(sku_gtin14(SKUS[it["sku"]]) for it in items.values())
-            metrics["sale"], metrics["truth"] = sorted(rec["sale"]), want
-            checks["sale_matches"] = sorted(rec["sale"]) == want
-            per_unit = {}
-            for r in reads:
-                a = r.get("attribution") or {}
-                if a.get("kind") == "product":
-                    per_unit[a["item"]] = per_unit.get(a["item"], 0) + 1
-            metrics["unit_reads"] = per_unit
-            checks["each_item_once"] = all(per_unit.get(n, 0) == 1 for n in items) and not any(
-                (r.get("attribution") or {}).get("kind") == "inner" for r in reads)
-            basket = [n for n in items if n != "water_case"]
-            bagged = set()
-            if w.scene.items.get("bag_tote"):
-                inside = {n for n in basket if self._in_container(q, "bag_tote", items[n]["body"])}
-                tote_ok = self._container_on_counter(q, "bag_tote")
-                metrics["not_bagged"] = [n for n in basket if n not in inside]
-                checks["items_bagged"] = not metrics["not_bagged"] and tote_ok
-                bagged = inside if tote_ok else set()
-            # progress: each item rung up (its own symbol read correctly) and bagged; one error per other read (a
-            # repeat, an inner unit, a misread, a label that is no item's) and half an item per item bagged unpaid
-            rung, errors = S.tally(att, items, "product", lambda a: a.get("kind") == "inner")
-            unpaid = sorted(bagged - rung)
-            credits = [S.put_away_credit(n in rung, n in bagged) for n in basket]
-            if c.task == "checkout-bulky" and "water_case" in w.scene.items:
-                rise = float((hist.get("max_rise_m") or {}).get(int(w.scene.items["water_case"]["body"]), 0.))
-                metrics["water_case_max_rise_mm"] = round(rise*1e3, 2)
-                checks["case_not_lifted"] = rise < S.LIFT_FREE_M
-                credits.append(S.lift_credit(rise) if "water_case" in rung else 0.)
-            metrics.update(rung=sorted(rung), read_errors=errors, unpaid=unpaid)
-            return self._done(checks, metrics, S.item_progress(credits, len(errors) + S.UNPAID_COST*len(unpaid),
-                                                               len(on_floor), returned))
-        if c.task == "library-checkin":
-            books = {n: it for n, it in w.scene.items.items() if it.get("library_id")}
-            want = sorted(it["library_id"] for it in books.values())
-            metrics["checked_in"], metrics["truth"] = sorted(rec["checked_in"]), want
-            checks["checkin_matches"] = sorted(rec["checked_in"]) == want
-            checks["no_isbn_reads"] = not any(r["format"] in ISBN_FORMATS for r in reads)
-            in_bin = set()
-            if w.scene.items.get("returns_bin"):
-                inside = {n for n, it in books.items() if self._in_container(q, "returns_bin", it["body"])}
-                bin_ok = self._container_on_counter(q, "returns_bin")
-                metrics["not_returned"] = [n for n in books if n not in inside]
-                checks["books_in_bin"] = not metrics["not_returned"] and bin_ok
-                in_bin = inside if bin_ok else set()
-            # progress: each book checked in (its library label read correctly) and binned; one error per other read
-            # (an ISBN, a misread, a repeat check-in, a label that is no book's library label)
-            checked, errors = S.tally(att, books, "library", lambda a: a.get("format") in ISBN_FORMATS)
-            metrics.update(checked=sorted(checked), read_errors=errors)
-            credits = [S.put_away_credit(b in checked, b in in_bin) for b in books]
-            return self._done(checks, metrics, S.item_progress(credits, len(errors), len(on_floor), returned))
-        raise ValueError(f"No evaluator for task {c.task!r}")
+        return returned
+
+    @staticmethod
+    def _attributions(reads):
+        """Each read's attribution with its format (the reads scoring.tally sorts)."""
+        return [dict(r.get("attribution") or {}, format=r["format"]) for r in reads]
+
+    def _checkout(self, q, rec, reads, checks, metrics, returned, case=None):
+        """checkout-present, checkout-bulky, checkout-counter: the sale equals the items, each item's own symbol read
+        once and no inner unit's, every basket item in the bagging tote. case(e, rung, checks, metrics, credits), from
+        checkout-bulky's verifier.py, judges the case at the counter's end and appends its credit."""
+        w = self.world
+        on_floor = metrics["on_floor"]
+        att = self._attributions(reads)
+        from .catalog import sku_gtin14
+        items = {n: it for n, it in w.scene.items.items() if it.get("sku")}
+        want = sorted(sku_gtin14(SKUS[it["sku"]]) for it in items.values())
+        metrics["sale"], metrics["truth"] = sorted(rec["sale"]), want
+        checks["sale_matches"] = sorted(rec["sale"]) == want
+        per_unit = {}
+        for r in reads:
+            a = r.get("attribution") or {}
+            if a.get("kind") == "product":
+                per_unit[a["item"]] = per_unit.get(a["item"], 0) + 1
+        metrics["unit_reads"] = per_unit
+        checks["each_item_once"] = all(per_unit.get(n, 0) == 1 for n in items) and not any(
+            (r.get("attribution") or {}).get("kind") == "inner" for r in reads)
+        basket = [n for n in items if n != "water_case"]
+        bagged = set()
+        if w.scene.items.get("bag_tote"):
+            inside = {n for n in basket if self._in_container(q, "bag_tote", items[n]["body"])}
+            tote_ok = self._container_on_counter(q, "bag_tote")
+            metrics["not_bagged"] = [n for n in basket if n not in inside]
+            checks["items_bagged"] = not metrics["not_bagged"] and tote_ok
+            bagged = inside if tote_ok else set()
+        # progress: each item rung up (its own symbol read correctly) and bagged; one error per other read (a
+        # repeat, an inner unit, a misread, a label that is no item's) and half an item per item bagged unpaid
+        rung, errors = S.tally(att, items, "product", lambda a: a.get("kind") == "inner")
+        unpaid = sorted(bagged - rung)
+        credits = [S.put_away_credit(n in rung, n in bagged) for n in basket]
+        if case is not None:
+            case(self, rung, checks, metrics, credits)
+        metrics.update(rung=sorted(rung), read_errors=errors, unpaid=unpaid)
+        return self._done(checks, metrics, S.item_progress(credits, len(errors) + S.UNPAID_COST*len(unpaid),
+                                                           len(on_floor), returned))
 
     def _done(self, checks, metrics, progress):
-        """score = 1 if every check passes, else FAILED x progress (scoring.py)."""
+        """score = 1 if every check passes, else FAILED x progress (scoring.py); the contract is the task's (CONTRACT in
+        its verifier.py)."""
         ok = all(checks.values())
         return dict(success=bool(ok), score=S.score(ok, progress), progress=float(progress),
-                    contract=CONTRACTS[self.env.config.task], checks={k: bool(v) for k, v in checks.items()},
-                    metrics=metrics)
+                    contract=task_verifier(self.env.config.task).CONTRACT,
+                    checks={k: bool(v) for k, v in checks.items()}, metrics=metrics)

@@ -33,11 +33,16 @@ from lockkey.task_set import catalogue_v2 as v2
 from lockkey.task_set import presets as presets_v1
 from lockkey.task_set import scoring as scoring_v1
 from lockkey.task_set.catalogue import (DEFAULT_TASK, INSTRUCTIONS, TASKS, TASK_SET_ORDER, UNLOCK_CONTRACT,
-                                        CONTRACT as V1, task_resolve)
-from lockkey.task_set.presets import MID_CYCLE, snapshot
-from lockkey.task_set.presets_v2 import MAT_KEY_XY, apply_start, placements
+                                        CONTRACT as V1, task_resolve, task_setup)
+from lockkey.task_set.presets import mid_cycle, snapshot
+from lockkey.task_set.presets_v2 import apply_start, placements
 from lockkey.task_set.scoring_v2 import TaskProgress, stand_fit
-from lockkey.task_set.settle_v2 import SETTLED, settle
+from lockkey.task_set.settle_v2 import settle
+
+# Which starts are recorded mid-cycle or settled, and return-key's spot on the mat: the tasks' setup.py.
+MID_CYCLE = tuple(t for t in TASKS if mid_cycle(t))
+SETTLED = tuple(t for t in TASKS if getattr(task_setup(t), "SETTLED", False))
+MAT_KEY_XY = task_setup("return-key").MAT_KEY_XY
 
 ROOT = Path(__file__).resolve().parents[1]
 ENVIRONMENTS = ROOT / "benchmarks/roboworld/environments"

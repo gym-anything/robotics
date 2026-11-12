@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/craft/brush-stroke/painting-tasks-v2/seed-0",
+  "name": "brush-stroke",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "craft",
+    "task": "brush-stroke",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+  },
+  "description": "With the round brush, paint the pencilled S-stroke on the paper in the red acrylic, swelling from thin to wide and back as the pencilled outline does, and staying inside it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

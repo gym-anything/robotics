@@ -6,6 +6,15 @@ from .presets import apply_start
 from .scoring import TaskProgress
 
 
+def task_env(config, task, contract=None):
+    """A new task's environment at its start, as its setup.py's setup builds it: lockkey-tasks-v2's TaskLockKeyEnvV2
+    (adapter_v2.py) under that contract, the released TaskLockKeyEnv below without one."""
+    if contract is not None:
+        from .adapter_v2 import TaskLockKeyEnvV2
+        return TaskLockKeyEnvV2(config, task)
+    return TaskLockKeyEnv(config, task)
+
+
 class TaskLockKeyEnv(LockKeyEnv):
     def __init__(self, config, task):
         self.task = validate(task)

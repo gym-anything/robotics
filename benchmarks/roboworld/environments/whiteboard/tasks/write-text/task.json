@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "whiteboard/whiteboard-tasks-v2/write-text",
+  "name": "write-text",
+  "env_id": "whiteboard",
+  "split": "train",
+  "selection": {
+    "task": "write-text",
+    "contract": "whiteboard-tasks-v2"
+  },
+  "description": "Write HELLO on the whiteboard with the black marker, where the supplied reference image shows it and at the size shown. Leave the rest of the board clean.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

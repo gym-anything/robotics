@@ -49,12 +49,9 @@ class ApparatusSession:
             from .laboratory_liquid import LaboratoryLiquid
             self.liquid = LaboratoryLiquid(self.world, liquid_numerics, reagents)
             if self.liquid.reagents.aliquot_ml > 0:
-                from .task import EndpointEvaluator
-                from .task_readings import TaskReadings
-                r = self.liquid.reagents
-                self.evaluator = EndpointEvaluator(self.dt_s, r.aliquot_ml, r.acid_molar, r.base_molar)
-                self.task_readings = TaskReadings(self.liquid)
-                self.evaluator.update(0, **self.task_readings.read())
+                # The titration task's evaluator (tasks/titration/verifier.py).
+                from .task_catalogue import task_verifier
+                task_verifier('titration').verify(self)
         self._initial = self.snapshot()
 
     @property

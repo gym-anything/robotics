@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/mixed/seed-0",
+  "name": "mixed",
+  "env_id": "tighten-codex",
+  "split": "test",
+  "selection": {
+    "task": "mixed"
+  },
+  "description": "Recommission the loosened sensor stand: The W4F sensor's two M3 screws and the frame corner bracket's two M4 screws (one forward into the post, one upward from underneath into the rail) have worked loose, and the rail has drooped. Tighten the M3s with the green 0.35 N m driver and the M4s with the yellow 0.60 N m driver until each driver clicks, leaving the rail level. The white reference flag slides aside for tool access; when you finish it must be back at its home position, the sensor must detect it there, and the assembly must hold on its own after you let go.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -22,6 +22,7 @@ def _source_digest():
     digest=hashlib.sha256()
     here,robots=Path(__file__).resolve().parent,package_dir('robots')
     paths=[('deposit_cans/'+p.name,p) for p in here.glob('*.py')]
+    paths += [('deposit_cans/'+p.relative_to(here).as_posix(),p) for p in here.glob('tasks/*/*.py')]
     paths += [('robots/'+p.relative_to(robots).as_posix(),p) for p in robots.rglob('*') if p.suffix in ('.py','.json') and not any(x in p.relative_to(robots).parts for x in ('tests','tools','yam'))]
     for name,p in sorted(paths):
         digest.update(name.encode());digest.update(p.read_bytes())

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/towel/roll/laundry-tasks-v2",
+  "name": "roll",
+  "env_id": "laundry",
+  "split": "train",
+  "selection": {
+    "garment": "towel",
+    "task": "roll",
+    "contract": "laundry-tasks-v2"
+  },
+  "description": "Roll the bath towel up from one short end into a roll. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

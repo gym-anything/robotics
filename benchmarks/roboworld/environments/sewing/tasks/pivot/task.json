@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "sewing/v1/sample-room/pivot/sewing-tasks-v2/seed-0",
+  "name": "pivot",
+  "env_id": "sewing",
+  "split": "train",
+  "selection": {
+    "preset": "sample-room",
+    "task": "pivot",
+    "seed": 0,
+    "contract": "sewing-tasks-v2"
+  },
+  "description": "Join the two plies with a seam 10 mm from the right edge, turning a square corner, and continue 10 mm from the near edge to the left edge; trim the threads and let go of the work.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

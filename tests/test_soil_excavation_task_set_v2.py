@@ -42,6 +42,25 @@ soil_stub = ModuleType("soil_excavation.soil")
 soil_stub.ORIGIN_BLOCK, soil_stub.ORIGIN_PILE = 0, 1
 legacy, E = isolated_import({"soil_excavation.soil": soil_stub}, "soil_excavation.task", "soil_excavation.task_set_v2")
 STUBBED = {"soil_excavation.soil": soil_stub, "soil_excavation.task": legacy, "soil_excavation.task_set_v2": E}
+# The task folders' verifiers (tasks/<task>/verifier.py, layout.task_verifier) import these modules by name: load
+# each against the copies, and while this module's tests run, the copies find those folders through their layout.
+with patch.dict(sys.modules, STUBBED):
+    for name in [name for name in sys.modules if name.startswith(L.PACKAGE + ".tasks.")]:
+        del sys.modules[name]                    # put back with the rest of sys.modules
+    FOLDERS = {task: L.task_verifier(task) for task in C.EIGHT_TASKS}
+LAYOUT = ModuleType(L.__name__)
+vars(LAYOUT).update(vars(L), task_verifier=FOLDERS.get)
+COPIES_LAYOUT = [patch.object(legacy, "L", LAYOUT), patch.object(E, "L", LAYOUT)]
+
+
+def setUpModule():
+    for p in COPIES_LAYOUT:
+        p.start()
+
+
+def tearDownModule():
+    for p in COPIES_LAYOUT:
+        p.stop()
 
 ROOT = PACKAGES
 V2 = C.CONTRACT
@@ -116,8 +135,10 @@ def fixture(task, contract=V2):
                soil=NS(state=NS(particle_q=NS(numpy=lambda: ledger.pos), mpm=NS(particle_Jp=NS(numpy=lambda: ledger.jp)))))
     env = NS(spec=spec, world=world, lock=threading.RLock())
     env.evaluator = legacy.Evaluator(env)
-    with patch.object(E, "Ledger", return_value=ledger), patch.object(E, "tool_held", return_value={"left": True, "right": True}), \
-         patch.object(legacy, "tool_held", return_value={"left": True, "right": True}):
+    folder = FOLDERS[task]
+    with patch.object(E, "Ledger", return_value=ledger), \
+         patch.object(folder, "Ledger", return_value=ledger, create=True), \
+         patch.object(folder, "tool_held", return_value={"left": True, "right": True}, create=True):
         E.install(env, contract)
     return env, ledger, positions, rotations
 
@@ -239,8 +260,9 @@ class CatalogueTests(unittest.TestCase):
 class JudgementTests(unittest.TestCase):
     def evaluate(self, fixture, held=True, final=True):
         env, ledger, _, _ = fixture
-        with patch.object(E, "Ledger", return_value=ledger), patch.object(E, "tool_held", return_value={"left": held, "right": held}), \
-             patch.object(legacy, "tool_held", return_value={"left": held, "right": held}):
+        folder = FOLDERS[env.spec["task"]]
+        with patch.object(E, "Ledger", return_value=ledger), \
+             patch.object(folder, "tool_held", return_value={"left": held, "right": held}, create=True):
             return env.evaluator.evaluate() if final else env.evaluator.progress()
 
     def test_all_revised_untouched_starts_are_zero_and_layouts_unchanged(self):
@@ -256,14 +278,16 @@ class JudgementTests(unittest.TestCase):
                 expected["instruction"] = C.INSTRUCTIONS[t]
                 self.assertEqual(f[0].spec, expected)
                 self.assertEqual(len(f[0].world.recorders), 1)
-                self.assertIsInstance(f[0].evaluator, E.BreakHardpanEvaluator if t == "break-hardpan" else E.TaskSetEvaluator)
+                self.assertIsInstance(f[0].evaluator, FOLDERS[t].BreakHardpanEvaluator if t == "break-hardpan" else
+                                      E.TaskSetEvaluator)
 
     def test_insertion_progress_is_independent_of_hands(self):
         f = fixture("penetrate-marked")
         f[2]["spade"][2] = L.GRADE - .08
         readings = []
         for held in ({"left": True, "right": True}, {"left": True, "right": False}, {"right": True}, {}):
-            with patch.object(E, "Ledger", return_value=f[1]), patch.object(E, "tool_held", return_value=held):
+            with patch.object(E, "Ledger", return_value=f[1]), \
+                 patch.object(FOLDERS["penetrate-marked"], "tool_held", return_value=held):
                 ev = f[0].evaluator.evaluate()
             self.assertFalse(ev["succeeded"])
             readings.append(ev["progress"])
@@ -271,7 +295,8 @@ class JudgementTests(unittest.TestCase):
         self.assertEqual(len(set(readings)), 1, readings)
         f[2]["spade"][2] = L.GRADE - .151
         for held, success in (({"left": True, "right": True}, True), ({"left": True}, False), ({}, False)):
-            with patch.object(E, "Ledger", return_value=f[1]), patch.object(E, "tool_held", return_value=held):
+            with patch.object(E, "Ledger", return_value=f[1]), \
+                 patch.object(FOLDERS["penetrate-marked"], "tool_held", return_value=held):
                 ev = f[0].evaluator.evaluate()
             self.assertEqual(ev["succeeded"], success)              # two hands stay a success criterion
             self.assertEqual(ev["score"], 1. if success else round(.9*ev["progress"], 4))
@@ -351,8 +376,9 @@ class JudgementTests(unittest.TestCase):
         env, lg = f[0], f[1]
         self.assertEqual(env.evaluator.start_raw, 0.)
         reads = []
-        state = E.WorkWindows.particle_state
-        with patch.object(E.WorkWindows, "particle_state", lambda ww, w: reads.append(w.tick) or state(ww, w)):
+        windows = FOLDERS["break-hardpan"].WorkWindows
+        state = windows.particle_state
+        with patch.object(windows, "particle_state", lambda ww, w: reads.append(w.tick) or state(ww, w)):
             hold = [tuple(env.world.tool_q[0, :3])]*20
             for _ in range(100):                     # creep: J_p +170 %, the whole square sinking 5 cm
                 lg.jp *= 1.01
@@ -442,9 +468,9 @@ class JudgementTests(unittest.TestCase):
         # A cylinder's radial extent matters when tilted horizontally.
         part = f[0].world.scene.parts["auger"][0]
         r = Rotation.from_euler("y", 90, degrees=True).as_matrix()
-        self.assertAlmostEqual(E.part_lowest_z(part, [0, 0, .1], r), .08)
+        self.assertAlmostEqual(FOLDERS["auger-holes"].part_lowest_z(part, [0, 0, .1], r), .08)
         part.kind = "capsule"
-        self.assertAlmostEqual(E.part_lowest_z(part, [0, 0, .1], np.eye(3)), .03)
+        self.assertAlmostEqual(FOLDERS["auger-holes"].part_lowest_z(part, [0, 0, .1], np.eye(3)), .03)
 
     def test_exposure_rewards_approach_but_roof_strikes_and_wrong_spoil_fail(self):
         f = fixture("expose-line")
@@ -493,8 +519,9 @@ class JudgementTests(unittest.TestCase):
         env, ledger, _, _ = fixture("set-post", C.POST_CONTRACT)
         original = env.evaluator
         self.assertIs(type(original), legacy.Evaluator)
+        post = FOLDERS["set-post"]
         for p in (0., .3, .8, 1.):
-            with patch.object(legacy, "Ledger", return_value=ledger), patch.object(original, "_set_post", return_value=(
+            with patch.object(legacy, "Ledger", return_value=ledger), patch.object(post, "_set_post", return_value=(
                     [legacy.crit("post_support", 1., False, "fixture")], [], dict(score=min(p, .99), fields=dict(progress=p)))):
                 result = env.evaluator.evaluate()
                 self.assertEqual(result["score"], min(p, .99))
@@ -514,10 +541,10 @@ class JudgementTests(unittest.TestCase):
                 return crits, [A], dict(score=.5*A, pending=True, fields=dict(progress=round(.5*A, 4)))
             return crits, [A, SU], dict(score=min(.5*A + .5*SU, .99), fields=dict(progress=round(.5*A + .5*SU, 4)))
 
-        with patch.object(legacy.Evaluator, "_set_post", own):
+        with patch.object(FOLDERS["set-post"], "_set_post", own):
             env, ledger, _, _ = fixture("set-post", V2)
             ev = env.evaluator
-            self.assertIsInstance(ev, E.SetPostEvaluator)
+            self.assertIsInstance(ev, FOLDERS["set-post"].SetPostEvaluator)
             self.assertEqual(calls, [False, True])  # one advisory and one load-test reading of the start
             self.assertAlmostEqual(ev.start_raw, .5*.0054*.9046)
             self.assertEqual(env.spec["instruction"], L.TASKS["set-post"]["instruction"])
@@ -557,7 +584,7 @@ class JudgementTests(unittest.TestCase):
 
         # Same readings under set-post's own contract: unchanged min(progress, .99), no baseline.
         reading.update(A=0., SU=.0054*.9046, ok=False)
-        with patch.object(legacy.Evaluator, "_set_post", own):
+        with patch.object(FOLDERS["set-post"], "_set_post", own):
             env, ledger, _, _ = fixture("set-post", C.POST_CONTRACT)
             with patch.object(legacy, "Ledger", return_value=ledger):
                 self.assertEqual(env.evaluator.evaluate()["score"], round(.5*.0054*.9046, 4))
@@ -609,7 +636,7 @@ class ShapePointTests(unittest.TestCase):
         for shape, surface in cases:
             with self.subTest(kind=shape["kind"]):
                 placed = dict(shape, pos=(.1, -.2, .3), quat=quat)
-                pts = E.shape_points(placed)
+                pts = FOLDERS["break-hardpan"].shape_points(placed)
                 world = surface @ Rotation.from_quat(quat).as_matrix().T + (.1, -.2, .3)
                 gap = np.sqrt(((world[:, None, :] - pts[None, :, :])**2).sum(-1)).min(1).max()
                 self.assertLessEqual(gap, .01)

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/pork-tenderloin/medallions/filleting-tasks-v2/seed-0",
+  "name": "medallions",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "pork-tenderloin",
+    "task": "medallions",
+    "seed": 0,
+    "contract": "filleting-tasks-v2"
+  },
+  "description": "Cut 25 mm medallions from the thick part.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -7,7 +7,8 @@
   props      the packets and jars the task's recipe was measured from, on the counter beside the work
 
 Positions and outlines come from params (ROOM, WINDOW, DOOR, BOARD, WORK_TABLE, STOOLS, SHELVING, BASIN, DISPENSER,
-BIN, APRON_HOOKS, PROP, PROPS); scene.furniture and scene.props give the same outlines static collision proxies.
+BIN, APRON_HOOKS, PROP) and the task's setup.py PROPS; scene.furniture and scene.props give the same outlines static
+collision proxies.
 Labels are generic (no brand is drawn); their text is generated here.
 """
 

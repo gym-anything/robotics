@@ -9,6 +9,7 @@ marked so in the materials map ("visual" set).
 import math
 import numpy as np
 from . import materials as M, layouts
+from .config import task_setup
 from .labelsim import Collider
 
 TABLE = 0.91                  # bench top height (authored packing-table height)
@@ -312,10 +313,8 @@ class Scene:
         L, W, H = 16*IN, 12*IN, 8*IN
         jitter = self.rng.uniform(-.02, .02, 2)
         yaw = self.rng.uniform(-.1, .1)
-        if task == "gs1-case-side":
-            pos = (.12+jitter[0], -.12+jitter[1], z+H/2)
-        else:
-            pos = (.12+jitter[0], -.06+jitter[1], z+H/2)
+        # a benchmark task's setup.py CARTON_Y where it has its own place across the bench (gs1-case-side)
+        pos = (.12+jitter[0], getattr(task_setup(task), "CARTON_Y", -.06)+jitter[1], z+H/2)
         q = self.wp.quat_from_axis_angle(self.wp.vec3(0, 0, 1), float(yaw))
         body = self.free_body("carton", pos, q)
         self.box("carton_shell", (0, 0, 0), (L/2, W/2, H/2), "kraft", body=body, mu=.4, density=100.)
@@ -333,12 +332,13 @@ class Scene:
             patches.append((M.SURFACES["paper_label"], 2, 1, (*o["u"], *o["v"])))
             self.task_geometry["old_label"] = o
             # its print is drawn by dressing.py as a sheet on the board (the new label must cover it)
-        if task == "press-down":
-            self.task_geometry["laid_label"] = layouts.laid_label(self.c.seed, carton_W=W)
-        if task in ("smooth-corner", "finish-securing"):
-            # task ladder: where the label was stuck down and which areas of it are still lifted
-            # (layouts.partly_applied); the start state is built by ladder.lay_partly_applied
-            self.task_geometry["laid_label"] = layouts.partly_applied(task, self.c.seed, carton_W=W)
+        laid_label = getattr(task_setup(task), "laid_label", None)
+        if laid_label is not None:
+            # a benchmark task's setup.py laid_label where the label starts on the carton top: press-down's laid label;
+            # the task ladder's repair rungs, where it was stuck down and which areas of it are still lifted
+            # (layouts.partly_applied). The start state is built by the task's setup (lay_label_on_carton,
+            # ladder.lay_partly_applied).
+            self.task_geometry["laid_label"] = laid_label(self.c.seed, carton_W=W)
         self.colliders.append(Collider("carton", "box", (L/2, W/2, H/2), M.SURFACES["kraft"], body=body,
                                        patches=tuple(patches)))
         self.items["carton"] = dict(body=body, size=(L, W, H), yaw=float(yaw))
@@ -384,29 +384,8 @@ class Scene:
     def part(self):
         z = TABLE
         self.label_spec = self._presented("2x4", .008, self.printer(-.30, -.17, 4*IN, lip=.012, kind="thermal_transfer"))   # PET 7818 is a thermal-transfer stock; short lip: a 2-in-long label must overhang ~25 mm for pickup
-        if self.c.task == "part-id-match":
-            # three stainless mounting plates from one delivery (the retired part-id-steel plate, unchanged: same size,
-            # material, density, friction and label surface), each laser-marked with its part number (visual only:
-            # annealed marking is flush with the surface); the label belongs to one of them (layouts.plates)
-            lay = layouts.plates(self.c.seed)
-            sx, sy, sz = layouts.PLATE_SIZE
-            for k, ((x, y, yaw), number, mark) in enumerate(zip(lay["poses"], lay["part_numbers"], lay["markings"])):
-                name = f"plate_{k + 1}"
-                q = self.wp.quat_from_axis_angle(self.wp.vec3(0, 0, 1), float(yaw))
-                body = self.free_body(name, (x, y, z + sz/2), q)
-                self.box(f"{name}_steel", (0, 0, 0), (sx/2, sy/2, sz/2), "stainless", body=body, mu=.3, density=7900.)
-                self.colliders.append(Collider(name, "box", (sx/2, sy/2, sz/2), M.SURFACES["steel"], body=body))
-                self.items[name] = dict(body=body, kind="steel_plate", size=layouts.PLATE_SIZE, part_number=number,
-                                        marking=mark)
-            self.target = f"plate_{lay['target'] + 1}"
-            self.task_geometry["plates"] = lay
-        else:
-            dx, dy = layouts.canister_offset(self.c.seed)
-            body = self.free_body("part", (.10 + dx, -.08 + dy, z+.125))
-            self.cyl_hull("jug_wall", (0, 0, 0), .075, .125, "hdpe_white", body=body, mu=.3, density=950.)
-            self.set_mass(body, 3.2)      # 4 L round screw-lid HDPE canister with contents (authored)
-            self.colliders.append(Collider("part", "cylinder", (.075, .125), M.SURFACES["hdpe"], body=body))
-            self.items["part"] = dict(body=body, kind="hdpe_jug", radius=.075, height=.25)
+        # the items on the bench: the task's setup.py place_items (part-id-hdpe's canister, part-id-match's plates)
+        task_setup(self.c.task).place_items(self, z)
         self._tools(.60, -.02)
         self._dressing_pack()
 

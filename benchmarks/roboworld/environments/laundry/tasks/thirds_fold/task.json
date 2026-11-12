@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/towel/thirds_fold/laundry-tasks-v2",
+  "name": "thirds_fold",
+  "env_id": "laundry",
+  "split": "train",
+  "selection": {
+    "garment": "towel",
+    "task": "thirds_fold",
+    "contract": "laundry-tasks-v2"
+  },
+  "description": "Fold the bath towel in thirds lengthwise, the way towels are folded for a linen shelf. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

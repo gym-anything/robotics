@@ -1,6 +1,6 @@
 """Task selection only; no simulator imports. The original resolver is physics-hashed and unchanged."""
 
-from .task import INSTRUCTIONS, G1_MACHINE_NOTE
+from .task import INSTRUCTIONS, G1_MACHINE_NOTE, task_setup
 from .variants import resolve as legacy_resolve
 
 CONTRACT = "sewing-tasks-v1"
@@ -10,7 +10,9 @@ NEW_TASKS = ("seam-to-notch", "square-plies", "three-sides", "load-and-seam")
 REVISED = ("load", "plain-seam", "pivot")
 EIGHT_TASKS = ("load", "seam-to-notch", "plain-seam", "square-plies", "pivot", "three-sides",
                "load-and-seam", "curve")
-BASE_TASK = dict(zip(NEW_TASKS, ("plain-seam", "load", "pivot", "load")))
+# the task whose start a new task reuses (a benchmark task's BASE in its setup.py; three-sides the pivot's)
+BASE_TASK = dict(zip(NEW_TASKS, (task_setup("seam-to-notch").BASE, task_setup("square-plies").BASE, "pivot",
+                                 task_setup("load-and-seam").BASE)))
 PIVOT_INSTRUCTION = ("Join the two plies with a seam 10 mm from the right edge, turning a square corner, and "
                      "continue 10 mm from the near edge to the left edge; trim the threads and let go of the work.")
 TASK_SET = tuple(dict(preset="sample-room", task=t, seed=0,

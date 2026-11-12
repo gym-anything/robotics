@@ -57,11 +57,13 @@ class Deposits(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         import numpy as np
-        from concrete_finishing import layout as Lay, params as P
+        from concrete_finishing import params as P
         from concrete_finishing.coupling import Coupler, Contactor
         from concrete_finishing.paste import Sole
         cls.np, cls.P = np, P
-        cls.reg = Lay.patch_region(0, 21.0)
+        from gym_anything_robotics import task_folders
+        patch = task_folders.setup("concrete_finishing", "patch-flush")            # tasks/patch-flush/setup.py
+        cls.reg = patch.patch_region(0, 21.0)
         cls.c = Contactor("float", 0, np.zeros(3), np.eye(3), Sole("blade", 0.203, 0.0445), 1.0)
         cls.cp = Coupler({"patch": cls.reg}, [cls.c], 0.0005)
 

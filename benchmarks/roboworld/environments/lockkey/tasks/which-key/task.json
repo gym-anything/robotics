@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/which-key/lockkey-tasks-v2",
+  "name": "which-key",
+  "env_id": "lockkey",
+  "split": "train",
+  "selection": {
+    "task": "which-key",
+    "contract": "lockkey-tasks-v2"
+  },
+  "description": "Two keys rest on the stands beside the padlock on the chest; only one of them opens it. Unlock the padlock and swing the shackle open. Leave the key that does not open it on its stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

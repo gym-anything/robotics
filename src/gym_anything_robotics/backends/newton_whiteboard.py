@@ -194,8 +194,14 @@ class NewtonWhiteboardBackend(RoboticsBackend):
                     for name, j in self.env.robot_joints.items()
                 }
             },
-            task_images=self._task_images if self.env.task.kind == "bridge" else None,
+            task_images=self._task_images if self._hands_reference() else None,
         )
+
+    def _hands_reference(self):
+        """A benchmark task of the native catalogue (the bridge, tasks/bridge/) hands over its reference picture."""
+        from whiteboard.tasks import task_setup
+
+        return task_setup(self.env.task.kind) is not None
 
     def _task_images(self):
         """The bridge diagram to copy, as the board is seen from the front (Task.reference_view)."""
@@ -275,9 +281,11 @@ class NewtonWhiteboardBackend(RoboticsBackend):
                 self.env.trace.command_id = old
 
     def act(self, action):
-        # Bridge tasks: the step reward is the change in score, so an episode's return is its final score
-        # whatever the drawing order. Text tasks keep the absolute score.
-        bridge = self.env.task.kind == "bridge"
+        # Bridge tasks (DELTA_REWARD, its verifier.py): the step reward is the change in score, so an episode's return
+        # is its final score whatever the drawing order. Text tasks keep the absolute score.
+        from whiteboard.tasks import task_verifier
+
+        bridge = getattr(task_verifier(self.env.task.kind), "DELTA_REWARD", False)
         key = (id(self.env.ink), self.env.ink.revision, self.env.task)
         cached = getattr(self, "_score_cache", None)
         before = (cached[1] if cached and cached[0] == key else self.env.evaluate()["score"]) if bridge else 0.0

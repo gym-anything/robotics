@@ -6,19 +6,7 @@ must crossing-check and settle them before exposing an episode. No props added.
 import numpy as np
 
 from .garment_asset import PathRef
-
-
-def rounded_half_fold(positions, table_top):
-    """A two-layer half fold with a rounded bend, its fold line along the towel's long (world Y) axis."""
-    x = np.array(positions, dtype=np.float64, copy=True)
-    s = x[:, 0] - (x[:, 0].min() + x[:, 0].max()) / 2
-    lower, upper = s < -.05, s > .05
-    theta = np.clip((s + .05) * np.pi / .10, 0., np.pi)
-    x[:, 0] = .10 / np.pi * np.sin(theta)
-    x[:, 2] = table_top + .012 + .10 / np.pi * (1 - np.cos(theta))
-    x[lower, 0] = s[lower] + .05
-    x[upper, 0] = -s[upper] + .05
-    return x
+from .task_set import task_setup
 
 
 def accordion_curve(s, length):
@@ -65,8 +53,11 @@ def bunched_ties(index, positions):
 
 
 def start_positions(entry, index, positions, table_top):
-    if entry.start == "folded_towel":
-        return rounded_half_fold(positions, table_top)
+    """A task's start positions from the garment's lay as loaded. A benchmark task's setup.py (tasks/<task>/) gives
+    them, except an at-rest start, which the reset loader has already placed (newton15/garment.rest_start)."""
+    folder = task_setup(entry.garment, entry.name) if entry.start != "at_rest" else None
+    if folder is not None:
+        return folder.setup(index, positions, table_top)
     if entry.start == "bunched_ties":
         return bunched_ties(index, positions)
     return np.array(positions, dtype=np.float64, copy=True)

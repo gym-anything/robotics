@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/lined/lined-measure/wine-tasks-v2/seed-0",
+  "name": "lined-measure",
+  "env_id": "wine-pouring",
+  "split": "train",
+  "selection": {
+    "preset": "lined",
+    "task": "lined-measure",
+    "seed": 0,
+    "contract": "wine-tasks-v2"
+  },
+  "description": "Pour a legal 175 mL measure into the lined glass at spot 3: at least to its etched line, never short; no spills or drips; bottle back on its coaster.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

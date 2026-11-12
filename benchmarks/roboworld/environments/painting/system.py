@@ -339,32 +339,21 @@ class PaintSystem:
 
     def _pencil(self):
         """Graphite template lines on the paper (the craft tasks' pencilled circle, S-stroke outline, square): darker
-        substrate cells ~0.3 mm wide, which keep showing faintly through thin acrylic (K-M over the substrate)."""
+        substrate cells ~0.3 mm wide, which keep showing faintly through thin acrylic (K-M over the substrate). A
+        benchmark task's template is pencil() in its setup.py (tasks/<task>/)."""
         ch = self.charts.get("paper")
         if ch is None:
             return
-        from .task import S_CURVE, stroke_width
         xs = (np.arange(ch.nu) + 0.5)*ch.dx - ch.size[0]/2
         ys = (np.arange(ch.nv) + 0.5)*ch.dx - ch.size[1]/2
         X, Y = np.meshgrid(xs, ys, indexing="ij")
         t = self.spec["task"]
         line = 0.6*ch.dx
-        if t == "fill-circle":
+        pencil = getattr(L.task_setup(t), "pencil", None)
+        if pencil is not None:
+            m = pencil(ch, X, Y, line)
+        elif t == "fill-circle":
             m = np.abs(np.hypot(X, Y) - 0.030) < line
-        elif t == "swatch-card":
-            m = ((np.abs(np.abs(X) - 0.025) < line) & (np.abs(Y) <= 0.025 + line)) | \
-                ((np.abs(np.abs(Y) - 0.025) < line) & (np.abs(X) <= 0.025 + line))
-        elif t == "brush-stroke":
-            m = np.zeros(X.shape, bool)
-            ts = np.linspace(0, 1, 800)
-            c = S_CURVE(ts)
-            tang = np.gradient(c, axis=0)
-            nrm = np.stack([-tang[:, 1], tang[:, 0]], 1)/np.linalg.norm(tang, axis=1, keepdims=True)
-            for side in (-1, 1):
-                pts = c + side*nrm*(stroke_width(ts)/2)[:, None]
-                ii = np.clip(((pts[:, 0] + ch.size[0]/2)/ch.dx).astype(int), 0, ch.nu - 1)
-                jj = np.clip(((pts[:, 1] + ch.size[1]/2)/ch.dx).astype(int), 0, ch.nv - 1)
-                m[ii, jj] = True
         else:
             return
         ch.substrate_rgb[m] = ch.substrate_rgb[m]*0.62

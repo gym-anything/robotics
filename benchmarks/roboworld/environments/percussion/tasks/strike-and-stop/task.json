@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "percussion/v1/assessment/strike-and-stop/seed-0",
+  "name": "strike-and-stop",
+  "env_id": "percussion",
+  "split": "train",
+  "selection": {
+    "preset": "assessment",
+    "task": "strike-and-stop"
+  },
+  "description": "Play a short tone: strike the C4 resonator bar once, then stop its ringing by touching the bar when the cue light on the mast turns on (0.22 s after your stroke), without striking it again.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

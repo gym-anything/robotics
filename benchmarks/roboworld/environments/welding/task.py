@@ -5,6 +5,10 @@ bonds.py), the rigid bodies' poses and contacts, and the source's recorded histo
 D1.1:2000 Table 6.1 / Fig 5.4 / 5.18.2 (the public copy at law.resource.org) or the cited trade source; [authored] where
 the build chose the number.
 
+The eight benchmark tasks (EIGHT_TASKS) keep their own start and evaluation code in their folders, tasks/<task>/
+(setup.py, verifier.py; gym_anything_robotics.task_folders); this module keeps the catalogue, the tasks outside the
+benchmark and the evaluator machinery they share.
+
 Weld frame (all tasks): x along the joint, y out of the bracket's near (weld) face, z up from the base plate; the
 joint's root line is the x axis, the bracket spans x in [0, 150] mm.
 """
@@ -14,7 +18,8 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from . import params as PR
+from gym_anything_robotics import task_folders
+
 from . import sections as SC
 from .bonds import slice_bonds, FIT_MM
 
@@ -100,18 +105,14 @@ TIME_LIMIT_S = {"position-torch": 60., "tack": 120., "fillet-2f": 180., "set-up-
                 "hold-and-present": 90., "set-up-and-weld": 180.}
 # tasks that need the FR3's hand (torch-only rigs and the G1 are refused)
 NEEDS_HAND = {"tack", "fit-up-bracket", "tack-and-weld", "hold-and-present"}
-START_STATE = {"position-torch": "tacked", "tack": "loose", "fillet-2f": "tacked", "set-up-gun": "tacked",
-               "fit-up-bracket": "loose", "half-fillet": "tacked", "stitch-weld-ends": "tacked",
-               "tack-and-weld": "loose", "fillet-from-both-ends": "tacked", "hold-and-present": "loose",
-               "set-up-and-weld": "tacked"}
-# a task's own initial condition, set on its built start state before tick 0 by welding/presets.py (disclosed in the
-# assisted log), as welding/variations.py apply_initial sets a variation's wire stick-out
-START_PRESET = {"set-up-gun": "source left on the last job's short-circuit setting, 1/4 in of wire",
-                "fit-up-bracket": "bracket stood off its layout",
-                "set-up-and-weld": "source left on the last job's short-circuit setting"}
-# tasks judged on the weld's sections (the on-demand evaluation freezes a still-liquid pool hands-off, as fillet-2f)
-WELD_TASKS = ("fillet-2f", "half-fillet", "stitch-weld-ends", "tack-and-weld", "fillet-from-both-ends",
-              "set-up-and-weld")
+# START_STATE (the start state env.py builds: "tacked" or "loose"), START_PRESET (a task's own initial condition, set on
+# its built start state before tick 0 by welding/presets.py and disclosed in the assisted log, as welding/variations.py
+# apply_initial sets a variation's wire stick-out) and WELD_TASKS (tasks judged on the weld's sections: the on-demand
+# evaluation freezes a still-liquid pool hands-off, as fillet-2f) cover every task in TASKS order. A benchmark task's
+# entries are in its folder (setup.py START_STATE and PRESET, verifier.py WELD; task_tables), the other tasks' here
+_START_STATE = {"tack": "loose", "stitch-weld-ends": "tacked", "fillet-from-both-ends": "tacked"}
+_WELD_TASKS = ("stitch-weld-ends", "fillet-from-both-ends")
+PACKAGE = "welding"
 
 L_BRACKET = .150
 NOMINAL_LEG = 6.35e-3                      # 1/4 in [read: the work order]
@@ -193,8 +194,7 @@ START_OVERLAP_MAX = 2*OVERLAP_RESOLUTION
 # the score (reward): 1 for an accepted weld, else FAIL_SCORE_SCALE x progress, progress the share of the required fillet
 # that exists as sound, fused weld measured on the final weld (fillet_progress), net of the tacked start; every failure
 # stays below every success (the label_application convention, label_application/task.py). The mean of the checks is
-# reported beside it (reward.mean_of_checks)
-REWARD_CONTRACT = "progress-v1"
+# reported beside it (reward.mean_of_checks); its contract is fillet-2f's REWARD_CONTRACT (tasks/fillet-2f/verifier.py)
 FAIL_SCORE_SCALE = .9
 # a weld is inspected solid. An on-demand evaluation (GET /v1/evaluation, the benchmark's final one) of a weld whose pool
 # is still freezing with the arc off judges the weld as it freezes hands-off: a copy of the weld process is stepped with
@@ -208,44 +208,20 @@ SETTLE_MAX_S = 10.
 # Every task but fillet-2f (whose rule is above) is scored the same way: 1 on success, else FAIL_SCORE_SCALE x its
 # progress, progress 0 at the untouched start state and continuous in the end state, whatever the route (the fraction
 # of checks passed is reported as reward.mean_of_checks)
-# set-up-gun: the procedure (params.SCHEDULES spray_0p9_90-10: 12.7 m/min, 29 V; electrical stick-out = contact tip to
-# work - 1/4 in = 19 - 6.35 = 12.7 mm, Lincoln L-56 [read], the basis of the variations' stick-out range); tolerances
-# [authored]: about a dial's resolution on the feed and the voltage, 1/16 in on the stick-out
+# set-up-gun and set-up-and-weld: the procedure (params.SCHEDULES spray_0p9_90-10: 12.7 m/min, 29 V); tolerances
+# [authored]: about a dial's resolution on the feed and the voltage (set-up-gun's stick-out: tasks/set-up-gun/)
 SETUP_PROCEDURE = "spray_0p9_90-10"
 SETUP_WFS_TOL = .3                         # m/min
 SETUP_VOLTS_TOL = .5                       # V
-SETUP_STICKOUT = 12.7e-3
-SETUP_STICKOUT_TOL = 1.5e-3
-# its start (welding/presets.py): the source left on the cell's documented short-circuit job (params.SCHEDULES
-# sc_0p9_C25_175A, 6.4 m/min at 20 V, 1/2 in contact tip to work) and that job's 1/4 in of wire (the lower end of the
-# variations' range, the same basis); a catalogue variation's own stick-out replaces the wire (variations.apply_initial)
+# their start (welding/presets.py): the source left on the cell's documented short-circuit job (params.SCHEDULES
+# sc_0p9_C25_175A, 6.4 m/min at 20 V, 1/2 in contact tip to work); set-up-gun's also leaves that job's wire
 SETUP_LEFT_JOB = "sc_0p9_C25_175A"
-SETUP_LEFT_STICKOUT = 6.35e-3
 # position-torch's progress: each presentation term is 1 inside its band and falls to 0 at twice the band's half-width
 # outside it; gun contact or an arc during the episode halves it (failures of the job, not of the position) [authored]
 POSITION_SEAM_START = (0., 10e-3)          # the stretch of the root line the wire tip must reach (at_seam_start)
 FAULT_FACTOR = .5
-# fit-up-bracket: the bracket stood off its layout by a disclosed preset (welding/presets.py): FITUP_SHIFT toward the
-# weld side (+y, onto the open plate between the bracket and the robots; the clamps hold the other edge) and yawed about
-# its own vertical axis, seed 0 the design's 25 mm / 6 deg, other seeds drawn in the ranges [authored]. Success: both
-# ends of the bracket's root edge (the joint's line) within FIT_MM of the layout (the fit-up the thermal grid describes,
-# the tack task's position limit; a centre offset alone misses a yaw), square within 1 deg (the tack task's), released,
-# at rest (E0's scale: 1 mm/s), the clamped plate not moved over FITUP_PLATE_MM, no arm latched in a protective stop
-FITUP_SHIFT_MM = (15., 30.)
-FITUP_YAW_DEG = (3., 8.)
-FITUP_SEED0 = (25., 6.)
-FITUP_SQUARE_DEG = 1.
-FITUP_SQUARE_ZERO_DEG = 10.                # a bracket tipped this far earns no position credit [authored]
-FITUP_REST_M_S = 1e-3
-FITUP_PLATE_MM = .5
-# half-fillet: the right half of the joint, END_ALLOWANCE in from its end to its middle, judged as fillet-2f judges its
-# span (size, throat, per-section soundness, fusion, the start zone's lap bound), every crater of the weld laid in the
-# episode or touching the half filled to size, and the left half left unwelded up to the second tack (its metal starts
-# at 125.75 mm in the tacked start). 70 mm of span hold the aim_tacks start's 5.5 mm of undersize (5.25-10.25 mm)
-# inside D1.1's 10 %; a 2 in stitch's 45 mm do not (below)
-HALF_SPAN = (END_ALLOWANCE, L_BRACKET/2)
-HALF_FUSION_X = (6e-3, .25*L_BRACKET, 70e-3)
-HALF_LEFT_FREE = (100e-3, 120e-3)
+# fit-up-bracket's and half-fillet's own constants: tasks/fit-up-bracket/ (setup.py, verifier.py) and
+# tasks/half-fillet/verifier.py
 # stitch-weld-ends (outside the eight-task set): 2 in (50.8 mm) at each end, judged
 # END_ALLOWANCE in from the joint's end (the design's windows), the
 # middle left bare with 15 mm of run-out and run-in beside it; outside the windows only undercut (base-metal damage) is
@@ -265,15 +241,7 @@ FREE_ZONE_PENALTY = .5                     # progress lost per unit share of a z
 BOTH_MEET = (L_BRACKET/3, 2*L_BRACKET/3)
 RUN_MIN_LEN = 5e-3
 RUN_END_LEN = 5e-3
-# hold-and-present: position-torch's checks, unchanged, with the loose bracket held: both Franka fingers on it (the tack
-# demonstrations grip its top edge across its 8 mm thickness, 30 N per finger) and the bracket square within 1 deg and
-# within FIT_MM of its fit-up, the tack task's own limits (E24: the grip left it 0.058 deg and 0.068 mm off).
-# Progress: HOLD_PRESENT_TORCH_SHARE x position-torch's progress + the rest x the hold (held x the alignment term)
-# [authored]
-HOLD_PRESENT_TORCH_SHARE = .5
-# set-up-and-weld: fillet-2f's checks, unchanged, on a tacked start whose source the preset left on the cell's short-
-# circuit job (SETUP_LEFT_JOB; the wire as the tacked start leaves it), and the source at the procedure at the end
-# (SETUP_PROCEDURE within SETUP_WFS_TOL / SETUP_VOLTS_TOL, as set-up-gun judges it)
+# hold-and-present's and set-up-and-weld's own terms: tasks/hold-and-present/verifier.py, tasks/set-up-and-weld/
 
 
 def _overlap(r):
@@ -482,32 +450,6 @@ def position_progress(d, d0, work_deg, travel_deg, ctwd_m, settled_mm, faulted):
                 fault_factor=FAULT_FACTOR if faulted else 1.)
 
 
-def setup_progress(wfs_m_min, volts, stickout_m, start, faulted):
-    """set-up-gun's progress: the mean of the wire feed, voltage and stick-out terms, each net of the start state
-    (net_of_start; a term already in its band at the start is left out); halved for gun contact or an arc."""
-    target = PR.v(PR.SCHEDULES)[SETUP_PROCEDURE]
-    terms = dict(
-        wire_feed=net_of_start(abs(wfs_m_min - target["wfs_m_min"]), abs(start["wfs_m_min"] - target["wfs_m_min"]),
-                               SETUP_WFS_TOL),
-        voltage=net_of_start(abs(volts - target["voltage_v"]), abs(start["voltage_v"] - target["voltage_v"]),
-                             SETUP_VOLTS_TOL),
-        stickout=net_of_start(abs(stickout_m - SETUP_STICKOUT), abs(start["stickout_m"] - SETUP_STICKOUT),
-                              SETUP_STICKOUT_TOL))
-    p = _mean([v for v in terms.values() if v is not None])*(FAULT_FACTOR if faulted else 1.)
-    return dict(progress=float(p), terms=terms, fault_factor=FAULT_FACTOR if faulted else 1.)
-
-
-def fitup_displacement(seed):
-    """(shift m toward +y, yaw deg) of fit-up-bracket's start (welding/presets.py) for a world seed (Config.seed: the
-    legacy seed or a variation's config_seed); deterministic, seed 0 the design's 25 mm / 6 deg."""
-    if int(seed) == 0:
-        return FITUP_SEED0[0]*1e-3, FITUP_SEED0[1]
-    rng = np.random.default_rng(271828 + int(seed))
-    shift = float(rng.uniform(*FITUP_SHIFT_MM))*1e-3
-    yaw = float(rng.uniform(*FITUP_YAW_DEG))*(1. if rng.uniform() < .5 else -1.)
-    return shift, yaw
-
-
 def fitup_errors(pb, Rb, pk, Rk, origin_in_base, origin_in_bracket, nominal_rel, length=L_BRACKET):
     """The bracket's fit-up errors against its layout, in the base plate's frame: the larger displacement of the two
     ends of its root edge (the joint's line: weld-frame x = 0 and L on the bracket) from where the layout has them,
@@ -525,27 +467,6 @@ def fitup_errors(pb, Rb, pk, Rk, origin_in_base, origin_in_bracket, nominal_rel,
                 yaw_deg=math.degrees(math.atan2(Rrel[1, 0], Rrel[0, 0])))
 
 
-def fitup_progress(err, start_err, held):
-    """fit-up-bracket's progress: the root edge's approach to its layout net of the start (1 within FIT_MM), times a
-    squareness term (1 within 1 deg, 0 tipped FITUP_SQUARE_ZERO_DEG), and 0 while the hand still touches the bracket
-    (held is not placed)."""
-    pos = net_of_start(err["root_edge_mm"], start_err["root_edge_mm"], FIT_MM)
-    if pos is None:
-        pos = float(err["root_edge_mm"] <= FIT_MM + 1e-9)
-    sq = graded(err["tilt_deg"], FITUP_SQUARE_DEG, FITUP_SQUARE_ZERO_DEG - FITUP_SQUARE_DEG)
-    return dict(progress=0. if held else float(pos*sq), position=pos, squareness=sq, held=bool(held))
-
-
-def hold_present_progress(torch_progress, held, square_deg, offset_mm):
-    """hold-and-present's progress: HOLD_PRESENT_TORCH_SHARE x position-torch's progress (position_progress, net of the
-    start) + the rest x the hold: 1 while both fingers hold the bracket, times its alignment (squareness and position
-    each 1 within the tack task's limits, 0 at twice: the smaller); 0 while not held."""
-    align = min(graded(abs(square_deg), 1., 1.), graded(offset_mm, FIT_MM, FIT_MM))
-    hold = float(align) if held else 0.
-    return dict(progress=float(HOLD_PRESENT_TORCH_SHARE*torch_progress + (1. - HOLD_PRESENT_TORCH_SHARE)*hold),
-                torch_progress=float(torch_progress), hold=hold, alignment=float(align), held=bool(held))
-
-
 def tack_progress(tacks, bonded, square_deg, offset_mm, touching, quality_share):
     """tack's progress (the task kept outside the eight-task set): 0.5 x B + 0.5 x Q, both 0 without a bond. B: each of
     the two places (a tack starting within 40 mm of the near end, one ending past 110 mm) earns half its longest fused
@@ -559,22 +480,6 @@ def tack_progress(tacks, bonded, square_deg, offset_mm, touching, quality_share)
     q = _mean([graded(abs(square_deg), 1., 1.), graded(offset_mm, FIT_MM, FIT_MM), 0. if touching else 1.,
                quality_share])
     return dict(progress=float(.5*b + .5*q), bonded_tacks=float(b), quality=float(q), bonded=True)
-
-
-def episode_metal(start_rows):
-    """A predicate on sections: True where the section holds weld metal the episode laid or melted again, False where it
-    is bare or holds the start state's metal as it froze then (the fixture's tacks, untouched)."""
-    old = {_key(r): r.get("freeze_t") for r in (start_rows or []) if r["weld_area_m2"] > 0}
-
-    def new(r):
-        if r["weld_area_m2"] <= 0:
-            return False
-        k = _key(r)
-        if k not in old:
-            return True
-        t, t0 = r.get("freeze_t"), old[k]
-        return t is None or t0 is None or abs(t - t0) > 1e-9
-    return new
 
 
 def window_credit(rows, lo, hi, beyond=None):
@@ -697,6 +602,41 @@ def _ok(v):
     return bool(v)
 
 
+# ---------------------------------------------------------------- the benchmark tasks' folders
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task in TASKS and task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task in TASKS and task_folders.exists(PACKAGE, task) else None
+
+
+def task_tables():
+    """{"START_STATE": {task: state}, "START_PRESET": {task: preset}, "WELD_TASKS": (task, ...)}, in TASKS order, made
+    once (the module's START_STATE, START_PRESET and WELD_TASKS). The task folders import this module, so they are read
+    when a table is first used, not while it is imported."""
+    g = globals()
+    if "WELD_TASKS" not in g:
+        state, preset, weld = {}, {}, []
+        for t in TASKS:
+            s, v = task_setup(t), task_verifier(t)
+            state[t] = _START_STATE[t] if s is None else s.START_STATE
+            if getattr(s, "PRESET", None) is not None:
+                preset[t] = s.PRESET
+            if (t in _WELD_TASKS) if v is None else v.WELD:
+                weld.append(t)
+        g.update(START_STATE=state, START_PRESET=preset, WELD_TASKS=tuple(weld))
+    return {k: g[k] for k in ("START_STATE", "START_PRESET", "WELD_TASKS")}
+
+
+def __getattr__(name):
+    if name in ("START_STATE", "START_PRESET", "WELD_TASKS"):
+        return task_tables()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 class Evaluator:
     def __init__(self, env):
         self.env = env
@@ -707,35 +647,39 @@ class Evaluator:
         self.start_rows = None
         self._start_snap = self._start = None
         w = getattr(env, "world", None)
-        if getattr(getattr(env, "config", None), "task", None) in WELD_TASKS and getattr(w, "process", None) is not None:
+        task = getattr(getattr(env, "config", None), "task", None)
+        if task in task_tables()["WELD_TASKS"] and getattr(w, "process", None) is not None:
             self.start_rows = SC.weld_report(w.process, X_READ)
             self.start_raw_progress = fillet_progress(self.start_rows)["raw"]
 
     def evaluate(self, settle=False):
-        """success (every check), score and checks. fillet-2f: score = 1 on success, else 0.9 x progress (REWARD_CONTRACT);
-        settle=True (the on-demand evaluation) judges a weld still freezing with the arc off as it freezes hands-off.
-        Every other task: 1 on success, else 0.9 x its progress (TASK_REWARD_CONTRACT); the weld tasks
-        judge a freezing weld as fillet-2f does."""
+        """success (every check), score and checks. A benchmark task's verifier.py (tasks/<task>/) judges it (verify):
+        fillet-2f's score is 1 on success, else 0.9 x progress (its REWARD_CONTRACT); settle=True (the on-demand
+        evaluation) judges a weld still freezing with the arc off as it freezes hands-off. Every other task: 1 on
+        success, else 0.9 x its progress (TASK_REWARD_CONTRACT); the weld tasks judge a freezing weld as fillet-2f
+        does."""
         task = self.env.config.task
-        if task == "fillet-2f":
-            return self._evaluate_fillet_2f(settle)
-        if task in START_PRESET and getattr(self.env, "start_preset", None) is None:
-            raise RuntimeError(f"task {task!r} starts from its preset ({START_PRESET[task]}), which was not applied to "
+        preset, weld = task_tables()["START_PRESET"], task_tables()["WELD_TASKS"]
+        if task in preset and getattr(self.env, "start_preset", None) is None:
+            raise RuntimeError(f"task {task!r} starts from its preset ({preset[task]}), which was not applied to "
                                f"this environment: build it through the backend, or call welding.presets."
                                f"apply_start_preset(env) before tick 0")
-        if task in WELD_TASKS:
+        folder = task_verifier(task)
+        if folder is not None:
+            return folder.verify(self, settle)
+        if task in weld:
             rows, judged, flags = self._final_rows(settle)
-            if task == "tack-and-weld":
-                return self.judge_tack_and_weld(rows, judged, flags, **self._assembly())
-            if task == "set-up-and-weld":
-                s = self.env.world.process.src.s
-                return self.judge_set_up_and_weld(rows, judged, flags, wfs_m_min=float(s.wfs_m_min),
-                                                  voltage_v=float(s.voltage_v))
             return getattr(self, "judge_" + task.replace("-", "_"))(rows, judged, flags)
         fn = getattr(self, "_eval_" + task.replace("-", "_"))
-        checks = {k: {("pass" if kk == "ok" else kk): vv for kk, vv in c.items()} for k, c in fn().items()}
+        return self.evaluate_checks(fn, getattr(self, "_progress_" + task.replace("-", "_")))
+
+    def evaluate_checks(self, checks, progress):
+        """A task judged on its checks and a progress term: checks() gives name -> dict(..., ok=bool) and is read
+        first, then progress() the reward (it may use what checks() measured); 1 on success, else FAIL_SCORE_SCALE x
+        progress (_scored)."""
+        checks = {k: {("pass" if kk == "ok" else kk): vv for kk, vv in c.items()} for k, c in checks().items()}
         passed = [c["pass"] for c in checks.values()]
-        reward = getattr(self, "_progress_" + task.replace("-", "_"))()
+        reward = progress()
         return self._scored(bool(passed) and all(passed), checks, reward)
 
     @staticmethod
@@ -782,119 +726,6 @@ class Evaluator:
         m = self._measured
         return position_progress(seam_start_distance(m["wire_tip"]), self._start_measures()["seam_distance_m"],
                                  m["work"], m["travel"], m["ctwd"], m["settled"], m["faulted"])
-
-    # ------------------------------------------------------------------ set-up-gun (A7)
-    def _eval_set_up_gun(self):
-        """The source's set points as its state holds them (what the tool_io outputs set, not a command log), the wire's
-        stick-out, no arc, the gun's hardware clear of everything (the wire may touch: touch sensing measures the
-        stick-out against the plate), the gas valve closed at the end (a purge during the episode is allowed)."""
-        env, w = self.env, self.env.world
-        st, s = w.process.src.st, w.process.src.s
-        target = PR.v(PR.SCHEDULES)[SETUP_PROCEDURE]
-        contacts = self._gun_contacts()
-        h = env.history
-        self._measured = dict(wfs=float(s.wfs_m_min), volts=float(s.voltage_v), stickout=float(st.l_s),
-                              faulted=bool(h["gun_contact_ticks"] or h["arc_s"] or contacts))
-        return {
-            "wire_feed": dict(value_m_min=float(s.wfs_m_min), target_m_min=target["wfs_m_min"],
-                              tolerance_m_min=SETUP_WFS_TOL,
-                              ok=_ok(abs(s.wfs_m_min - target["wfs_m_min"]) <= SETUP_WFS_TOL + 1e-9)),
-            "voltage": dict(value_v=float(s.voltage_v), target_v=target["voltage_v"], tolerance_v=SETUP_VOLTS_TOL,
-                            ok=_ok(abs(s.voltage_v - target["voltage_v"]) <= SETUP_VOLTS_TOL + 1e-9)),
-            "stickout": dict(value_mm=float(st.l_s*1e3), target_mm=SETUP_STICKOUT*1e3,
-                             tolerance_mm=SETUP_STICKOUT_TOL*1e3,
-                             ok=_ok(abs(st.l_s - SETUP_STICKOUT) <= SETUP_STICKOUT_TOL + 1e-9)),
-            "no_arc": dict(arc_s=h["arc_s"], ok=_ok(h["arc_s"] == 0.)),
-            "no_contact": dict(contacts=contacts, wire_touched=bool(h["wire_touch"]),
-                               gun_contact_ticks=h["gun_contact_ticks"],
-                               ok=_ok(not contacts and h["gun_contact_ticks"] == 0)),
-            "gas_off": dict(gas_on=bool(st.gas_on), ok=_ok(not st.gas_on)),
-        }
-
-    def _progress_set_up_gun(self):
-        m = self._measured
-        return setup_progress(m["wfs"], m["volts"], m["stickout"], self._start_measures(), m["faulted"])
-
-    # ------------------------------------------------------------------ fit-up-bracket (A8)
-    def _eval_fit_up_bracket(self):
-        """The bracket on its layout (both ends of its root edge within FIT_MM), square, released, at rest; the clamped
-        plate not moved; no arm latched in a protective stop."""
-        env, w = self.env, self.env.world
-        sc = w.scene
-        err = self._fitup_errors(w.body_pose)
-        held = env.hand_touches_bracket()
-        speed = float(np.linalg.norm(w.state.body_qd.numpy()[sc.bodies["bracket"], :3]))
-        moved = float(np.linalg.norm(w.body_pose(sc.bodies["base_plate"])[0] - self._start_measures()["plate_m"]))*1e3
-        stopped = sorted(a for a, until in w._reflex_until.items() if w.time < until)
-        self._measured = dict(err=err, held=held)
-        return {
-            "on_layout": dict(root_edge_mm=err["root_edge_mm"], root_ends_mm=err["root_ends_mm"],
-                              centre_offset_mm=err["centre_mm"], yaw_deg=err["yaw_deg"], limit_mm=FIT_MM,
-                              ok=_ok(err["root_edge_mm"] <= FIT_MM + 1e-9)),
-            "square": dict(angle_error_deg=err["tilt_deg"], limit_deg=FITUP_SQUARE_DEG,
-                           ok=_ok(err["tilt_deg"] <= FITUP_SQUARE_DEG + 1e-9)),
-            "released": dict(touching=bool(held), ok=_ok(not held)),
-            "at_rest": dict(speed_mm_s=speed*1e3, limit_mm_s=FITUP_REST_M_S*1e3, ok=_ok(speed < FITUP_REST_M_S)),
-            "plate_unmoved": dict(moved_mm=moved, limit_mm=FITUP_PLATE_MM, ok=_ok(moved <= FITUP_PLATE_MM + 1e-9)),
-            "no_protective_stop": dict(stopped_arms=stopped, ok=_ok(not stopped)),
-        }
-
-    def _progress_fit_up_bracket(self):
-        m = self._measured
-        return fitup_progress(m["err"], self._start_measures()["fitup"], m["held"])
-
-    # ------------------------------------------------------------------ hold-and-present (A13)
-    def _fingers_on_bracket(self):
-        """Whether each finger of the handling hand touches the bracket (MuJoCo contacts with load): a grip across its
-        thickness has both; a hand resting on it or one finger pushing it does not."""
-        w = self.env.world
-        if "bracket" not in w.scene.bodies or not w.hand_arms:
-            return []
-        lab = list(w.model.body_label)
-        fingers = [b for b in w.hand_bodies() if "finger" in lab[b].split("/")[-1]]
-        return [bool(w.bodies_touch(w.scene.bodies["bracket"], {b})) for b in fingers]
-
-    def _eval_hold_and_present(self):
-        """position-torch's checks, unchanged, and the hold: both fingers on the bracket, the bracket square within 1 deg
-        and within FIT_MM of its fit-up (env.bracket_alignment, the tack task's measures), no arm latched in a protective
-        stop."""
-        env, w = self.env, self.env.world
-        checks = self._eval_position_torch()
-        fingers = self._fingers_on_bracket()
-        held = len(fingers) >= 2 and all(fingers)
-        sq, off = env.bracket_alignment()
-        stopped = sorted(a for a, until in w._reflex_until.items() if w.time < until)
-        self._measured.update(held=held, square=float(sq), offset=float(off))
-        checks.update({
-            "holding": dict(fingers_on_bracket=fingers, ok=_ok(held)),
-            "square": dict(angle_error_deg=float(sq), limit_deg=1., ok=_ok(held and abs(sq) <= 1.)),
-            "position": dict(offset_mm=float(off), limit_mm=FIT_MM, ok=_ok(held and off <= FIT_MM)),
-            "no_protective_stop": dict(stopped_arms=stopped, ok=_ok(not stopped)),
-        })
-        return checks
-
-    def _progress_hold_and_present(self):
-        m = self._measured
-        return hold_present_progress(self._progress_position_torch()["progress"], m["held"], m["square"], m["offset"])
-
-    # ------------------------------------------------------------------ set-up-and-weld (A14)
-    def judge_set_up_and_weld(self, rows, judged=None, flags=None, wfs_m_min=0., voltage_v=0.):
-        """set-up-and-weld (A14): every fillet-2f check on the weld, unchanged, and the source at the procedure at the
-        end (12.7 +- 0.3 m/min, 29 +- 0.5 V: set-up-gun's tolerances). Progress: fillet_progress net of the tacked start,
-        as fillet-2f's (the weld is the job; a weld laid at the short-circuit job's settings is judged as what it is)."""
-        target = PR.v(PR.SCHEDULES)[SETUP_PROCEDURE]
-        checks = self._eval_fillet_2f(rows)
-        diagnostics = dict(self.diagnostics)
-        checks["source_at_procedure"] = dict(
-            wire_feed_m_min=wfs_m_min, voltage_v=voltage_v, target=dict(wire_feed_m_min=target["wfs_m_min"],
-                                                                        voltage_v=target["voltage_v"]),
-            tolerance=dict(wire_feed_m_min=SETUP_WFS_TOL, voltage_v=SETUP_VOLTS_TOL),
-            ok=_ok(abs(wfs_m_min - target["wfs_m_min"]) <= SETUP_WFS_TOL + 1e-9
-                   and abs(voltage_v - target["voltage_v"]) <= SETUP_VOLTS_TOL + 1e-9))
-        checks = self._named(checks)
-        reward = fillet_progress(rows, self.start_raw_progress, self._last_craters)
-        return self._scored(all(c["pass"] for c in checks.values()), checks, reward, judged=judged or {},
-                            flags=flags or {}, diagnostics=diagnostics)
 
     # ------------------------------------------------------------------ shared measurements
     def _wire(self):
@@ -1333,22 +1164,6 @@ class Evaluator:
         }
         return checks
 
-    def judge_fillet(self, rows, judged=None, flags=None):
-        """fillet-2f's evaluation of one state's sections: success (every check), the progress reward and the score."""
-        checks = {k: {("pass" if kk == "ok" else kk): vv for kk, vv in c.items()}
-                  for k, c in self._eval_fillet_2f(rows).items()}
-        passed = [c["pass"] for c in checks.values()]
-        success = bool(passed) and all(passed)
-        reward = fillet_progress(rows, self.start_raw_progress, self._last_craters)
-        reward.update(contract=REWARD_CONTRACT, score_rule="1 if success else 0.9 x progress",
-                      mean_of_checks=float(np.mean(passed)))
-        return dict(success=success, score=1. if success else FAIL_SCORE_SCALE*reward["progress"], checks=checks,
-                    progress=reward["progress"], reward=reward, judged=judged or {}, flags=flags or {},
-                    diagnostics=dict(self.diagnostics))
-
-    def _evaluate_fillet_2f(self, settle=False):
-        return self.judge_fillet(*self._final_rows(settle))
-
     def _final_rows(self, settle=False):
         """The weld's sections to judge (fillet-2f's reading, shared by every weld task), what was done
         to read them (judged: a still-freezing weld frozen hands-off on a copy for the on-demand evaluation; the time
@@ -1387,68 +1202,6 @@ class Evaluator:
     @staticmethod
     def _named(checks):
         return {k: {("pass" if kk == "ok" else kk): vv for kk, vv in c.items()} for k, c in checks.items()}
-
-    def _half_reading(self, rows, new):
-        """half-fillet's craters judged (every one touching the half, and every one of the metal the episode laid,
-        wherever it lies: the second tack's, untouched, is the fixture's), and the raw progress: the half's fillet credit
-        less, per length of the half, the judged craters' deficit beyond it and the start zone's rejected metal (as
-        fillet_progress charges what success judges outside its span)."""
-        lo, hi = HALF_SPAN
-        beyond = _undercut_beyond_allowance(rows)
-        craters = [c for c in self._craters(rows) if c["rows"] and any(_in(r, lo, hi) or new(r) for r in c["rows"])]
-        in_crater = {_key(r) for c in craters for r in c["rows"]}
-        L = sum(r["dx_m"] for r in rows if _in(r, lo, hi))
-        charge = 0.
-        for r in rows:
-            if not 0. <= r["x_m"] <= L_BRACKET or _in(r, lo, hi) or r["weld_area_m2"] <= 0:
-                continue
-            if _key(r) in in_crater:
-                charge += r["dx_m"]*(1. - section_credit(r, beyond)[0])
-            elif r["x_m"] < lo and _section_defects(r, beyond, START_OVERLAP_MAX):
-                charge += r["dx_m"]
-        raw = window_credit(rows, lo, hi, beyond) - (charge/L if L > 0 else 0.)
-        return craters, in_crater, beyond, raw
-
-    def judge_half_fillet(self, rows, judged=None, flags=None):
-        """half-fillet (A9) on one state's sections. The half (HALF_SPAN) as fillet-2f judges its span; beyond it the
-        judged craters' metal at one cell of overlap, the start zone's at START_OVERLAP_MAX, the rest of the metal the
-        episode laid for convexity and porosity (fillet-2f judges both on all weld metal); the craters (_half_reading)
-        filled to 6.35 mm; undercut on the whole joint; HALF_LEFT_FREE bare; solid. Progress: (raw - raw0) / (1 -
-        raw0) less FREE_ZONE_PENALTY x the share of HALF_LEFT_FREE holding metal, clipped to [0, 1]; raw0 the tacked
-        start's."""
-        lo, hi = HALF_SPAN
-        new = episode_metal(self.start_rows)
-        craters, in_crater, beyond, raw = self._half_reading(rows, new)
-        checks = _window_checks(rows, lo, hi, HALF_FUSION_X, beyond)
-        outside = []
-        for r in rows:
-            if not 0. <= r["x_m"] <= L_BRACKET or _in(r, lo, hi) or r["weld_area_m2"] <= 0:
-                continue
-            if _key(r) in in_crater:
-                bad = _section_defects(r, beyond)
-            elif r["x_m"] < lo:
-                bad = _section_defects(r, beyond, START_OVERLAP_MAX)
-            elif new(r):
-                bad = [d for d in _section_defects(r, beyond) if d in ("convexity", "porosity")]
-            else:
-                bad = []
-            if bad:
-                outside.append((round(r["x_m"]*1e3, 2), bad))
-        worst = min(craters, key=lambda c: c["min_size_mm"]) if craters else None
-        checks["sound_beyond_half"] = dict(rejected_sections=outside[:40],
-                                           start_zone_overlap_limit_mm=START_OVERLAP_MAX*1e3, ok=_ok(not outside))
-        checks["crater_filled"] = dict(min_size_mm=worst["min_size_mm"] if worst else 0.,
-                                       craters=[{k: v for k, v in c.items() if k != "rows"} for c in craters],
-                                       limit_mm=NOMINAL_LEG*1e3, ok=_ok(craters and all(c["ok"] for c in craters)))
-        checks.update(_joint_checks(rows, HALF_LEFT_FREE, "left_half_unwelded"))
-        checks = self._named(checks)
-        raw0 = self._half_reading(self.start_rows, episode_metal(self.start_rows))[3] if self.start_rows else 0.
-        share = free_share(rows, *HALF_LEFT_FREE)
-        net = (raw - raw0)/(1. - raw0) if raw0 < 1. else float(raw >= 1.)
-        reward = dict(progress=float(np.clip(net - FREE_ZONE_PENALTY*share, 0., 1.)), raw=raw, start_raw=raw0,
-                      net_progress=float(net), left_half_metal_share=share)
-        return self._scored(all(c["pass"] for c in checks.values()), checks, reward, judged=judged or {},
-                            flags=flags or {})
 
     def judge_stitch_weld_ends(self, rows, judged=None, flags=None):
         """stitch-weld-ends (A10) on one state's sections: each window (STITCH_WINDOWS) as fillet-2f judges its span, a
@@ -1496,36 +1249,5 @@ class Evaluator:
         start = self.start_rows
         raw0 = fillet_progress(start, eligible=toward_middle(weld_runs(start)))["raw"] if start else None
         reward = fillet_progress(rows, raw0, self._last_craters, eligible=toward_middle(runs))
-        return self._scored(all(c["pass"] for c in checks.values()), checks, reward, judged=judged or {},
-                            flags=flags or {}, diagnostics=diagnostics)
-
-    def _assembly(self):
-        env, w = self.env, self.env.world
-        sq, off = env.bracket_alignment()
-        return dict(bond_active=bool(w.bond.active), square_deg=float(sq), offset_mm=float(off),
-                    hand_touching=bool(env.hand_touches_bracket()))
-
-    def judge_tack_and_weld(self, rows, judged=None, flags=None, bond_active=False, square_deg=0., offset_mm=0.,
-                            hand_touching=False):
-        """tack-and-weld (A11): every fillet-2f check on the final weld, which incorporates the tacks and is judged as
-        one weld (as fillet-2f judges its fillet over the fixture's tacks), and the tacked assembly: bonded, square
-        within 1 deg, within FIT_MM of the fit-up, the hand released. The tacks are the means: a bracket held and welded
-        without them is judged by the same end state. Progress: fillet_progress (net of the loose start, which holds no
-        weld) x the alignment (each of squareness and position 1 within its limit, 0 at twice: the smaller) x
-        FAULT_FACTOR while the hand still touches the bracket."""
-        checks = self._eval_fillet_2f(rows)
-        diagnostics = dict(self.diagnostics)
-        checks.update({
-            "bonded": dict(active=bool(bond_active), ok=_ok(bond_active)),
-            "square": dict(angle_error_deg=square_deg, limit_deg=1., ok=_ok(bond_active and abs(square_deg) <= 1.)),
-            "position": dict(offset_mm=offset_mm, limit_mm=FIT_MM, ok=_ok(bond_active and offset_mm <= FIT_MM)),
-            "hand_off": dict(touching=bool(hand_touching), ok=_ok(bond_active and not hand_touching)),
-        })
-        checks = self._named(checks)
-        weld = fillet_progress(rows, self.start_raw_progress, self._last_craters)
-        align = min(graded(abs(square_deg), 1., 1.), graded(offset_mm, FIT_MM, FIT_MM))
-        release = FAULT_FACTOR if hand_touching else 1.
-        reward = dict(weld, weld_progress=weld["progress"], alignment=align, release_factor=release,
-                      progress=float(weld["progress"]*align*release))
         return self._scored(all(c["pass"] for c in checks.values()), checks, reward, judged=judged or {},
                             flags=flags or {}, diagnostics=diagnostics)

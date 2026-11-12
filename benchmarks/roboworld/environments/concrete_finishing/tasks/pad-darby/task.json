@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "concrete-finishing/v1/b012/pad-darby/concrete-tasks-v2/seed-0",
+  "name": "pad-darby",
+  "env_id": "concrete-finishing",
+  "split": "train",
+  "selection": {
+    "preset": "b012",
+    "task": "pad-darby",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+  },
+  "description": "The pad was just struck off. Darby it: take out the high and low spots and get the stone down before the bleed water comes up. There is concrete in the tub for low spots. Tools back on the cart when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

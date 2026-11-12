@@ -5,7 +5,7 @@ did not take and have curled up off the carton (layouts.partly_applied: one corn
 corners, ends or long sides for finish-securing). This module builds that state on the real world; nothing here
 acts after the episode starts.
 
-CONSTRUCTED START STATE (not a robot action; same standing as press-down's laid label, env.lay_label_on_carton):
+CONSTRUCTED START STATE (not a robot action; same standing as press-down's laid label, its lay_label_on_carton):
   1. the label is laid flat, adhesive down and touching, at the seeded place on the flap half; each lifted area is
      the part of the label beyond a straight bond front, curled up from the front at constant curvature (at most
      100/m, below the paper's 119/m bending yield, so pressing it flat is elastic) until its farthest point stands

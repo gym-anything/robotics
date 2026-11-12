@@ -7,7 +7,9 @@ check counts. No command, hand identity, action order or best-so-far milestone
 affects credit. Changes from task_scoring.py: gain() has the rest-tolerance
 deadband and gives no credit for a start without error, load-fixture's upright
 term is standing(), uncap progress is uncap_terms() from the snap groove, and
-results report contract pencap-tasks-v2 with its task_id.
+results report contract pencap-tasks-v2 with its task_id. Each task's own
+predicates, success verdict and progress are in its verifier.py (tasks/<task>/;
+progress_v2 where this contract's progress differs); TaskEvaluator.grade calls them.
 """
 
 from collections import deque
@@ -15,7 +17,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation
 from .newton15.task import Evaluator as LegacyEvaluator, measure, nub_layout, FAIL_SCALE
-from .tasks import DEFAULT_TASK, validate
+from .tasks import DEFAULT_TASK, task_verifier, validate
 from .task_set_v2 import CONTRACT, task_id
 from .task_presets_v2 import (FIXTURE_XY, FIXTURE_HEIGHT, FIXTURE_HALF, BORE_DEPTH,
                               BORE_HALF, NOTEBOOK_HALF, NOTEBOOK_TOP)
@@ -54,11 +56,6 @@ def standing(axis):
     the set's own lying test), 1 within 10 degrees of vertical (the spec's ramp)."""
     elevation = math.degrees(math.asin(clip(-axis[2])))
     return clip((elevation-LYING_DEG)/(80.-LYING_DEG))
-
-
-def beyond(value, initial):
-    """Share of the way from the start's value to 1 (no credit for the start)."""
-    return clip((value-initial)/(1.-initial)) if initial < 1.-1e-9 else 0.
 
 
 def frame(pose):
@@ -212,7 +209,22 @@ class TaskEvaluator:
         self.solved = None
         self.last_tick, self.last_result = None, None
 
+    @property
+    def folder(self):
+        """The task's verifier.py (tasks/<task>/)."""
+        return task_verifier(self.task)
+
     def sample(self, env):
+        """One sample, every physics tick: the task's verifier.py judges it (verify, through grade)."""
+        return self.folder.verify(self, env)
+
+    def grade(self, env):
+        """One sample: the scene measured (poses, solved robot contact forces, the trailing window) and judged by the
+        task's verifier.py, which receives the measurements as keyword arguments: predicates(...) -> (the success
+        predicates now, the parts the rest test tracks); success(evaluator, env, ...), if defined, gives the success
+        verdict; progress_v2(...) -> the progress, else progress(...) as in task_scoring.py. FIXTURE_DEPTH_M (the
+        insertion the fixture test requires; else 40 mm) and NOTEBOOK_ON_BENCH (a part may lie on the notebook as on the
+        bench) apply if it sets them."""
         if env.tick == self.last_tick:
             return self.last_result
         if self.last_tick is not None and env.tick != self.last_tick+1:
@@ -231,10 +243,12 @@ class TaskEvaluator:
         pen, cap = points["pen"], points["cap"]
         snap = measure(c, poses["pen"], poses["cap"])
         smooth = cap_geometry(c, poses["pen"], poses["cap"])
-        fixture = fixture_state(c, pen["end"], pen["axis"], .030 if self.task == "cap-in-fixture" else .040)
+        folder = self.folder
+        fixture = fixture_state(c, pen["end"], pen["axis"], getattr(folder, "FIXTURE_DEPTH_M", .040))
         book, book_distance, book_quality = on_notebook(c, pen["mid"], pen["axis"], poses["notebook"])
-        pen_down, pen_quality = on_bench(c, pen["mid"], pen["axis"], poses["notebook"] if self.task == "uncap" else None)
-        cap_down, cap_quality = on_bench(c, cap["mid"], cap["axis"], poses["notebook"] if self.task == "uncap" else None)
+        bench = poses["notebook"] if getattr(folder, "NOTEBOOK_ON_BENCH", False) else None
+        pen_down, pen_quality = on_bench(c, pen["mid"], pen["axis"], bench)
+        cap_down, cap_quality = on_bench(c, cap["mid"], cap["axis"], bench)
         target = np.array([*FIXTURE_XY, c.table_top+FIXTURE_HEIGHT-BORE_DEPTH])
         tail_distance = float(np.linalg.norm(pen["end"]-target))
         if self.initial is None:
@@ -249,21 +263,11 @@ class TaskEvaluator:
         intact = all(p[2] >= c.table_top-.050 for p in
                      (pen["mid"], cap["mid"], poses["notebook"][:3]))
         task = self.task
-        if task in ("pen-on-notebook", "pass-pen"):
-            valid, tracked = book and released["pen"], ("pen",)
-        elif task == "load-fixture":
-            valid, tracked = fixture["inside"] and released["pen"], ("pen",)
-        elif task == "unload-fixture":
-            valid = snap["seated"] and fixture["out"] and pen_down and cap_down and released["pen"] and released["cap"]
-            tracked = ("pen", "cap")
-        elif task == "uncap":
-            valid = (not snap["engaged"] and snap["tip_to_mouth_m"] >= .010 and pen_down and cap_down
-                     and released["pen"] and released["cap"])
-            tracked = ("pen", "cap")
-        else:
-            valid, tracked = snap["seated"], ("pen", "cap")
-            if task == "cap-in-fixture":
-                valid = valid and fixture["inside"]
+        m = dict(c=c, pen=pen, snap=snap, smooth=smooth, fixture=fixture, book=book, book_distance=book_distance,
+                 book_quality=book_quality, pen_down=pen_down, pen_quality=pen_quality, cap_down=cap_down,
+                 cap_quality=cap_quality, tail_distance=tail_distance, initial=initial, release=release,
+                 released=released, intact=intact, gain=gain)
+        valid, tracked = folder.predicates(**m)
         valid = bool(valid and intact)
         now = env.tick*c.dt
         mid = np.array([points[name]["mid"] for name in tracked])
@@ -275,34 +279,9 @@ class TaskEvaluator:
         duration = now-self.recent[0][0]
         still = ramp(drift, 0., REST_M)*clip(duration/WINDOW_S)
         success = duration >= WINDOW_S-1e-10 and drift <= REST_M and all(v for _, _, v in self.recent)
-        if task in ("reseat-cap", "cap-in-fixture"):
-            # Same snap and 10 mm stillness test as seat-cap.
-            legacy = self.legacy.sample(env)
-            success = legacy["success"] and intact
-            if task == "cap-in-fixture":
-                success = success and all(v for _, _, v in self.recent)
-        if task in ("pen-on-notebook", "pass-pen"):
-            progress = gain(book_distance, initial["book_distance"])*(.7+.3*book_quality*release["pen"]*still)
-        elif task == "load-fixture":
-            approach = gain(tail_distance, initial["tail_distance"])
-            # A lying pen settles about 1 degree tail-down (probe: 0.0039 idle credit
-            # with the old clip(-axis_z) term); only standing it up counts.
-            upright = clip((standing(pen["axis"])-initial["upright"])/max(1.-initial["upright"], 1e-12))
-            progress = (.25*approach+.25*upright+.5*fixture["insertion"])*(.9+.1*release["pen"]*still)
-        elif task == "unload-fixture":
-            out = gain(fixture["remaining"], initial["remaining"])
-            down = min(pen_quality, cap_quality)*min(release["pen"], release["cap"])*still
-            progress = out*(.4+.3*(1.-abs(pen["axis"][2]))+.3*down)*(.5+.5*smooth["quality"])
-        elif task == "reseat-cap":
-            progress = clip((smooth["quality"]-initial["cap"]["quality"])/(1.-initial["cap"]["quality"]))
-        elif task == "cap-in-fixture":
-            progress = smooth["quality"]*(.8+.2*fixture["insertion"])
-        else:  # uncap: independent of which part moves or which hand pulls.
-            # Start-relative as well: the authored seated start gives (0, 0), so this only
-            # matters if a start were ever already partly off (it then earns nothing).
-            unsnapped, withdrawn = (beyond(x, x0) for x, x0 in zip(uncap_terms(c, snap, smooth), initial["uncap"]))
-            down = .5*(pen_quality*release["pen"]+cap_quality*release["cap"])*still
-            progress = .4*unsnapped+.4*withdrawn+.2*withdrawn*down
+        if hasattr(folder, "success"):
+            success = folder.success(self, env, **m)
+        progress = getattr(folder, "progress_v2", folder.progress)(still=still, **m)
         progress = clip(progress-collateral)
         result = dict(task_id=task_id(task), contract=CONTRACT, success=bool(success),
                       score=1. if success else FAIL_SCALE*progress, progress=progress,

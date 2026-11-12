@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/home/unwrap-gift/gift-bags-tasks-v2/seed-0",
+  "name": "unwrap-gift",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "home",
+    "task": "unwrap-gift",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v2"
+  },
+  "description": "A wrapped present lies on the dining table. Remove the wrapping paper from the gift box (tearing it is fine) and leave the box closed, upright on the table. Release everything when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

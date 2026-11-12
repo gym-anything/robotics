@@ -6,11 +6,11 @@ ready (unified contract, invariant 10).
 """
 
 import math
-from dataclasses import replace
 
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from gym_anything_robotics import task_folders
 from . import params as P
 from . import geometry as G
 from . import materials as M
@@ -28,21 +28,7 @@ REFERENCE_STROKE_J_KG = 0.33
 # Gluten: the work at which a flour batter has stiffened by a tenth is 25 reference strokes' worth
 # (1 - exp(-25 w_ref / w_d) = 0.1), an estimate of how much an over-mixed batter tightens
 FLOUR = M.Solid(work_scale=25.0*REFERENCE_STROKE_J_KG/0.10536)
-SPELT = replace(FLOUR, name="whole spelt flour", law_b=-2.43, n_slope=2.52)
-PUDDING = replace(FLOUR, name="instant pudding mix", rho=1550., void=0.94, grain=150e-6, law_b=-3.95, yield_x0=0.5,
-                  yield_x1=0.8, hyd_gain=0., set_tau=100., set_k=20., set_n=0.4, set_yield=30., set_xref=0.1745,
-                  starch=0.25, friction_deg=35., work_scale=0.)
-CAKE = replace(FLOUR, name="cake mix", rho=1500., void=1.5, law_b=-4.92, n_slope=0.85, yield_x0=0.5, yield_x1=0.8)
-STARCH = replace(FLOUR, name="corn starch", rho=1500., void=1.5, grain=15e-6, starch=1.0, gel_a=4.1e20, hyd_gain=0.,
-                 work_scale=0.)
 NONE = M.Paste()
-MAYO = M.Paste("mayonnaise", 990., 60., 40., 0.40, 2800., (0.96, 0.93, 0.80))
-KETCHUP = M.Paste("ketchup", 1040., 25., 5., 0.44, 3500., (0.72, 0.08, 0.05))
-RELISH = M.Paste("relish", 1100., 40., 20., 0.45, 3400., (0.42, 0.52, 0.16))
-HONEY = M.Paste("honey", 1430., 0., 20., 0.95, 2300., (0.86, 0.60, 0.12))
-MUSTARD = M.Paste("mustard", 1170., 12., 3., 0.45, 3400., (0.90, 0.75, 0.10))
-PORRIDGE = M.Paste("oat porridge", 1060., 30., 30., 0.45, 3700., (0.86, 0.80, 0.68))
-PETFOOD = M.Paste("canned pet food", 1050., 200., 80., 0.40, 3500., (0.52, 0.34, 0.24))
 
 MILK = {AQ: 0.965, FAT: 0.035}
 EGG = {AQ: 1.0 - P.EGG_FAT, FAT: P.EGG_FAT}
@@ -61,7 +47,8 @@ def blend(grams):
     return v
 
 
-# criteria: name -> (tasks' threshold table is in TASKS[...]["criteria"]). Where the limits come from:
+# criteria: name -> (tasks' threshold table is in TASKS[...]["criteria"], from each task's verifier.py JUDGING).
+# Where the limits come from:
 #   uniform cv 0.10   the feed industry's mixer test: a coefficient of variation of a tracer under 10 % is "excellent"
 #                     (Herrman and Behnke 1994, in Kansas State MF3393, opened; the pharmacopoeia's content uniformity
 #                     is 6 %). No baking standard for leavening or salt was found.
@@ -110,22 +97,19 @@ def blend(grams):
 #   uneven state the start allows is its settled bottom layer gelled where it lies, 1.46 times the mean in a 6 mm cell,
 #   and the rule of twice the mean could never fail once the starch was cooked. A threshold that tells an unstirred layer from a stirred sauce would have to be measured on stirred
 #   and whisked sauces' compositions, which no record holds.
-# stir-sauce's score (reward="cook"): 1 on success, else FAIL_SCORE_SCALE x the progress of cook_progress(), read
-# from the final state. Every other task's score is the share of its criteria met.
-TASKS = {
+# stir-sauce's score (reward="cook", its verifier.py score()): 1 on success, else FAIL_SCORE_SCALE x the progress of
+# cook_progress(), read from the final state. Every other task's score is the share of its criteria met.
+# TASKS (tasks()): each task's TEXT with its setup.py MATERIAL and its verifier.py JUDGING (tasks/<task>/)
+TEXT = {
     "dry-whisk": dict(
         preset="bake", title="Whisk the dry ingredients",
         instruction="The bowl holds flour with sugar, baking powder and salt dumped on it in separate places. Whisk "
-                    "the dry ingredients until they are evenly combined. Keep them in the bowl.",
-        solid=FLOUR, pastes=(NONE, NONE, NONE), portions=12,
-        criteria=dict(uniform=dict(species=("minor", "sugar"), cv=0.10), contained=0.01, vessel_in_place=0.05)),
+                    "the dry ingredients until they are evenly combined. Keep them in the bowl."),
     "muffin-fold": dict(
         preset="bake", title="Fold the muffin batter",
         instruction="The bowl holds the blended dry ingredients with milk, egg and oil poured into a well in the "
                     "middle. Fold the wet and dry ingredients together until just combined: no dry flour left, and "
-                    "no more mixing than that. Keep the batter in the bowl.",
-        solid=FLOUR, pastes=(NONE, NONE, NONE), portions=12,
-        criteria=dict(uniform=dict(species="solid", cv=0.10), dry=0.02, overmix=25, contained=0.01, vessel_in_place=0.05)),
+                    "no more mixing than that. Keep the batter in the bowl."),
     "pancake-whisk": dict(
         preset="bake", title="Whisk the pancake batter",
         # the recipe the batch is measured from says "Gently and quickly mix into the egg and milk mixture" and lets
@@ -133,33 +117,22 @@ TASKS = {
         # until smooth is not what the recipe wants.
         instruction="The bowl holds beaten egg, milk and oil with the dry ingredients heaped in the middle. Whisk the "
                     "dry ingredients into the liquid gently and quickly, until just combined: no dry flour left, and "
-                    "no more mixing than that; small lumps may stay. Keep the batter in the bowl.",
-        solid=FLOUR, pastes=(NONE, NONE, NONE), portion_ml=60.,
-        criteria=dict(uniform=dict(species="solid", cv=0.10), dry=0.02, overmix=25, contained=0.01, vessel_in_place=0.05)),
+                    "no more mixing than that; small lumps may stay. Keep the batter in the bowl."),
     "pudding-whisk": dict(
         preset="bake", title="Whisk the instant pudding",
         instruction="The bowl holds two cups of cold milk with a packet of instant pudding mix heaped in the middle. "
                     "Whisk for about two minutes, until the pudding is smooth, then take the whisk out. Keep the "
-                    "pudding in the bowl.",
-        solid=PUDDING, pastes=(NONE, NONE, NONE), portion_ml=120.,
-        criteria=dict(uniform=dict(species="solid", cv=0.10), dry=0.02, lumps=0.02, contained=0.01, vessel_in_place=0.05,
-                      tool_out=True)),
+                    "pudding in the bowl."),
     "cake-mixer": dict(
         preset="bake", title="Beat the cake batter with the hand mixer",
         instruction="The bowl holds cake mix with water, oil and eggs. The hand mixer stands on its heel beside the "
                     "bowl, switched off. Beat the batter with the mixer: lowest speed until the mix is moistened, "
                     "then a medium speed for about two minutes. Leave the mixer switched off and set down on the "
-                    "counter, out of the bowl. Keep the batter in the bowl.",
-        solid=CAKE, pastes=(NONE, NONE, NONE), portion_ml=60.,
-        criteria=dict(uniform=dict(species="solid", cv=0.10), dry=0.02, lumps=0.02, contained=0.01, vessel_in_place=0.05,
-                      appliance_off="mixer")),
+                    "counter, out of the bowl. Keep the batter in the bowl."),
     "sauce-blend": dict(
         preset="bake", title="Blend the sauce",
         instruction="The small bowl holds mayonnaise with a dollop of ketchup and a dollop of relish on it. Stir the sauce until it is "
-                    "evenly blended. Keep it in the bowl.",
-        solid=FLOUR, pastes=(MAYO, KETCHUP, RELISH), portion_ml=5.,
-        criteria=dict(uniform=dict(species=("paste_a", "paste_b", "paste_c"), cv=0.10), contained=0.01,
-                      vessel_in_place=0.05)),
+                    "evenly blended. Keep it in the bowl."),
     "stir-sauce": dict(
         preset="hob", title="Cook the sauce, stirring",
         # the simmer is the recipe's sign of done ("Bring to boil ... stirring constantly", Argo; "until thickened
@@ -168,31 +141,52 @@ TASKS = {
         instruction="The saucepan on the hob holds a cold slurry of milk, corn starch and sugar; the hob is on. Cook "
                     "the sauce, stirring, until it thickens and comes to a simmer, without letting it catch on the "
                     "bottom. Then turn the hob off. Keep the sauce in the pan and the pan on the hob. A probe "
-                    "thermometer stands in the crock.",
-        solid=STARCH, pastes=(NONE, NONE, NONE), portion_ml=30.,
-        criteria=dict(cooked=dict(fraction=0.95, temp_c=88.), scorch_cm2=2.0, contained=dict(limit=0.01, below_rim=True),
-                      vessel_in_place=dict(on_hob=True), appliance_off="knob", boil_s=180.),
-        reward="cook"),
+                    "thermometer stands in the crock."),
     "reheat-porridge": dict(
         preset="hob", title="Reheat the porridge",
         instruction="The saucepan on the hob holds cold cooked porridge; the hob is on. Stir until the porridge is "
                     "hot all the way through (74 C, 165 F, everywhere; a probe thermometer stands in the crock), "
                     "without letting it catch on the bottom. Then turn the hob off (knob to 0). Keep the porridge "
-                    "in the pan and the pan on the hob.",
-        solid=FLOUR, pastes=(PORRIDGE, NONE, NONE), portion_ml=60.,
-        criteria=dict(hot=dict(min_c=74., spread_k=15.), scorch_cm2=2.0, contained=0.01, vessel_in_place=0.05,
-                      appliance_off="knob")),
+                    "in the pan and the pan on the hob."),
 }
-VARIANT_MATERIAL = {"spelt": dict(solid=SPELT), "honey": dict(pastes=(MAYO, HONEY, MUSTARD)),
-                    "pet-meal": dict(pastes=(PETFOOD, NONE, NONE))}
+PACKAGE = "ingredient_mixing"
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+_TASKS = {}
+
+
+def tasks():
+    """name -> the task's preset, title, instruction, solid, pastes, portions or portion_ml, criteria (and reward),
+    built once: its folder's modules import this one."""
+    if not _TASKS:
+        _TASKS.update({name: dict(text, **task_setup(name).MATERIAL, **task_verifier(name).JUDGING)
+                       for name, text in TEXT.items()})
+    return _TASKS
+
+
+def __getattr__(name):
+    if name == "TASKS":
+        return tasks()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def task_spec(config):
-    t = dict(TASKS[config.task])
-    t.update(VARIANT_MATERIAL.get(config.variant, {}))
+    t = dict(tasks()[config.task])
+    t.update(getattr(task_setup(config.task), "VARIANT_MATERIAL", {}).get(config.variant, {}))
+    judging = getattr(task_verifier(config.task), "variant_judging", None)
+    if judging is not None:
+        judging(t, config.variant)
     if config.variant == "pet-meal":
-        t["criteria"] = dict(uniform=dict(species="minor", cv=0.10), contained=0.01, vessel_in_place=0.05)
-        t["portion_ml"] = 30.
         t["instruction"] = ("The small bowl holds a portion of canned food with a powdered supplement sprinkled on one "
                             "side. Mix the supplement evenly into the food. Keep it in the bowl.")
     return t
@@ -315,6 +309,25 @@ class _Fill:
         return self.pts[keep], comps[keep]
 
 
+class Start:
+    """What a benchmark task's setup.py puts its ingredients in on (start_state below calls its setup(s)).
+
+      config, layout, vessel   the selection, scene.task_layout's layout and the vessel (tools.Vessel)
+      recipes, scale           params.RECIPES and the layout's batch scale
+      sp, vp, rng              the lattice spacing, a point's volume and the start's seeded generator
+      a0, off                  where the cook happened to put things: an angle, and an offset from the vessel's axis
+      volume_of, polar         a composition's rest volume; a vector from a radius and an angle
+
+    setup(s) sets batch (the recipe's species masses), temp (C; 20 unless it sets it) and either fill (a _Fill) or
+    points and species (vessel frame)."""
+
+    def __init__(self, config, layout, vessel, recipes, scale, sp, vp, rng, a0, off, volume_of, polar):
+        self.config, self.layout, self.vessel, self.recipes, self.scale = config, layout, vessel, recipes, scale
+        self.sp, self.vp, self.rng, self.a0, self.off = sp, vp, rng, a0, off
+        self.volume_of, self.polar = volume_of, polar
+        self.temp, self.fill, self.batch, self.points, self.species = 20.0, None, None, None, None
+
+
 def start_state(config, scene):
     """Points (vessel frame), their species masses and temperatures, and the batch record for the evaluator."""
     t = task_spec(config)
@@ -325,7 +338,6 @@ def start_state(config, scene):
     sp = config.cell_m/(2 if config.points_per_cell == 8 else 1)
     vp = sp**3
     rng = np.random.default_rng([config.seed, 20261010])
-    temp = 20.0
     task = config.task
 
     def volume_of(comp):
@@ -335,108 +347,16 @@ def start_state(config, scene):
         return np.array([radius*math.cos(angle), radius*math.sin(angle)])
     a0 = rng.uniform(0, 2*math.pi) if config.seed else 0.3                       # where the cook happened to put things
     off = rng.uniform(-0.012, 0.012, 2) if config.seed else np.array([0.006, -0.004])
-    fill = None
-    if task == "dry-whisk":
-        # flour poured from the measuring cup, then the sugar and the leavening with the salt tipped onto its flanks
-        flour = blend(dict(flour=R["dry_mix"]["flour"]))*scale
-        sugar = blend(dict(sugar=R["dry_mix"]["sugar"]))*scale
-        minor = blend(dict(baking_powder=R["dry_mix"]["baking_powder"], salt=R["dry_mix"]["salt"]))*scale
-        fill = _Fill(v, sp, rng, 0.9*v.depth, level=L.get("start") == "level")
-        fill.mound(flour, volume_of(flour), off, 0.50)
-        fill.mound(sugar, volume_of(sugar), off + polar(0.052, a0), 0.60, round_r=0.006, bump=0.0008)
-        fill.mound(minor, volume_of(minor), off + polar(0.048, a0 + 2.3), 0.60, round_r=0.006, bump=0.0008)
-        batch = flour + sugar + minor
-    elif task in ("muffin-fold", "cake-mixer"):
-        fill = _Fill(v, sp, rng, 0.9*v.depth, level=L.get("start") == "level")
-        if task == "muffin-fold":
-            # the blended dry ingredients with a well made in the middle; the beaten liquid poured into the well
-            dry = blend(R["dry_mix"])*scale
-            wet = blend(R["muffin_wet"])*scale
-            vd, vw = volume_of(dry), volume_of(wet)
-            rw = 0.082 + (rng.uniform(-0.006, 0.006) if config.seed else 0.)
-            fill.ring(dry, vd, off, rw, 0.50)
-            fill.pool(wet, vw, off, rw)
-        else:
-            # the cake mix tipped in; water and oil poured round it; three eggs broken onto it
-            dry = blend(dict(mix=R["cake"]["mix"]))*scale
-            pour = blend(dict(water=R["cake"]["water"], oil=R["cake"]["oil"]))*scale
-            egg = blend(dict(egg=R["cake"]["egg"]))*scale
-            vd, vw, ve = volume_of(dry), volume_of(pour), volume_of(egg)
-            fill.mound(dry, vd, off, 0.50)
-            fill.pool(pour, vw)
-            for k in range(3):
-                fill.dollop(egg/3, ve/3, off + polar(0.030, a0 + k*2.1), flat=2.2)
-            wet = pour + egg
-        batch = dry + wet
-    elif task in ("pancake-whisk", "pudding-whisk"):
-        fill = _Fill(v, sp, rng, 0.9*v.depth, level=L.get("start") == "level")
-        if task == "pancake-whisk":
-            # the dry ingredients heaped in the middle of the beaten egg, milk and oil
-            dry = blend(R["pancake_dry"])*scale
-            wet = blend(R["pancake_wet"])*scale
-        else:
-            # the packet of pudding mix tipped into the cold milk
-            dry = blend(dict(mix=R["pudding"]["mix"]))*scale
-            wet = blend(dict(milk=R["pudding"]["milk"]))*scale
-            temp = L.get("milk_c", 20.0)
-        vd, vw = volume_of(dry), volume_of(wet)
-        fill.mound(dry, vd, off, 0.55)
-        fill.pool(wet, vw)
-        batch = dry + wet
-    elif task == "sauce-blend":
-        fill = _Fill(v, sp, rng, 0.9*v.depth, level=L.get("start") == "level")
-        if config.variant == "honey":
-            parts = [blend(dict(mayonnaise=R["sauce_honey"]["mayonnaise"])), blend(dict(honey=R["sauce_honey"]["honey"])),
-                     blend(dict(mustard=R["sauce_honey"]["mustard"]))]
-        elif config.variant == "pet-meal":
-            parts = [blend(dict(canned=R["pet_meal"]["canned"])), blend(dict(supplement=R["pet_meal"]["supplement"]))]
-        else:
-            parts = [blend(dict(mayonnaise=R["sauce"]["mayonnaise"])), blend(dict(ketchup=R["sauce"]["ketchup"])),
-                     blend(dict(relish=R["sauce"]["relish"]))]
-        parts = [q*scale for q in parts]
-        vols = [volume_of(q) for q in parts]
-        # the first part spooned in and pushed about (it keeps the relief its yield stress holds) ...
-        fill.spread(parts[0], vols[0], off, 0.003)
-        if config.variant == "pet-meal":
-            # ... the powder sprinkled over one side of it
-            c = off + polar(0.030, a0)
-            zs = fill.surface_at(c, 0.03)
-            fill.take(parts[1], vols[1], (fill.z - zs) + 0.25*fill.dist(c) + fill.bumps(0.001, 0.02))
-        else:
-            # ... a squeeze of the second and a spoonful of the third set on it side by side
-            rad = 0.38*float(np.interp(fill.surface_at(off), v.profile[1:, 1], v.profile[1:, 0]))
-            for k in range(1, len(parts)):
-                fill.dollop(parts[k], vols[k], off + polar(rad, a0 + (k - 1)*math.pi*(1.0 if len(parts) == 3 else 0.0)),
-                            flat=1.3 if k == 1 else 1.7)
-        batch = sum(parts)
-    elif task == "stir-sauce":
-        liquid = blend(dict(milk=R["stir_sauce"]["milk"], sugar=R["stir_sauce"]["sugar"]))*scale
-        starch = blend(dict(starch=R["stir_sauce"]["starch"]))*scale
-        temp = L.get("milk_c", 20.0)
-        total = liquid + starch
-        level = G.level_for(v.profile, volume_of(total))
-        pts = _lattice(v, sp, level, seed=config.seed)
-        z = pts[:, 2]
-        # settled for stand_min minutes at the hindered Stokes speed (1.7 mm/min): the top layer has given its starch
-        # to the bottom 4 mm
-        clear = min(0.8*level, 1.7e-3*L.get("stand_min", 2.0))
-        w = np.where(z > level - clear, 0.0, 1.0)
-        bottom = z < 0.004
-        w[bottom] += (w.size - w.sum())/max(1, bottom.sum())
-        comps = np.tile(liquid/volume_of(total)*vp, (len(pts), 1))
-        comps += np.outer(w, starch/volume_of(total)*vp)
-        batch = total
-    elif task == "reheat-porridge":
-        # yesterday's porridge spooned out of its tub into the pan: it lies as it fell
-        por = blend(dict(porridge=R["porridge"]["porridge"]))*scale
-        temp = 5.0
-        fill = _Fill(v, sp, rng, 0.9*v.depth, level=L.get("start") == "level")
-        fill.spread(por, volume_of(por), off*0.5, 0.006, slope=0.05, scale=0.045)
-        batch = por
-    else:
+    folder = task_setup(task)
+    if folder is None:
         raise ValueError(f"No continuum start state for task {task!r}")
-    if fill is not None:
-        pts, comps = fill.result()
+    s = Start(config, L, v, R, scale, sp, vp, rng, a0, off, volume_of, polar)
+    folder.setup(s)
+    temp, batch = s.temp, s.batch
+    if s.fill is not None:
+        pts, comps = s.fill.result()
+    else:
+        pts, comps = s.points, s.species
     # the lattice holds slightly more or less than the recipe: scale every point's mass so the batch is the recipe's
     comps = comps*(batch.sum()/comps.sum())
     return dict(points=pts, species=comps, temp=temp, batch=batch, recipe=recipe, spacing=sp, level=float(pts[:, 2].max()))
@@ -686,18 +606,7 @@ def evaluate(world, info, final=True):
     share = round(sum(bool(k["ok"]) for k in C.values())/len(C), 4)               # the share of the criteria met
     out["score"] = share
     if spec_t.get("reward") == "cook":
-        bottom = world.heat.area.sum()*1e4 if world.heat is not None else math.pi*P.PAN["radius"]**2*1e4
-        # the least layer, unless the whole pan already meets the verdict's share
-        frac = C["cooked"]["value"]
-        even = frac if frac >= crit["cooked"]["fraction"] else min(layers[COOK_LAYERS])
-        # the hob's switch is credited over a sauce that is cooked and was not boiled on
-        done = C["cooked"]["ok"] and C.get("not_boiled_on", dict(ok=True))["ok"]
-        r = cook_progress(even, C["contained"]["value"], C["not_scorched"]["value"], bottom,
-                          C["vessel_in_place"]["ok"], C["appliance_off"]["ok"], done, crit["cooked"]["fraction"])
-        out["progress"] = r["progress"]
-        out["reward"] = dict(r, score_rule=f"1 if success else {FAIL_SCORE_SCALE} x progress",
-                             share_of_criteria_met=share, cooked_share_by_layer={str(n): s for n, s in layers.items()})
-        out["score"] = 1.0 if out["success"] else round(FAIL_SCORE_SCALE*r["progress"], 4)
+        task_verifier(c.task).score(world, out, C, crit, layers, share)
     out["measures"]["points"] = int(len(x))
     out["measures"]["solid_states"] = {n: round(float(spec[:, k].sum()), 6) for n, k in
                                        (("dry", SOLID_D), ("lumped", SOLID_L), ("suspended", SOLID_S), ("cooked", SOLID_C))}
@@ -707,7 +616,6 @@ def evaluate(world, info, final=True):
 
 
 FAIL_SCORE_SCALE = 0.9           # a completion that is not a success scores at most 0.9 (label_application's rule)
-COOK_LAYERS = 3                  # cook_progress reads the least gelatinised of this many equal-mass layers of the sauce
 
 
 def layer_shares(z, cooked, wetted, mass, n):
@@ -723,31 +631,6 @@ def layer_shares(z, cooked, wetted, mass, n):
     c = np.bincount(layer, weights=cooked[order], minlength=n)
     s = np.bincount(layer, weights=wetted[order], minlength=n)
     return [round(float(c[i]/s[i]), 4) if s[i] > 0 else 0.0 for i in range(n)]
-
-
-def cook_progress(cooked, spilt, burnt_cm2, bottom_cm2, pan_in_place, hob_off, cooked_ok, fraction=0.95):
-    """stir-sauce's progress, from what the evaluator reads of the final state: how far the sauce has cooked, times the share of the batch still in the pan, times the share of the
-    pan's bottom not burnt on, times the closing state. Nothing in it is of the motion, the tool, the order or the
-    time taken; a pan left alone burns its whole bottom (unburnt 0), a knob turned off with nothing cooked has cook 0.
-
-      cook      the gelatinised share of the starch over the criterion's 95 %, at most 1; evaluate() passes the least
-                gelatinised of COOK_LAYERS equal-mass layers of the sauce in the pan (layer_shares): a layer cooked on
-                an unstirred bottom under cool milk is not the sauce thickening
-      keep      1 - the spilt share (contained's reading: on the counter, the floor, in the air, outside the pan below
-                its rim)
-      unburnt   1 - burnt-on area / the bottom's area (181 cm2): a ruined bottom is progress lost, as the burnt
-                film is in the pan
-      finish    0.75, + 0.10 with the pan on the hob, + 0.15 with the hob off once the sauce is cooked (the hob turned
-                off over a raw sauce is not progress). The weights, and the linear burn factor, are authored.
-
-    The four factors multiply: progress bought with a burnt pan or a lost batch is worth little, and no one factor
-    stands in for the cooking. A state that meets every criterion scores 1 whatever its progress."""
-    cook = min(1.0, max(0.0, float(cooked))/fraction)
-    keep = min(1.0, max(0.0, 1.0 - float(spilt)))
-    unburnt = min(1.0, max(0.0, 1.0 - float(burnt_cm2)/float(bottom_cm2)))
-    finish = 0.75 + 0.10*bool(pan_in_place) + 0.15*bool(hob_off and cooked_ok)
-    return dict(progress=round(cook*keep*unburnt*finish, 4), cook=round(cook, 4), keep=round(keep, 5),
-                unburnt=round(unburnt, 4), finish=round(finish, 2))
 
 
 def portion_temperatures(local, temp, mass, portion_m3, vp):

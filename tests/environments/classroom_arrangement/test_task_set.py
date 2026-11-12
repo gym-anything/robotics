@@ -364,7 +364,7 @@ class EvaluationTests(unittest.TestCase):
     def test_group_work_dispatch_is_unchanged(self):
         env = fixture("group-work", contract="v1")
         motion, window = env.window_motion()
-        self.assertEqual(env.evaluator.evaluate(), env.evaluator.by_place(motion, window))
+        self.assertEqual(env.evaluator.evaluate(), L.task_verifier("group-work").by_place(env.evaluator, motion, window))
         self.assertIsNone(reduction(0., 0.))
         self.assertEqual(reduction(0.25, 0.5), 0.5)
 

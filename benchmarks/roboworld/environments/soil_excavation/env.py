@@ -76,7 +76,11 @@ TOOL_START = {
                                           left=[shaft_grip(0.13, approach=(1., 0., 0.), up=(0., 1., 0.)) | dict(
                                               p=np.array([0., 0.13, 0.04]))])),
 }
-SECOND = {"set-post": ("tamper", "left"), "backfill-pipe": ("tamper", "left")}
+# the second tool a two-tool task holds and its hand, in TASKS order: a benchmark task's is its setup.py SECOND
+# (layout.task_setup), the other tasks' are here
+_SECOND = {"backfill-pipe": ("tamper", "left")}
+SECOND = {t: L.task_setup(t).SECOND if hasattr(L.task_setup(t), "SECOND") else _SECOND[t] for t in L.TASKS
+          if hasattr(L.task_setup(t), "SECOND") or t in _SECOND}
 
 
 class SoilEnv:

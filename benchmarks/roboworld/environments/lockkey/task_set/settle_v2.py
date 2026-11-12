@@ -33,7 +33,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from lockkey.newton15.evaluation import OPEN_LATERAL
+from .catalogue import task_setup
 from . import presets_v2 as presets
 
 SETTLE_S = .5
@@ -43,13 +43,12 @@ SHELL_OVERLAP_PAIR = frozenset({"shell", "key_bow"})
 MAX_SHELL_OVERLAP_M = 4.3e-4
 MAX_SETTLE_MOVE_M = .002
 MAX_KEY_SPEED_M_S = .05
-MAT_SPOT_M = .005
 # The design's bar, recorded per start (see the module docstring).
 SPEC_PENETRATION_M = 1e-4
 REST_SPEED_M_S = 1e-3          # key linear speed and every pin/driver joint speed at the end
 REST_SPIN_RAD_S = .05          # key angular speed at the end
-SETTLED = ("turn-to-open", "swing-open", "remove-key", "return-key")
-RELEASED = ("swing-open", "remove-key")
+# A task's setup.py (tasks/<task>/) says whether its start is settled (SETTLED) with the latch released
+# (LATCH_RELEASED), and adds its own checks of the settled start (check_settled).
 MECHANISM_PREFIXES = ("key_", "plug", "keypin_", "driver_", "shackle", "shell", "lock_casing")
 
 
@@ -80,7 +79,8 @@ def _contact_depths(env):
 
 def settle(env, task):
     """Run the settle on a freshly placed start (tick 0). Returns the settle record; raises if the start is invalid."""
-    if task not in SETTLED:
+    folder = task_setup(task)
+    if not getattr(folder, "SETTLED", False):
         return None
     if env.tick != 0:
         raise RuntimeError("The start settle runs only on a newly placed start")
@@ -134,21 +134,15 @@ def settle(env, task):
         problems.append(f"key moved {record['key_moved_m']*1e3:.1f} mm")
     if record["key_speed_m_s"] > MAX_KEY_SPEED_M_S:
         problems.append(f"key still moving at {record['key_speed_m_s']:.3f} m/s")
-    if bool(env.released) != (task in RELEASED):
-        problems.append(f"latch released={env.released}, intended {task in RELEASED}")
+    intended = getattr(folder, "LATCH_RELEASED", False)
+    if bool(env.released) != intended:
+        problems.append(f"latch released={env.released}, intended {intended}")
     lateral = e["shackle_short_leg_lateral_offset_m"]
-    if task == "return-key":
-        on_mat = (abs(key[0]-presets.MAT_KEY_XY[0]) < MAT_SPOT_M and abs(key[1]-presets.MAT_KEY_XY[1]) < MAT_SPOT_M
-                  and key[2] < env.config.table_height+.01)
-        if not on_mat:
-            problems.append(f"key left its place on the mat: {np.round(key[:3], 4).tolist()}")
-    else:
-        if not e["key_seated_now"]:
-            problems.append("key no longer seated")
-        if task == "remove-key" and not lateral > OPEN_LATERAL:
-            problems.append(f"shackle no longer open ({lateral*1e3:.2f} mm)")
-        if task == "swing-open" and not lateral < OPEN_LATERAL/2:
-            problems.append(f"shackle not over its bore ({lateral*1e3:.2f} mm)")
+    if presets.mid_cycle(task) and not e["key_seated_now"]:
+        problems.append("key no longer seated")
+    own = getattr(folder, "check_settled", None)
+    if own is not None:
+        own(env, key, lateral, problems)
     if problems:
         raise RuntimeError(f"lockkey {task}: constructed start is not valid after the {SETTLE_S} s settle: "
                            + "; ".join(problems))

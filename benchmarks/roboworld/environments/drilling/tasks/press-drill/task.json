@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/bench/press-drill/drilling-tasks-v2/seed-0",
+  "name": "press-drill",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "bench",
+    "task": "press-drill",
+    "seed": 0,
+    "contract": "drilling-tasks-v2"
+  },
+  "description": "Clamp the bar in the drill-press vise and drill a 9 mm hole through it at the punched mark. Leave the spindle stopped and the quill up.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

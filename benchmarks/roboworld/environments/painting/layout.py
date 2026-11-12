@@ -6,12 +6,14 @@ Presets are minor setup changes of the same room:
            long-reach brush in hand for behind-radiator)
   craft    C: folding table at the wall with watercolour paper on a drawing board, palette, round brush
   spray    D: folding table with an open spray box, a crate side under a "3" stencil and an aerosol can
-`setup(task, seed)` returns the episode spec: robot start, item poses, paints, wall colours, climate, held tools.
+`setup(task, seed)` returns the episode spec: robot start, item poses, paints, wall colours, climate, held tools. A
+benchmark task's own part of it is its setup.py (tasks/<task>/).
 """
 
 import math
 import numpy as np
 
+from gym_anything_robotics import task_folders
 from . import params as P
 
 R = P.ROOM
@@ -85,21 +87,23 @@ PRESETS = {
     "spray": ("spray-stencil", "clear-coat"),
 }
 
+# Every task's preset, tier and instruction. The tools a benchmark task starts with in hand are HELD in its setup.py
+# (tasks/<task>/); the other tasks keep theirs here (held).
 TASKS = {
-    "load-roller": dict(preset="wall", held=dict(right="roller"), tier="entry-medium", instruction=(
+    "load-roller": dict(preset="wall", tier="entry-medium", instruction=(
         "Load the dry roller cover in the tray: roll it in the paint well and on the ramp until it carries at least 50 g "
         "of paint spread around the nap, then hold it still above the tray for 10 s without a drip.")),
-    "roll-strip": dict(preset="wall", held=dict(right="roller"), tier="medium-hard", instruction=(
+    "roll-strip": dict(preset="wall", tier="medium-hard", instruction=(
         "Roll the marked 0.6 m-wide strip of the work wall (between the two blue tape marks, from the brushed band under "
         "the ceiling to the brushed band above the baseboard) to full hide, keeping a wet edge with the strip on its left, "
         "without runs, lap marks or paint on the ceiling, trim or outlet plate; then rest the roller in the tray.")),
     "cut-in-ceiling": dict(preset="wall", held=dict(right="sash"), tier="hard", instruction=(
         "With the angled sash brush, cut in a band at least 50 mm wide along 1.2 m of the wall-ceiling corner between "
         "the blue tape marks, reaching the corner without putting paint on the ceiling; load the brush from the cut pail.")),
-    "cut-in-trim": dict(preset="wall", held=dict(right="sash"), tier="hard", instruction=(
+    "cut-in-trim": dict(preset="wall", tier="hard", instruction=(
         "With the angled sash brush, cut in along the left side of the window casing and around the outlet plate, a band "
         "at least 40 mm wide, without paint on the casing or the plate.")),
-    "behind-radiator": dict(preset="wall", held=dict(right="longreach"), tier="hard", instruction=(
+    "behind-radiator": dict(preset="wall", tier="hard", instruction=(
         "With the long-reach dog-leg brush (load it from the cut pail), paint the wall behind the radiator -- the strip "
         "between the baseboard and the window apron -- to full hide, without getting paint on the radiator or the "
         "trim.")),
@@ -109,29 +113,37 @@ TASKS = {
     "fill-circle": dict(preset="craft", held=dict(right="round8"), tier="medium", instruction=(
         "With the round brush, fill the pencilled 60 mm circle on the watercolour paper evenly with the blue acrylic from "
         "the palette without crossing the line by more than 1 mm.")),
-    "brush-stroke": dict(preset="craft", held=dict(right="round8"), tier="hard", instruction=(
+    "brush-stroke": dict(preset="craft", tier="hard", instruction=(
         "With the round brush, paint the pencilled S-stroke on the paper with the red acrylic, swelling from 2 mm to 6 mm "
         "and back to 2 mm wide, staying within 1 mm of the template width.")),
-    "swatch-card": dict(preset="craft", held=dict(right="round8"), tier="medium", instruction=(
+    "swatch-card": dict(preset="craft", tier="medium", instruction=(
         "Paint the pencilled 50 x 50 mm square on the paper to full hide with the blue acrylic.")),
-    "spray-stencil": dict(preset="spray", held=dict(left="aerosol"), tier="hard", instruction=(
+    "spray-stencil": dict(preset="spray", tier="hard", instruction=(
         "Spray the number 3 through the stencil onto the crate side in the spray box, 25-40 cm from the target (the "
         "can's 10-16 in), building an even 25-50 um dry coat (the can's 1-2 mil) from light overlapping passes, with "
         "sharp edges and no runs, keeping overspray inside the box.")),
-    "clear-coat": dict(preset="spray", held=dict(left="aerosol"), tier="medium-hard", lacquer=True, instruction=(
+    "clear-coat": dict(preset="spray", tier="medium-hard", instruction=(
         "Clear-coat the photo print lying in the spray box evenly (25-50 um dry, built from light overlapping passes, "
         "25-40 cm from it) without runs, keeping overspray inside the box.")),
 }
 
 ROBOT_START = dict(wall=(-0.35, 0.70, math.pi/2), craft=(-0.35, 0.30, math.pi/2), spray=(-0.35, 0.30, math.pi/2))
 
-# strip / band targets on the wall chart (x0, x1, z0, z1) in world metres
-STRIP = dict(x0=-0.75, x1=-0.15, z0=0.15, z1=Z - 0.06)
+# cut-in-ceiling's band on the wall chart (x0, x1, z0, z1) in world metres; a benchmark task's strip or band is in its
+# folder (tasks/<task>/)
 CEILING_BAND = dict(x0=-1.30, x1=-0.10, z0=Z - 0.050, z1=Z)
-CASING_BAND = dict(x0=WX0 - CS - 0.04, x1=WX0 - CS, z0=WIN["sill"], z1=WIN["head"] + CS)
-OUTLET_BAND = dict(x0=OUT["x"] - OUT["w"]/2 - 0.04, x1=OUT["x"] + OUT["w"]/2 + 0.04, z0=OUT["z"] - OUT["h"]/2 - 0.04,
-                   z1=OUT["z"] + OUT["h"]/2 + 0.04)
-BEHIND_RAD = dict(x0=WIN["x"] - RAD["len"]/2, x1=WIN["x"] + RAD["len"]/2, z0=BB["h"], z1=WIN["sill"] - WIN["stool_t"] - WIN["apron"])
+
+PACKAGE = "painting"
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
 
 
 def yaw_quat(yaw):
@@ -152,17 +164,21 @@ def flat_quat(yaw):
 
 def setup(task, seed=0):
     """Episode spec for a task and seed. Seeds vary paint and wall colours, tray fill, tool placement (+-5 cm, +-10
-    deg), climate (18-27 C, RH 30-70 %) and, on the wall, the two spackle patches."""
+    deg), climate (18-27 C, RH 30-70 %) and, on the wall, the two spackle patches. A benchmark task's setup.py
+    (tasks/<task>/) gives the tools in hand (HELD), the spray preset's paint (PAINT) and what the task adds to the
+    preset's room (setup(spec, jit, ang), called last with the spec and the seeded draws)."""
     if task not in TASKS:
         raise ValueError(f"Unknown task {task!r}; choose from {sorted(TASKS)}")
     t = TASKS[task]
+    folder = task_setup(task)
+    held = t["held"] if folder is None else folder.HELD
     preset = t["preset"]
     rng = np.random.default_rng(1000 + int(seed))
     jit = (lambda s=0.05: float(rng.uniform(-s, s))) if seed else (lambda s=0.05: 0.0)
     ang = (lambda s=10: math.radians(float(rng.uniform(-s, s)))) if seed else (lambda s=10: 0.0)
     climate = dict(T_C=23.0, RH=0.50) if not seed else dict(T_C=float(rng.uniform(18, 27)), RH=float(rng.uniform(0.30, 0.70)))
     spec = dict(task=task, preset=preset, seed=int(seed), glides="nylon", climate=climate, items={}, books={},
-                robot=ROBOT_START[preset], held=dict(t["held"]), instruction=t["instruction"])
+                robot=ROBOT_START[preset], held=dict(held), instruction=t["instruction"])
     if preset == "wall":
         spec["paint"] = dict(kind="latex", color=PAINT_COLORS[seed % 3])
         spec["old_color"] = OLD_COLORS[(seed//3) % 3] if seed else "accessible_beige"
@@ -188,19 +204,14 @@ def setup(task, seed=0):
         items["tray"] = dict(kind="tray", pose=(-1.05 + jit(), 1.25 + jit(), 0.0, yaw_quat(math.pi/2 + ang())), fill=fill)
         items["pail"] = dict(kind="pail", pose=(-0.02 + jit(), 1.30 + jit(0.03), 0.0, yaw_quat(ang(30))), fill=0.6e-3)
         items["can"] = dict(kind="can", pose=(-1.45 + jit(), 1.42 + jit(0.03), 0.0, yaw_quat(0.0)), fill=P.CAN["fill"])
-        if "roller" not in t["held"].values():
+        if "roller" not in held.values():
             # lying on the drop cloth: handle (frame -z) along the floor, cover axis horizontal
             items["roller"] = dict(kind="roller", pose=(-0.55 + jit(), 1.22 + jit(0.03), 0.0315, lying_quat(ang())))
-        if "sash" not in t["held"].values():
+        if "sash" not in held.values():
             # lying flat on the cloth beside the pail (thickness vertical), bristles toward the room
             items["sash"] = dict(kind="sash", pose=(0.17 + jit(0.03), 1.20 + jit(0.03), 0.0103, flat_quat(ang(20))))
-        # wet bands already brushed for the roll-strip task (painter's order: cut in first, roll into it), and the strip
-        # rolled two minutes earlier on the left (seeded wet-edge age)
+        # wet films already on the wall at the start (a task's setup.py lays them: roll-strip)
         spec["prepainted"] = []
-        if task == "roll-strip":
-            spec["prepainted"] = [dict(region=(STRIP["x0"], STRIP["x1"] + 0.6, Z - 0.075, Z), h=110e-6, age=60.0),
-                                  dict(region=(STRIP["x0"], STRIP["x1"] + 0.6, BB["h"], BB["h"] + 0.075), h=110e-6, age=60.0),
-                                  dict(region=(STRIP["x0"] - 0.6, STRIP["x0"], BB["h"], Z), h=105e-6, age=120.0)]
         if task == "touch-up":
             spec["scuffs"] = [(-1.2 + 0.4*k + jit(0.05), 1.0 + 0.25*k + jit(0.05)) for k in range(3)]
     elif preset == "craft":
@@ -212,22 +223,17 @@ def setup(task, seed=0):
         items["board"] = dict(kind="board", pose=(-0.30 + jit(0.02), 1.28 + jit(0.02), zt, yaw_quat(ang(3))))
         items["palette"] = dict(kind="palette", pose=(-0.80 + jit(0.03), 1.20 + jit(0.03), zt, yaw_quat(ang(10))),
                                 wells={0: ("ultramarine", 9e-6), 1: ("cadmium_red", 9e-6)})
-        if "round8" not in t["held"].values():
+        if "round8" not in held.values():
             items["round8"] = dict(kind="round8", pose=(0.12, 1.15, zt + 0.0046, flat_quat(math.pi/2)))
     else:
-        lac = bool(t.get("lacquer"))
-        spec["paint"] = dict(kind="lacquer" if lac else "enamel", color="clear" if lac else "gloss_red")
+        spec["paint"] = dict(folder.PAINT)                      # the task's aerosol (its setup.py)
         spec["old_color"] = "accessible_beige"
         items = spec["items"]
         items["table"] = dict(kind="table", pose=(-0.35, 1.30, 0.0, yaw_quat(0.0)))
         zt = P.TABLE["height"]
         items["spray_box"] = dict(kind="spray_box", pose=(-0.10, 1.33, zt, yaw_quat(0.0)))
-        if lac:
-            spec["print"] = True
-        else:
-            cj, sj, a = jit(0.02), jit(0.02), ang(3)
-            items["crate"] = dict(kind="crate", pose=(-0.10 + cj, 1.33 + sj, zt + 0.004, yaw_quat(a)))
-            items["stencil"] = dict(kind="stencil", pose=(-0.10 + cj, 1.33 + sj, zt + 0.004 + 0.012, yaw_quat(a)))
-        if "aerosol" not in t["held"].values():
+        if "aerosol" not in held.values():
             items["aerosol"] = dict(kind="aerosol", pose=(-0.80, 1.20, zt, yaw_quat(0.0)))
+    if folder is not None:
+        folder.setup(spec, jit, ang)                            # the task's own start (tasks/<task>/setup.py)
     return spec

@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/uncap/pencap-tasks-v2",
+  "name": "uncap",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "uncap",
+    "contract": "pencap-tasks-v2"
+  },
+  "description": "Take the cap off the yellow pen and lay the pen and the cap down on the bench.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

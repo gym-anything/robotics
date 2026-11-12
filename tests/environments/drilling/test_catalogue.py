@@ -18,14 +18,17 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from drilling import catalogue as C, materials as M, params as P, variants
-from drilling.catalogue_evaluator import area_depth_share, configure_environment
+from drilling.catalogue_evaluator import configure_environment
 from drilling.config import Config
 from drilling.holes import Hole
 from drilling.layout import bench_layout
 from drilling.task import Evaluator, INSTRUCTIONS, _check
+from gym_anything_robotics import task_folders
 from tests.packages import PACKAGES
 
 ROOT = PACKAGES
+area_depth_share = task_folders.verifier("drilling", "panel-holes").area_depth_share
+lower_mark = task_folders.verifier("drilling", "timber-bolt").lower_mark
 
 
 class NoRuntime(importlib.abc.MetaPathFinder):
@@ -225,7 +228,7 @@ class EvaluatorTests(unittest.TestCase):
         env.evaluator.task = "ledger-anchor"
         env.evaluator.instruction = INSTRUCTIONS["ledger-anchor"]
         report = ([_check("ledger predicate", False)], dict(progress=0.37, scoring="progress v3"))
-        with patch.object(Evaluator, "_ledger_anchor", return_value=report):
+        with patch.object(task_folders.verifier("drilling", "ledger-anchor"), "checks", return_value=report):
             self.assertEqual(env.evaluator.evaluate(), Evaluator.evaluate(env.evaluator))
             self.assertAlmostEqual(env.evaluator.evaluate()["score"], 0.333)
             self.assertNotIn("contract", env.evaluator.evaluate())
@@ -400,7 +403,7 @@ class EvaluatorTests(unittest.TestCase):
         rot = Rotation.from_euler("y", -1., degrees=True)
         top.a = rot.apply([0., 0., -1.])
         bottom.a = top.a.copy()
-        bottom.p0 = env.evaluator._timber_lower_mark(top)
+        bottom.p0 = lower_mark(env.evaluator, top)
         # The bolt follows the same slightly tilted hole, not a forced vertical path.
         p0, r0 = env.poses["board0"]
         env.poses["carriage_bolt"] = (p0 + r0 @ (bottom.p0 + bottom.a*0.040),

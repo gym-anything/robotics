@@ -9,11 +9,29 @@ ends-meet < 3 mm, Army tail 38 mm); the pucker gate is authored (AATCC 88B is ph
 Material frame of a ply: u across the seam (the seam edge is u = width), v along it. The stack starts with its far
 end (v = length) under the foot just past the needle, so a seam runs from v ~ length toward v = 0 as the machine feeds
 the plies away from the operator.
+
+A benchmark task's own start settings and checks are in its folder, tasks/<task>/ (setup.py, verifier.py); this module
+keeps the measurements and checks the tasks share, and the tasks outside the benchmark (baste, three-sides).
 """
 
 import math
 
 import numpy as np
+
+from gym_anything_robotics import task_folders
+
+PACKAGE = "sewing"
+
+
+def task_setup(task):
+    """A benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task in task_folders.names(PACKAGE) else None
+
+
+def task_verifier(task):
+    """A benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task in task_folders.names(PACKAGE) else None
+
 
 PRESETS = ("sample-room",)
 TASKS = {"load": "A0", "plain-seam": "A1", "baste": "A2", "pivot": "A5", "curve": "A6"}
@@ -44,14 +62,15 @@ def instruction(task, robot=None):
     return text + G1_MACHINE_NOTE if robot == "g1" else text
 
 
-# start states and per-task machine/ply settings (the policy may change speed, presser, needle stop, reverse, trim)
+# start states and per-task machine/ply settings (the policy may change speed, presser, needle stop, reverse, trim); a
+# benchmark task's are PLIES in its setup.py
 TASK_SETUP = {
-    "load": dict(start="tray", ply_width=0.200, ply_length=0.420, stitch_length=2.5e-3),
-    "plain-seam": dict(start="under_foot", ply_width=0.200, ply_length=0.420, stitch_length=2.5e-3),
+    "load": task_setup("load").PLIES,
+    "plain-seam": task_setup("plain-seam").PLIES,
     "baste": dict(start="under_foot", ply_width=0.200, ply_length=0.420, stitch_length=5.0e-3,
                   seam_allowance=0.006, needle_tension=0.35),
-    "pivot": dict(start="under_foot", ply_width=0.200, ply_length=0.200, stitch_length=2.5e-3),
-    "curve": dict(start="under_foot", ply_width=0.200, ply_length=0.300, stitch_length=2.5e-3, corner_radius=0.100),
+    "pivot": task_setup("pivot").PLIES,
+    "curve": task_setup("curve").PLIES,
 }
 TIME_LIMIT_S = {"load": 60.0, "plain-seam": 120.0, "baste": 120.0, "pivot": 120.0, "curve": 120.0}
 
@@ -71,8 +90,10 @@ INSTRUCTIONS.update({
                      "and join them with a plain seam 10 mm from their right edges along the whole length; "
                      "backtack three or four stitches at both ends, trim the threads and let go of the work.",
 })
-for _task, _base in (("seam-to-notch", "plain-seam"), ("square-plies", "load"),
-                     ("three-sides", "pivot"), ("load-and-seam", "load")):
+# a task that reuses another's start (a benchmark task's BASE in its setup.py) takes a copy of its settings
+for _task, _base in (("seam-to-notch", task_setup("seam-to-notch").BASE),
+                     ("square-plies", task_setup("square-plies").BASE),
+                     ("three-sides", "pivot"), ("load-and-seam", task_setup("load-and-seam").BASE)):
     TASK_SETUP[_task] = dict(TASK_SETUP[_base])
     TIME_LIMIT_S[_task] = 180.0 if _task in ("three-sides", "load-and-seam") else TIME_LIMIT_S[_base]
 
@@ -101,10 +122,9 @@ SAME_PLACE = 0.5e-3          # the curve: stitches within this of a place's firs
 JOIN_SECURE = 25.4e-3/4      # the curve: the seam inside each end of a trimmed piece, within the seam, sewn at least
                              # twice (backtacked, locked or overlapped) [read: GL-PD-20023 3.5.2, ends "backstitched
                              # or overstitched not less than 1/4 inch"; MIL-DTL-32184 asks 1/2 in for a restart]
-# the curve's partial score (Evaluator._partial_curve) [authored, none measured]
+# the curve's partial score (partial in tasks/curve/verifier.py) [authored, none measured]
 CURVE_SOFT = 1.6e-3          # a stitch's credit falls linearly from 1 at TOL_LINE off the line to 0 this much further
 CURVE_SOFT_REG = 3.0e-3      # and from 1 with the plies' material points ENDS_MEET apart to 0 this much further
-CURVE_SEAM_SHARE = 0.90      # the seam's share; 0.05 more once trimmed and 0.05 more for letting go once trimmed
 CURVE_DAMAGE = {"damaged": 0.75, "bent": 0.5, "broken": 0.5}  # factor by the needle's state
 CURVE_FAULT = 0.75           # factor for a broken thread (a protective stop is judged by success only)
 CURVE_PARTIAL_MAX = 0.95     # the most a seam that fails a check scores: 1.0 is success only
@@ -573,195 +593,15 @@ class Evaluator:
                                     note="not scored while identical inputs give two seam shapes")
         return c
 
-    def _eval_load(self):
-        env = self.env
-        w = env.world
-        W, L = w.config.ply_width, w.config.ply_length
-        c = {}
-        c["foot_down"] = _check(w.machine.presser == "down" and w.machine.foot_N > 1.0, round(w.machine.foot_N, 2))
-        for k in (0, 1):
-            hits = self.under_needle(k)
-            c[f"ply{k}_single_layer"] = _check(len(hits) == 1, len(hits))
-            if hits:
-                u, v = hits[0]
-                c[f"ply{k}_seam_allowance"] = _check(abs((W - u) - 0.010) <= TOL_LINE, round((W - u)*1e3, 2),
-                                                     "10 +- 1.6 mm")
-                c[f"ply{k}_from_end"] = _check(3e-3 <= L - v <= 8e-3, round((L - v)*1e3, 2), "3-8 mm")
-        off, n_edge = self.ply_registration()
-        c["edges_aligned"] = _check(n_edge > 0 and off <= 1.5e-3,
-                                    dict(misregistration_mm=round(off*1e3, 2), edge_points=n_edge),
-                                    "<= 1.5 mm in material coordinates, where the plies lie stacked")
-        c["no_reflex"] = _check(not w.reflexes, len(w.reflexes))
-        return c
-
-    def _eval_plain_seam(self):
-        c = self.seam_checks(0.010, 2.5e-3, backtack=True)
-        c.update(self.common())
-        return c
-
     def _eval_baste(self):
         c = self.seam_checks(0.006, 5.0e-3, backtack=False, reverse_allowed=False)
         c.update(self.common())
         return c
 
-    def _eval_pivot(self):
-        env = self.env
-        w = env.world
-        W, L = w.config.ply_width, w.config.ply_length
-        st = [s for s in self.stitches() if s["formed"] and s["plies"] == [0, 1]]
-        c = {}
-        c["stitches_formed"] = _check(len(st) >= 6, len(st))
-        if len(st) >= 6:
-            uv = np.array([s["holes"][1] for s in st])
-            corner = np.array([W - 0.010, 0.010])
-            d = np.linalg.norm(uv - corner, axis=1)
-            k = int(np.argmin(d))
-            c["corner"] = _check(d[k] <= TOL_LINE, round(float(d[k])*1e3, 2), "<= 1.6 mm from (10, 10) mm")
-            leg1, leg2 = uv[:k + 1], uv[k:]
-            e1 = np.abs((W - leg1[:, 0]) - 0.010).max() if len(leg1) else 0.
-            e2 = np.abs(leg2[:, 1] - 0.010).max() if len(leg2) else 0.
-            c["leg1_line"] = _check(e1 <= TOL_LINE, round(float(e1)*1e3, 3))
-            c["leg2_line"] = _check(e2 <= TOL_LINE, round(float(e2)*1e3, 3))
-            gaps = np.linalg.norm(np.diff(uv, axis=0), axis=1)/_spans(st, self.stitches())
-            c["continuous"] = _check(gaps.max() <= 3.5e-3, round(float(gaps.max())*1e3, 2),
-                                     "<= 3.5 mm per stitch (a skipped stitch's span counts two)")
-            c["skips"] = _skips(self.stitches())
-            c["leg2_reaches_left_edge"] = _check(leg2[:, 0].min() <= END_REACH if len(leg2) else False,
-                                                 round(float(leg2[:, 0].min())*1e3, 2) if len(leg2) else None)
-        c.update(self.common())
-        return c
+    # the checks of a task's primary outcome (a benchmark task's are PRIMARY in its verifier.py)
+    PRIMARY = {"baste": ("stitches_formed",)}
 
-    PRIMARY = {"plain-seam": ("stitches_formed",), "baste": ("stitches_formed",), "pivot": ("stitches_formed",),
-               "curve": ("stitches_formed",),
-               "load": ("ply0_single_layer", "ply1_single_layer")}
-
-    def _curve_seam(self):
-        """The curve's stitches measured on the work. Every formed stitch through exactly one hole in each ply (two),
-        forward or reverse, in any order: each hole's distance from the edge path (d) and its place along the line 10 mm
-        inside it (s: arc length from the far end of the right edge), the worse of its two holes off the line (dev), the
-        two plies' material points apart (reg). Every formed stitch, whatever plies it binds (formed): its holes'
-        distances from the edge (d_all) and its worse hole off the line (dev_formed). The places of the skipped
-        stitches' holes on each ply (skip_s). The sequences of sewing on places (runs, indices into two; see the comments
-        below): their stitches per inch on each ply, smallest and largest over every inch window inside a
-        sequence (density, None without one), and each stitch's mean step between places over the inch about it
-        (step_local). The thread between consecutive formed stitches of one seam piece, in the work (links): the
-        needle thread from top hole to top hole, the bobbin's from bottom to bottom, the longer. The shortest seam
-        sewn twice inside an end of a trimmed piece within the seam (joins, None without one). The line's length (ell)."""
-        from .mesh import seam_edge_path
-        w = self.env.world
-        W, L, R, A = w.config.ply_width, w.config.ply_length, w.config.corner_radius, w.config.seam_allowance
-        edge = seam_edge_path(W, L, R, n_arc=96)
-        line = seam_edge_path(W, L, R, A, n_arc=96)
-        st = self.stitches()
-        formed = [s for s in st if s["formed"] and s["holes"]]
-        two = [s for s in formed if s["plies"] == [0, 1]]
-        uv = np.array([s["holes"][k] for s in two for k in (0, 1)], float).reshape(-1, 2)
-        d = _polyline_distance(uv, edge)[0].reshape(-1, 2)
-        at2 = _polyline_distance(uv, line)[1].reshape(-1, 2)
-        allh = np.array([h for s in formed for h in s["holes"].values()], float).reshape(-1, 2)
-        d_all = _polyline_distance(allh, edge)[0]
-        cut = np.cumsum([0] + [len(s["holes"]) for s in formed])
-        dev_formed = np.array([np.abs(d_all[cut[i]:cut[i + 1]] - A).max() for i in range(len(formed))])
-        skipped = [s for s in st if not s["formed"] and s["reason"] not in NOT_A_SKIP]
-        skip_s = [np.sort(_polyline_distance(np.array([s["holes"][k] for s in skipped if k in s["holes"]],
-                                                      float).reshape(-1, 2), line)[1]) for k in (0, 1)]
-        at = at2.mean(axis=1)
-        # places and sequences: the stitches of the seam in sewing order, a skipped stitch's holes included
-        # (skips judges the skip itself), collapsed into places while within SAME_PLACE of a place's first stitch (a pile,
-        # a lock or a bar tack is one place; a slow creep is a place every SAME_PLACE); a sequence is consecutive places
-        # of one seam piece and feed direction moving the same way along the line, a step up to THREAD_LINK_MAX (a
-        # longer thread is judged by no_long_threads)
-        two_id = {id(x): i for i, x in enumerate(two)}
-        members = [x for x in st if (id(x) in two_id) or (not x["formed"] and x["reason"] not in NOT_A_SKIP
-                                                         and sorted(x["holes"]) == [0, 1])]
-        m_at = np.array([_polyline_distance(np.array([x["holes"][k] for k in (0, 1)], float), line)[1]
-                         for x in members], float).reshape(-1, 2)
-        seqs, places, sign = [], [], 0.0            # places: [members' indices]; seqs: [places]
-        for i, x in enumerate(members):
-            if places:
-                first = members[places[-1][0]]
-                d0 = float(m_at[i].mean() - m_at[places[-1][0]].mean())
-                if x["reverse"] == first["reverse"] and x["seam"] == first["seam"] and abs(d0) < SAME_PLACE:
-                    places[-1].append(i)
-                    continue
-                prev = members[places[-1][-1]]
-                step = float(m_at[i].mean() - m_at[places[-1][0]].mean())
-                if (x["reverse"] == prev["reverse"] and x["seam"] == prev["seam"] and abs(step) <= THREAD_LINK_MAX
-                        and (sign == 0.0 or np.sign(step) == sign)):
-                    sign = sign or float(np.sign(step))
-                    places.append([i])
-                    continue
-                seqs.append(places)
-            places, sign = [[i]], 0.0
-        if places:
-            seqs.append(places)
-        density, step_local, runs = None, np.full(len(two), np.nan), []
-        for q in seqs:
-            pos = np.array([m_at[pl].mean(axis=0) for pl in q])        # (places, plies)
-            runs.append([two_id[id(members[i])] for pl in q for i in pl if id(members[i]) in two_id])
-            if len(q) < 2:
-                continue
-            for k in (0, 1):
-                c = np.sort(np.abs(pos[:, k] - pos[0, k]))
-                if c[-1] - c[0] >= INCH:
-                    x0 = np.arange(c[0], c[-1] - INCH + 1e-12, 0.25e-3)
-                    n = np.searchsorted(c, x0 + INCH) - np.searchsorted(c, x0)
-                    density = (min(density[0], int(n.min())) if density else int(n.min()),
-                               max(density[1], int(n.max())) if density else int(n.max()))
-            c = np.abs(pos.mean(axis=1) - pos[0].mean())
-            for m, pl in enumerate(q):
-                lo, hi = np.searchsorted(c, c[m] - 0.5*INCH), np.searchsorted(c, c[m] + 0.5*INCH, side="right") - 1
-                if hi > lo:
-                    mean_step = (c[hi] - c[lo])/(hi - lo)
-                else:                             # no other place in the inch about it: the step to its nearer neighbour
-                    mean_step = min([c[m] - c[m - 1]]*(m > 0) + [c[m + 1] - c[m]]*(m < len(q) - 1))
-                for i in pl:
-                    if id(members[i]) in two_id:
-                        step_local[two_id[id(members[i])]] = mean_step
-        # joins: each end of a trimmed seam piece inside the seam (not within END_REACH of the far end or the
-        # line's end) has the JOIN_SECURE of seam inside it sewn at least twice, by its own backtack or lock or by
-        # another piece overlapping it; the smallest such length over every interior end (None without one)
-        ell = float(np.linalg.norm(np.diff(line, axis=0), axis=1).sum())
-        spans_seq = []
-        for j, q in enumerate(seqs):
-            pts = [float(m_at[i].mean()) for pl in q for i in pl]
-            if j:                                 # the thread from the previous stitch of the piece sews into it too
-                prev = seqs[j - 1][-1][-1]
-                if (members[prev]["seam"] == members[q[0][0]]["seam"]
-                        and abs(float(m_at[prev].mean()) - pts[0]) <= THREAD_LINK_MAX):
-                    pts.append(float(m_at[prev].mean()))
-            spans_seq.append((min(pts), max(pts), members[q[0][0]]["seam"]))
-        joins = None
-        pieces = sorted({sq[2] for sq in spans_seq}, key=lambda v: (v is None, v))
-        if len(pieces) > 1:
-            grid = np.arange(0.0, ell, 0.1e-3)
-            passes = np.zeros(len(grid), int)
-            for lo_, hi_, _ in spans_seq:
-                passes[(grid >= lo_ - 0.5*STEP_MAX) & (grid <= hi_ + 0.5*STEP_MAX)] += 1
-            for piece in pieces:
-                ends = [sq for sq in spans_seq if sq[2] == piece]
-                for e, inward in ((min(sq[0] for sq in ends), 1.0), (max(sq[1] for sq in ends), -1.0)):
-                    if e <= END_REACH or e >= ell - END_REACH:
-                        continue
-                    depth = (grid - e)*inward
-                    sel = np.nonzero((depth >= 0) & (depth <= JOIN_SECURE))[0]
-                    sel = sel[np.argsort(depth[sel])]
-                    single = np.nonzero(passes[sel] < 2)[0]
-                    secured = JOIN_SECURE if not len(single) else float(depth[sel[single[0]]])
-                    joins = secured if joins is None else min(joins, secured)
-        links = []
-        for a, b in zip(formed[:-1], formed[1:]):
-            if a["seam"] == b["seam"]:
-                top = [np.asarray(x["holes"].get(1, x["holes"].get(0)), float) for x in (a, b)]
-                bottom = [np.asarray(x["holes"].get(0, x["holes"].get(1)), float) for x in (a, b)]
-                links.append(max(float(np.linalg.norm(top[1] - top[0])), float(np.linalg.norm(bottom[1] - bottom[0]))))
-        return dict(stitches=st, formed=formed, two=two, d=d, s=at2, dev=np.abs(d - A).max(axis=1),
-                    reg=np.linalg.norm(uv[0::2] - uv[1::2], axis=1), d_all=d_all, dev_formed=dev_formed,
-                    is_two=np.array([s["plies"] == [0, 1] for s in formed], bool), skip_s=skip_s, runs=runs,
-                    density=density, step_local=step_local, links=np.asarray(links, float), joins=joins,
-                    ell=float(np.linalg.norm(np.diff(line, axis=0), axis=1).sum()))
-
-    def _eval_curve(self):
+    def _eval_curve(self, seam=None):
         """The seam 10 mm inside the curved edge (task A6), judged on the finished work, not on how or in which
         order it was sewn: every hole of every formed stitch within
         1/16 in of 10 mm from the edge path (right edge, the rounded corner, the near edge); the two plies joined at the
@@ -772,8 +612,10 @@ class Evaluator:
         Every formed stitch through both plies counts, forward or reverse: a backtack, a lock over earlier stitches, a
         restart over the seam, a seam in trimmed pieces and a seam sewn from the left edge are the same seam. Cycles
         with no fabric under the needle are not skipped stitches. The authored 0.8 mm mean allowance is
-        recorded, not judged (it fails seams inside the sourced 1/16 in); one-ply stitches are judged by seam_line."""
-        g = self._curve = self._curve_seam()
+        recorded, not judged (it fails seams inside the sourced 1/16 in); one-ply stitches are judged by seam_line.
+        seam(e) measures the stitches (the curve's curve_seam, tasks/curve/verifier.py); without it the evaluator's own
+        _curve_seam does (the task-set evaluators, task_set_scoring.py, against their target lines)."""
+        g = self._curve = seam(self) if seam is not None else self._curve_seam()
         w = self.env.world
         A = w.config.seam_allowance
         n = len(g["two"])
@@ -824,59 +666,6 @@ class Evaluator:
         c.update(self.common(per_pad_release=True))
         return c
 
-    def _partial_curve(self, checks):
-        """The curve's score short of success (constants authored, none measured):
-        the share of the seam's required span, 6 mm from either end along the line, sewn through both plies, each
-        stitch covering half the 3.5 mm step either side of its place with its credit, the best stitch at a place
-        counting once (overlaps add nothing). A stitch's credit is the least of: 1 within 1/16 in of the line falling
-        linearly to 0 at 3.2 mm; 1 with the plies' material points within 3 mm falling to 0 at 6 mm apart; 1 with the
-        mean step of its run's inch about it in the 9-12 stitches-an-inch band falling to 0 at 1.5 and 3.5 mm
-        (STITCH_BOUNDS); 0 where the thread to it broke. Times 1 - strays / the stitches the required span takes, a stray
-        being a formed stitch off the line or with its plies apart (credit 0 there, whatever plies it binds) or a thread
-        longer than THREAD_LINK_MAX: rework, which re-sewing over the seam neither adds nor dilutes. Times the needle's
-        damage factor (CURVE_DAMAGE) and CURVE_FAULT for a broken thread. Times 0.90, + 0.05 once the threads are
-        trimmed and + 0.05 for letting go once trimmed; at most 0.95. The order, direction, speed and method of sewing,
-        pivots, presser lifts and backtacks earn nothing and cost nothing; a protective stop is judged by success
-        only."""
-        g, M = self._curve, self.env.world.machine
-        broken = {t.get("cycle") for t in M.threads if t["broken"]}
-        place = np.minimum(np.clip(1.0 - (g["dev"] - TOL_LINE)/CURVE_SOFT, 0.0, 1.0),
-                           np.clip(1.0 - (g["reg"] - ENDS_MEET)/CURVE_SOFT_REG, 0.0, 1.0))
-        lo_band, hi_band = INCH/(SPI_BAND[1] + 1), INCH/SPI_BAND[0]
-        m = g["step_local"]
-        dens = np.ones(len(m))
-        known = ~np.isnan(m)
-        dens[known] = np.clip(np.minimum((m[known] - STITCH_BOUNDS[0])/(lo_band - STITCH_BOUNDS[0]),
-                                         (STITCH_BOUNDS[1] - m[known])/(STITCH_BOUNDS[1] - hi_band)), 0.0, 1.0)
-        credit = np.minimum(place, dens)
-        credit[np.array([s["cycle"] in broken for s in g["two"]], bool)] = 0.0
-        grid = np.arange(END_REACH, g["ell"] - END_REACH, 0.05e-3) + 0.025e-3
-        best, owner = np.zeros(len(grid)), np.full(len(grid), -1)
-        at = g["s"].mean(axis=1)
-        for k in np.argsort(credit, kind="stable"):          # ascending: the best stitch at a place is written last
-            if credit[k] > 0:
-                a, b = np.searchsorted(grid, [at[k] - 0.5*STEP_MAX, at[k] + 0.5*STEP_MAX])
-                best[a:b], owner[a:b] = credit[k], k
-        coverage = float(best.mean()) if len(grid) else 0.0
-        # rework: a stitch that is the best nowhere counts 1 - its place credit (on the line: nothing; off it:
-        # in proportion); a formed one-ply stitch 1 - its line credit; a thread over THREAD_LINK_MAX 1
-        dominated = np.ones(len(place), bool)
-        dominated[np.unique(owner[owner >= 0])] = False
-        one_ply = np.clip(1.0 - (g["dev_formed"][~g["is_two"]] - TOL_LINE)/CURVE_SOFT, 0.0, 1.0)
-        strays = (float(np.sum(1.0 - place[dominated])) + float(np.sum(1.0 - one_ply))
-                  + float(np.sum(g["links"] > THREAD_LINK_MAX)))
-        need = (g["ell"] - 2*END_REACH)/self.env.world.config.stitch_length
-        rework = max(0.0, 1.0 - strays/need)
-        damage = min(CURVE_DAMAGE.get(M.needle_state, 1.0), CURVE_FAULT if broken else 1.0)
-        trimmed = M.tether == "trimmed"
-        let_go = trimmed and checks["released"]["ok"]
-        score = CURVE_PARTIAL_MAX*damage*rework*coverage*(CURVE_SEAM_SHARE + 0.05*trimmed + 0.05*let_go)
-        self._info["partial_score"] = dict(value=round(score, 4), coverage=round(coverage, 4), strays=round(strays, 3),
-                                           rework_factor=round(rework, 4), damage=damage, trimmed=trimmed,
-                                           let_go=let_go, path_mm=round(g["ell"]*1e3, 1),
-                                           note="the score short of success (1.0 on success)")
-        return score
-
     def _balance(self, stitches):
         """The stitches' balance, recorded but not scored: balance follows from the two set tensions through the
         capstan law (machine.py), which no task lets the policy change, so it is the same for every stitch a policy can
@@ -887,21 +676,34 @@ class Evaluator:
                                          note="not scored: set by the tensions, which the tasks fix")
 
     def evaluate(self):
+        """The episode's evaluation (verdict): a benchmark task's verifier.py (tasks/<task>/) decides, its verify(e)
+        calling verdict with the task's checks; a task outside the benchmark (baste) has its _eval_ method here."""
+        folder = task_verifier(self.env.config.task)
+        if folder is not None:
+            return folder.verify(self)
+        return self.verdict()
+
+    def verdict(self, checks=None, *, primary=None, partial=None, outcome=None, blend=None):
         """success: every check passes. score: for the curve, 1.0 on success and otherwise its continuous partial
-        score (_partial_curve), 0 with nothing sewn; for the other tasks the fraction of checks passed, and 0 while the
-        task's primary outcome is absent (no stitch through both plies; for load, the plies not lying under the
-        needle): the common checks (needle intact, released, ...) hold for a policy that does nothing and must not
-        score it. info: recorded quantities that are not checks (balance; the curve's partial score and its parts)."""
+        score (partial in tasks/curve/verifier.py), 0 with nothing sewn; for the other tasks the fraction of checks
+        passed, and 0 while the task's primary outcome is absent (no stitch through both plies; for load, the plies not
+        lying under the needle): the common checks (needle intact, released, ...) hold for a policy that does nothing
+        and must not score it. info: recorded quantities that are not checks (balance; the curve's partial score and
+        its parts).
+
+        The task's parts: checks(e) its checks (else its _eval_ method here), primary the checks of its primary
+        outcome (else PRIMARY here), partial(e, checks) its score short of success (else the fraction above). outcome
+        and blend are the task-set contracts' (task_set_scoring.TaskEvaluator.verdict) and are not used here."""
         task = self.env.config.task
         self._info = {}
         name = task.replace("-", "_")
-        checks = getattr(self, "_eval_" + name)()
+        checks = checks(self) if checks is not None else getattr(self, "_eval_" + name)()
         passed = [v["ok"] for v in checks.values()]
-        primary = all(checks.get(k, {"ok": False})["ok"] for k in self.PRIMARY.get(task, ()))
+        keys = self.PRIMARY.get(task, ()) if primary is None else primary
+        primary = all(checks.get(k, {"ok": False})["ok"] for k in keys)
         success = bool(passed) and all(passed)
-        partial = getattr(self, "_partial_" + name, None)
         if partial is not None:
-            p = partial(checks)
+            p = partial(self, checks)
             score = 1.0 if success else float(p)
         else:
             score = float(np.mean(passed)) if passed and primary else 0.0

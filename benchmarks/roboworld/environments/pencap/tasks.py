@@ -1,4 +1,6 @@
-"""Physics-free task discovery. The empty selection retains the original seat-cap launch."""
+"""Physics-free task discovery. The empty selection retains the original seat-cap launch.
+
+Each task's own start and success code is in its folder, tasks/<task>/ (task_setup, task_verifier)."""
 
 DEFAULT_TASK = "seat-cap"
 TASKS = (DEFAULT_TASK, "pen-on-notebook", "unload-fixture", "reseat-cap",
@@ -19,13 +21,24 @@ INSTRUCTIONS = {
                       "press it until it snaps fully into place, leaving the capped pen standing in the fixture.",
 }
 CONTRACTS = {task: f"pencap/{task}-v1" for task in TASKS}
-FIXTURE_TASKS = frozenset(("unload-fixture", "load-fixture", "cap-in-fixture"))
 
 
 def validate(task):
     if not isinstance(task, str) or task not in TASKS:
         raise ValueError(f"Unknown pencap task {task!r}; choose one of {', '.join(TASKS)}")
     return task
+
+
+def task_setup(task):
+    """The task's setup.py in its folder, tasks/<task>/ (gym_anything_robotics.task_folders): its start."""
+    from gym_anything_robotics import task_folders
+    return task_folders.setup("pencap", task)
+
+
+def task_verifier(task):
+    """The task's verifier.py in its folder, tasks/<task>/: its success check and progress."""
+    from gym_anything_robotics import task_folders
+    return task_folders.verifier("pencap", task)
 
 
 def task_resolve(selection):

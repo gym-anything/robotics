@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "concrete-finishing/v1/b012/patch-drywall/concrete-tasks-v2/seed-0",
+  "name": "patch-drywall",
+  "env_id": "concrete-finishing",
+  "split": "train",
+  "selection": {
+    "preset": "b012",
+    "task": "patch-drywall",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+  },
+  "description": "Fill the anchor holes and knife the patch flush.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

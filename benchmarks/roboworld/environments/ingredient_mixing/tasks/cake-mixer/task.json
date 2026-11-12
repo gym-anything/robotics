@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/bake/cake-mixer/contract-ingredient-mixing-tasks-v2/seed-0",
+  "name": "cake-mixer",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "bake",
+    "task": "cake-mixer",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+  },
+  "description": "The bowl holds cake mix with water, oil and eggs. The hand mixer stands on its heel beside the bowl, switched off. Beat the batter with the mixer until smooth. Leave the mixer switched off and set down on the counter, out of the bowl. Keep the batter in the bowl.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -15,7 +15,7 @@ task_evaluation.evaluate ask this module for the detection rule and the evaluati
 from types import SimpleNamespace
 
 from .presets import SCREWS, flag_home, pretightened_screws
-from .task import EIGHT_ORDER, NEW_TASKS, TASKS, instruction
+from .task import EIGHT_ORDER, TASKS, instruction, task_verifier
 from .task_evaluation import FAIL_FACTOR, clip, decreasing, required, score_state
 
 CONTRACT = "tighten-tasks-v2"
@@ -37,8 +37,8 @@ def detection_margin(config):
     """Margin subtracted from the flag's half-width/height for detection. Other tasks: the whole nominal 4.2 mm spot
     on the 10 x 44 mm face. mixed: most of the spot on the face (its centre on it). The rule follows the task, not
     the contract: sensor and aim keep their whole-spot rule; only the tasks built on mixed (front-m4, find-loose) use
-    mixed's."""
-    return 0. if config.task == "mixed" or config.task in NEW_TASKS else .0021
+    mixed's. A task's verifier.py sets SPOT_CENTRE_DETECTION for mixed's rule."""
+    return 0. if getattr(task_verifier(config.task), "SPOT_CENTRE_DETECTION", False) else .0021
 
 
 def resolve(selection):
@@ -63,8 +63,10 @@ def resolve(selection):
 def evaluate(env, metrics):
     """task_evaluation.evaluate with each task's own detection rule at the flag's home."""
     config = env.config
+    # The task's criteria: its verifier.py (tasks/<task>/).
+    criteria = task_verifier(config.task)
     need = required(config)
-    keep_names = pretightened_screws(config) if config.task in NEW_TASKS else ()
+    keep_names = pretightened_screws(config) if getattr(criteria, "PRESERVE_OTHERS", False) else ()
     optical = env._optical()
     q = env.state.joint_q.numpy()
     starts = env.model.joint_q_start.numpy()
@@ -89,18 +91,20 @@ def evaluate(env, metrics):
     tol = config.rail_level_tolerance_rad
     level = decreasing(rail["pitch"], tol, env.FREE_DROOP_RAD)
     square = decreasing(rail["yaw"], tol, config.rail_yaw_clearance_rad)
-    slot_band = .0005 if config.task == "support" else .001
-    slot = decreasing(rail["offset"], slot_band, .0015 if config.task == "support" else .003)
-    if config.task not in ("frame", "support"):
+    reference = getattr(criteria, "RAIL_SLOT_M", None)     # (band, zero) of the rail's slot offset
+    if reference is not None:
+        slot_band = reference[0]
+        slot = decreasing(rail["offset"], slot_band, reference[1])
+    else:
         square = slot = 1.
     rail_ok = (abs(pitch) <= tol and abs(rail["pitch"]) <= tol)
-    if config.task in ("frame", "support"):
+    if reference is not None:
         rail_ok = rail_ok and abs(yaw) <= tol and abs(rail["yaw"]) <= tol and abs(offset) <= slot_band and abs(rail["offset"]) <= slot_band
-    if config.task in ("sensor", "aim"):
+    if not getattr(criteria, "RAIL_LEVEL", True):
         rail_ok = True
-    need_optical = config.task in ("sensor", "aim", *NEW_TASKS)
+    need_optical = getattr(criteria, "DETECTION", False)
     torque_ok = all(metrics[n]["peak_bit_socket_moment_2ms_nm"] <= .4 for n in SCREWS[:2])
-    group = "sensor" if config.task in ("sensor", "aim") else "frame"
+    group = getattr(criteria, "HANDS_OFF_GROUP", "frame")
     hands_off = not env._held[group]
 
     def retained(name):

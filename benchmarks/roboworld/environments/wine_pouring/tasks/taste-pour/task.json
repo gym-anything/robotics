@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/service/taste-pour/wine-tasks-v2/seed-0",
+  "name": "taste-pour",
+  "env_id": "wine-pouring",
+  "split": "train",
+  "selection": {
+    "preset": "service",
+    "task": "taste-pour",
+    "seed": 0,
+    "contract": "wine-tasks-v2"
+  },
+  "description": "Pour the host a tasting measure: 30-45 mL of red wine into the glass at spot 2; no spills or drips; bottle back on its coaster.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

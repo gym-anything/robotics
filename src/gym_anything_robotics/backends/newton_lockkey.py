@@ -18,10 +18,10 @@ class NewtonLockKeyBackend(RoboticsBackend):
     def __init__(self, *, robot="panda", config=None, device=None, cameras=("bench_rgb",),
                  output_dir=None, renderer_options=None, recording=True, task="unlock", contract=None):
         from lockkey.newton15.config import Config
-        from lockkey.newton15.env import LockKeyEnv
+        from lockkey.newton15.env import LockKeyEnv  # noqa: F401  (a missing simulator fails before anything is built)
         from lockkey.newton15.catalog import Catalog
         from lockkey.newton15.kinematics import Kinematics
-        from lockkey.task_set.catalogue import validate
+        from lockkey.task_set.catalogue import task_setup, validate
         self.task = validate(task)
         if contract is not None:
             # Opt-in lockkey-tasks-v2 (lockkey/task_set/*_v2.py); without `contract` nothing below changes.
@@ -38,14 +38,8 @@ class NewtonLockKeyBackend(RoboticsBackend):
         self.options = dict(renderer_options or {})
         self.output = Path(output_dir or Path.home()/".cache/gar/lockkey"/uuid.uuid4().hex)
         self.output.mkdir(parents=True, exist_ok=False)
-        if self.task == "unlock":
-            self.env = LockKeyEnv(config)
-        elif contract is not None:
-            from lockkey.task_set.adapter_v2 import TaskLockKeyEnvV2
-            self.env = TaskLockKeyEnvV2(config, self.task)
-        else:
-            from lockkey.task_set.adapter import TaskLockKeyEnv
-            self.env = TaskLockKeyEnv(config, self.task)
+        # The task's setup.py (lockkey/tasks/<task>/) builds its environment at its start.
+        self.env = task_setup(self.task).setup(config, contract)
         self.catalog, self.ik = Catalog(self.env), Kinematics()
         self.images, self.trace = deque(), None
         if recording:

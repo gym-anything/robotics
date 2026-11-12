@@ -11,11 +11,18 @@ import unittest
 from football.football_specs import BallSpec
 from football.newton15 import variants
 from football.newton15.config import Config
-from football.newton15.drills import (
-    CONTRACT, PLAYED_AWAY_M, Clearance, CornerTarget, PassGate, PassSquare, Save, Trap, make_verifier,
-)
+from football.newton15.drills import CONTRACT, PLAYED_AWAY_M, make_verifier
 from football.newton15.task import FAIL_SCORE_SCALE, PitchAwareGoalDetector
+from gym_anything_robotics import task_folders
 from tests.packages import PACKAGES
+
+# The drills' verifiers live in their task folders (tasks/<task>/verifier.py).
+Clearance = task_folders.verifier("football", "clearance").Clearance
+PassGate = task_folders.verifier("football", "pass-gate").PassGate
+Trap = task_folders.verifier("football", "trap").Trap
+PassSquare = task_folders.verifier("football", "pass-square").PassSquare
+CornerTarget = task_folders.verifier("football", "corner-target").CornerTarget
+Save = task_folders.verifier("football", "save").Save
 
 R = BallSpec().radius_m
 DT = 0.002

@@ -1,15 +1,18 @@
 """Opt-in task instructions and evaluation, outside provenance.PHYSICS.
 
 The wine-checks-v1 evaluator (task.py) is inherited for every other selection and for split-bottle.
-Only the explicit task-set contract wine-tasks-v1 uses these checks, progress and settled read.
+Only the explicit task-set contract wine-tasks-v1 uses these checks, progress and settled read. A benchmark task's own
+checks and progress terms under it are in its verifier.py (tasks/<task>/), which passes them to
+Evaluator.evaluate_checks; the five fill tasks share task.fill_checks and fill_progress below.
 """
 import numpy as np
 
 from . import params as P
 from .contracts import TASKS_V1_REWARD_CONTRACT, reward_contract
 from .task_set_v2 import TASK_SET_CONTRACTS          # wine-tasks-v1 and wine-tasks-v2 (task_set_v2.py) judge alike
+from .layout import task_verifier
 from .task import (Evaluator as LegacyEvaluator, FAIL_SCORE_SCALE, INSTRUCTIONS,
-                   LINED_WINDOW_ML, SETTLE_HOLD_MAX_S, SPOT_NAMES, VERIFY_EXTRA_STATE, WINE_NAMES)
+                   LINED_WINDOW_ML, SETTLE_HOLD_MAX_S, SPOT_NAMES, VERIFY_EXTRA_STATE, WINE_NAMES, Reading)
 
 
 TASKS_V1_INSTRUCTIONS = {
@@ -44,24 +47,18 @@ def unspilled_fraction(served, lost):
     return served/(served + lost) if served + lost > 0 else 1.
 
 
-def carry_progress(kept, required, upright, distance, initial_distance):
-    remaining = max(0., distance - P.SPOT_RADIUS_M)
-    travel = max(0., initial_distance - P.SPOT_RADIUS_M)
-    delivered = clip01(1. - remaining/travel) if travel > 0 else 0.
-    retained = clip01(kept/required) if upright and required > 0 else 0.
-    return dict(progress=retained*delivered, retained_fraction=retained, delivery_progress=delivered)
-
-
-def dump_progress(old_initial, old_in_glass, old_in_bucket, old_lost, fresh, fresh_lost, upright):
-    # Count only liquid that reached the requested destination. Moving old wine to
-    # the source or coaster must not receive disposal credit through an empty glass.
-    removed = clip01((old_initial - old_in_glass)/old_initial) if old_initial > 0 else 0.
-    in_bucket = clip01(old_in_bucket/old_initial) if old_initial > 0 else 0.
-    dumped = min(removed, in_bucket)*unspilled_fraction(old_in_bucket, old_lost)
-    filled = volume_progress(fresh, 42., 58.) if upright else 0.
-    efficiency = unspilled_fraction(fresh, fresh_lost)
-    return dict(progress=.4*dumped + .6*filled*efficiency, dump_progress=dumped,
-                served_share=filled, unspilled_fraction=efficiency)
+def fill_progress(e, x, t, upright):
+    """The progress terms of the five fill tasks (task.fill_checks): the net fill toward the volume window, while the
+    target stands upright, times the share of the poured liquid that reached it."""
+    g, got, src_liq, lost = x.g, x.got, x.src_liq, x.lost
+    low, high = (LINED_WINDOW_ML if "line" in g else
+                 ((g["volume"] - g["tol"])*1e6, (g["volume"] + g["tol"])*1e6))
+    initial = e.initial_containers.get(t, {}).get(src_liq, 0.)
+    filled = volume_progress(got, low, high, initial) if upright else 0.
+    efficiency = unspilled_fraction(max(0., got - initial), lost)
+    terms = dict(progress=filled*efficiency, served_share=filled,
+                 unspilled_fraction=efficiency, target_initial_mL=initial)
+    return terms
 
 
 def instruction(config, meta=None):
@@ -110,12 +107,14 @@ class Evaluator(LegacyEvaluator):
             # Read the actual filled/settled reset state, not the requested layout
             # volume: particle quantisation makes these different by a few uL.
             self.initial_containers = {n: dict(v) for n, v in env.inventory()["containers"].items()}
-            if env.config.task == "carry-glass":
-                g = env.layout["goal"]
-                self.initial_distance = float(np.linalg.norm(
-                    self._xy(g["target"])[0] - np.asarray(P.DELIVERY_SPOTS[g["deliver_spot"]])))
+            start = getattr(task_verifier(env.config.task), "contract_start", None)
+            if start is not None:           # what the task's verifier.py reads at reset under the task-set contract
+                start(self)
 
-    def evaluate(self):
+    def evaluate_checks(self, task_checks=None, finish=None, *, contract_checks=None, progress=None):
+        """The evaluation under the selected contract. Under wine-tasks-v1 and -v2 the task's hooks apply:
+        contract_checks(e, x) in place of task_checks(e, x) (x: task.Reading) and progress(e, x, t, upright), the
+        continuous progress terms; finish is the released report's (task.Evaluator.evaluate_checks)."""
         env = self.env
         w = env.world
         lay = env.layout
@@ -123,8 +122,8 @@ class Evaluator(LegacyEvaluator):
         task = env.config.task
         contract = reward_contract(task, getattr(env.config, "task_contract", ""))
         if contract not in TASK_SET_CONTRACTS:
-            out = super().evaluate()
-            if task != "split-bottle":
+            out = super().evaluate_checks(task_checks, finish)
+            if "reward" not in out:         # split-bottle's report carries its own (split-progress-v1)
                 out["reward"] = dict(contract=contract, mean_of_checks=out["score"])
             return out
         inv = env.inventory()
@@ -152,32 +151,9 @@ class Evaluator(LegacyEvaluator):
         checks["released"] = not any(robot_contact.values())
         liquid_of = lambda name: next((i.get("liquid") for i in lay["items"] if i["name"] == name), None)
         src_liq = liquid_of(src) if src else None
-        if task in ("pour-glass", "taste-pour", "refill-glass", "water-tumbler", "lined-measure"):
-            t = g["target"]
-            target_ml = (g["volume"] if "volume" in g else env.geometry(t).volume_below(env.geometry(t).lines[g["line"]]))*1e6
-            got = vol(t, src_liq)
-            if "line" in g:
-                checks["volume"] = LINED_WINDOW_ML[0] <= got <= LINED_WINDOW_ML[1]
-            else:
-                checks["volume"] = abs(got - target_ml) <= g["tol"]*1e6
-            checks["target_upright"] = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-            if g.get("spot"):
-                checks["target_on_spot"] = float(np.linalg.norm(self._xy(t)[0] - np.asarray(P.DELIVERY_SPOTS[g["spot"]]))) <= P.SPOT_RADIUS_M
-            self.meta.update(target_mL=target_ml, got_mL=got)
-        elif task == "carry-glass":
-            t = g["target"]
-            checks["kept"] = vol(t) >= g["keep"]*1e6 - P.SPILL_TOL_ML - 0.5
-            checks["target_upright"] = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-            checks["target_on_spot"] = float(np.linalg.norm(self._xy(t)[0] - np.asarray(P.DELIVERY_SPOTS[g["deliver_spot"]]))) <= P.SPOT_RADIUS_M
-        elif task == "dump-and-pour":
-            t = g["target"]
-            checks["old_dumped"] = vol(t, g["old"]) <= g["old_max"]*1e6
-            old0 = self.initial_containers.get(t, {}).get(g["old"], 0.)
-            checks["old_in_bucket"] = vol(g["dump"], g["old"]) >= old0 - g["old_max"]*1e6 - P.SPILL_TOL_ML
-            self.meta.update(old_initial_mL=old0, old_in_bucket_mL=vol(g["dump"], g["old"]))
-            checks["volume"] = abs(vol(t, g["fresh"]) - g["volume"]*1e6) <= g["tol"]*1e6
-            checks["target_upright"] = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-            self.meta.update(fresh_mL=vol(t, g["fresh"]), old_mL=vol(t, g["old"]), dump_mL=vol(g["dump"]))
+        x = Reading(env=env, w=w, lay=lay, g=g, inv=inv, c=c, checks=checks, vol=vol, spilled=spilled, lost=lost,
+                    src=src, src_liq=src_liq)
+        (task_checks if contract_checks is None else contract_checks)(self, x)     # the task's own (its verifier.py)
         checks["no_spill"] = lost <= P.SPILL_TOL_ML
         if src:
             film = inv["film"].get(src, 0.)
@@ -202,23 +178,7 @@ class Evaluator(LegacyEvaluator):
                                      spilled=round(spilled, 2), film={k: round(v, 2) for k, v in inv["film"].items()}))
         t = g["target"]
         upright = self._upright(t) <= P.GLASS_UPRIGHT_DEG
-        if task == "carry-glass":
-            distance = float(np.linalg.norm(self._xy(t)[0] - np.asarray(P.DELIVERY_SPOTS[g["deliver_spot"]])))
-            terms = carry_progress(vol(t), g["keep"]*1e6 - P.SPILL_TOL_ML - .5,
-                                   upright, distance, self.initial_distance)
-        elif task == "dump-and-pour":
-            # Film is already classified as outside liquid: do not count it twice.
-            lost_liquid = lambda liq: sum(inv[k].get(liq, 0.) for k in ("bar", "floor", "elsewhere")) + vol("coaster", liq)
-            terms = dump_progress(old0, vol(t, g["old"]), vol(g["dump"], g["old"]), lost_liquid(g["old"]),
-                                  vol(t, g["fresh"]), lost_liquid(g["fresh"]), upright)
-        else:
-            low, high = (LINED_WINDOW_ML if "line" in g else
-                         ((g["volume"] - g["tol"])*1e6, (g["volume"] + g["tol"])*1e6))
-            initial = self.initial_containers.get(t, {}).get(src_liq, 0.)
-            filled = volume_progress(got, low, high, initial) if upright else 0.
-            efficiency = unspilled_fraction(max(0., got - initial), lost)
-            terms = dict(progress=filled*efficiency, served_share=filled,
-                         unspilled_fraction=efficiency, target_initial_mL=initial)
+        terms = progress(self, x, t, upright)                # the task's progress terms (its verifier.py)
         progress = 0. if w.fault else terms["progress"]
         out["score"] = 1. if success else FAIL_SCORE_SCALE*progress
         out["reward"] = dict(terms, contract=contract, progress=progress, mean_of_checks=score)

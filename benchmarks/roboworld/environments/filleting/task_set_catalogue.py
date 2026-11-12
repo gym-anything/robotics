@@ -1,5 +1,5 @@
 """Opt-in task contracts; the original variants.py and its defaults stay frozen."""
-from . import variants as legacy
+from . import layout as LY, variants as legacy
 from .task import INSTRUCTIONS as OLD_INSTRUCTIONS, TIME_LIMIT_S
 
 CONTRACT = "filleting-tasks-v1"
@@ -53,12 +53,14 @@ def task_resolve(selection):
 
 
 def start_options(chosen, config=None):
-    """No new placements/props. A5 uses the cutting tasks' knife-in-hand start in the A0 scene."""
+    """No new placements/props. A task whose setup.py names another task's scene (put-away-knife: the cutting tasks'
+    knife-in-hand start in the A0 scene) is built in that scene with its knife start (layout.task_start)."""
     values = dict(config or {})
     task = chosen["task"]
-    if task == NEW_TASK:
-        if "knife_start" in values and values["knife_start"] not in (None, "hand"):
-            raise ValueError("put-away-knife starts with the knife in hand")
-        values["knife_start"] = "hand"
-        task = "A0"  # scene carrier only; never the public task/evaluator
+    start = LY.task_start(task)
+    if "scene" in start:
+        if "knife_start" in values and values["knife_start"] not in (None, start["knife_start"]):
+            raise ValueError(f"{TASK_SLUG[task]} starts with the knife in {start['knife_start']}")
+        values["knife_start"] = start["knife_start"]
+        task = start["scene"]  # scene carrier only; never the public task/evaluator
     return task, values

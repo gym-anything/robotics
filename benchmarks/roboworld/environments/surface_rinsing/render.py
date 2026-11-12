@@ -596,9 +596,9 @@ def _dressing(S, mats, spec):
         return outer
 
     sh = L.SHELF
-    if spec.get("task") != "scrub-rinse-pan":
-        # the wall shelf is that task's destination: an accepted pan (centre over the clean board, handle any way) can
-        # reach the shelf's far end, and these drawn-only jugs have no colliders
+    folder = L.task_setup(spec["task"]) if spec.get("task") is not None else None
+    if getattr(folder, "DRESS_WALL_SHELF", True):
+        # chemical jugs on the wall shelf, unless the task's setup.py keeps it bare (DRESS_WALL_SHELF: its destination)
         ref("bleach_bottle", "/Dress/sanitizer_jug", (L.DRAINBOARDS["clean"][1] + 0.12, L.Y - 0.15, 1.52), yaw=-20.0)
         ref("multi_cleaner_bottle", "/Dress/spray_cleaner", (L.DRAINBOARDS["clean"][1] + 0.25, L.Y - 0.12, 1.52), yaw=15.0)
     ref("plastic_crate_01", "/Dress/crate_0", (0.5*(sh["x0"] + sh["x1"]), 0.5*(sh["y0"] + sh["y1"]), sh["levels"][1]), yaw=0.0)

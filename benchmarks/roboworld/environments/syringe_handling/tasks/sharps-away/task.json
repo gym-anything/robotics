@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/injection/sharps-away/contract-syringe-tasks-v1/seed-0",
+  "name": "sharps-away",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "injection",
+    "task": "sharps-away",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v1"
+  },
+  "description": "Three used syringes with bare needles lie on the tray with two loose needle sheaths and a used gauze square. Put every syringe with its needle into the red sharps container through the flap in its lid. Do not put a sheath back on a needle, do not let a needle touch anything on the way, and put nothing else into the container.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -5,21 +5,23 @@ exposing tick zero. Prior assembly uses the existing construction torque ramp,
 never fabricated loads/clicks, frozen bodies or altered constraints.
 """
 
-import hashlib
 import math
 
-from .task import NEW_TASKS, uses_eight
+from .task import task_setup
 
 SCREWS = ("sensor_left", "sensor_right", "frame_top", "frame_front")
-LOOSE_CHOICES = ("sensor_left", "sensor_right", "frame_front")
+
+
+def single_loose(task):
+    """Whether the task starts with one screw loose and the other three tightened: its setup.py picks that screw
+    (loose_screw)."""
+    return hasattr(task_setup(task), "loose_screw")
 
 
 def loose_screw(task, seed):
-    if task == "front-m4":
-        return "frame_front"
-    if task == "find-loose":
-        digest = hashlib.sha256(f"tighten-find-loose-v1:{seed}".encode()).digest()
-        return LOOSE_CHOICES[int.from_bytes(digest[:8], "big") % len(LOOSE_CHOICES)]
+    """The single-loose task's loose screw for this seed: loose_screw(seed) in its setup.py."""
+    if single_loose(task):
+        return task_setup(task).loose_screw(seed)
     raise ValueError(f"No single-loose preset for {task}")
 
 
@@ -28,12 +30,13 @@ def pretightened_screws(config):
 
 
 def flag_home(config):
-    return -.0035 if config.task == "aim" else 0.
+    """The reference flag's home (and start) on its carriage, m: FLAG_HOME_M in the task's setup.py, else 0."""
+    return getattr(task_setup(config.task), "FLAG_HOME_M", 0.)
 
 
 def apply_start_coordinates(builder, items, config):
     """Only initial joint positions, respecting the existing helical equality."""
-    if config.task not in NEW_TASKS:
+    if not single_loose(config.task):
         return
     rail = builder.joint_label.index("horizontal_profile_slot_travel")
     q0 = builder.joint_q_start[rail]
@@ -50,23 +53,28 @@ def apply_start_coordinates(builder, items, config):
 
 
 def build(config, robot_setup="tighten-fr3"):
-    """Wrap scene.build, which these presets do not change; append task props last."""
+    """Wrap scene.build, which these presets do not change; then the task's setup.py (tasks/<task>/) completes the
+    start: setup(builder, items, materials, config) sets its start coordinates and appends its props last."""
     from .scene import build as build_scene
     result = build_scene(config, robot_setup)
     builder, items, materials, _, _ = result
-    apply_start_coordinates(builder, items, config)
-    if uses_eight(config) and config.task in ("sensor", "aim", *NEW_TASKS):
-        import newton
-        import warp as wp
-        # Same proven bumper as mixed, moved to aim's original -3.5 mm home.
-        # A new prop only: the flag's joints, geometry and contact model stay.
-        x = .2655 + flag_home(config) - .020 - .0001 - .004
-        shape = builder.add_shape_box(-1, xform=wp.transform((x, -.063, .785), wp.quat_identity()),
-            hx=.004, hy=.010, hz=.005, label="flag_home_stop",
-            cfg=newton.ModelBuilder.ShapeConfig(mu=.45, density=2700, ke=2.5e7, kd=4.6e4,
-                gap=config.contact_gap_m, mu_torsional=0., mu_rolling=0.))
-        materials[shape] = "robot_dark"
+    task_setup(config.task).setup(builder, items, materials, config)
     return result
+
+
+def add_flag_home_stop(builder, materials, config):
+    """The eight-task contracts' home stop for the reference flag (sensor, aim, front-m4 and find-loose add it from
+    their setup.py), at the flag's home (flag_home)."""
+    import newton
+    import warp as wp
+    # Same proven bumper as mixed, moved to aim's original -3.5 mm home.
+    # A new prop only: the flag's joints, geometry and contact model stay.
+    x = .2655 + flag_home(config) - .020 - .0001 - .004
+    shape = builder.add_shape_box(-1, xform=wp.transform((x, -.063, .785), wp.quat_identity()),
+        hx=.004, hy=.010, hz=.005, label="flag_home_stop",
+        cfg=newton.ModelBuilder.ShapeConfig(mu=.45, density=2700, ke=2.5e7, kd=4.6e4,
+            gap=config.contact_gap_m, mu_torsional=0., mu_rolling=0.))
+    materials[shape] = "robot_dark"
 
 
 def settle_initial(env):

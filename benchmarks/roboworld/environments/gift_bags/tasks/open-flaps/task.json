@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/receiving/open-flaps/gift-bags-tasks-v2/seed-0",
+  "name": "open-flaps",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "receiving",
+    "task": "open-flaps",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v2"
+  },
+  "description": "You are at the receiving table in a back room. A supply carton stands on the stainless table with its top flaps closed but not taped. Open it: fold all four top flaps open so that they stay open. Leave the contents inside and the carton upright where it is. Release everything when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

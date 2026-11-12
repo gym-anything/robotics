@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "whiteboard/whiteboard-tasks-v2/correct-misspelling",
+  "name": "correct-misspelling",
+  "env_id": "whiteboard",
+  "split": "train",
+  "selection": {
+    "task": "correct-misspelling",
+    "contract": "whiteboard-tasks-v2"
+  },
+  "description": "Correct the misspelt word on the board to match the reference image, with the corrected letter in black and the other letters left as they are. Leave the marker and wiper resting in the tray.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

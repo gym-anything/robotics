@@ -11,6 +11,7 @@ from gym_anything_robotics.backends.newton_whiteboard_task_set import NewtonWhit
 from whiteboard.task_set.mechanical import read_state
 from whiteboard.task_set.presets import apply_start
 from whiteboard.task_set_v2 import CONTRACT, TaskV2, evaluate, preset_config, source_identity
+from whiteboard.tasks import task_verifier
 
 
 class NewtonWhiteboardTaskSetV2Backend(NewtonWhiteboardTaskSetBackend):
@@ -46,7 +47,9 @@ class NewtonWhiteboardTaskSetV2Backend(NewtonWhiteboardTaskSetBackend):
         if not self.env.healthy:
             raise RuntimeError("Cannot evaluate a faulted whiteboard")
         with self.env._lock:
-            state = None if self.env.task.name in ("write-text", "write-in-colour", "draw-table") else read_state(self.env)
+            # The tasks judged from the board alone (READS_STATE False, their verifier.py) need no body state.
+            reads = getattr(task_verifier(self.env.task.name), "READS_STATE", True)
+            state = read_state(self.env) if reads else None
             result = evaluate(self.env.task, self.env.ink, self.config, state)
             result["task_source_sha256"] = self.task_source["sha256"]
             return result

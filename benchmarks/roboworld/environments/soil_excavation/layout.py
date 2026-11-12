@@ -11,6 +11,7 @@ spec (blocks, layers, piles, carved holes, static colliders), marks, the tarp an
 import math
 import numpy as np
 
+from gym_anything_robotics import task_folders
 from . import params as P
 
 GRADE = -0.020
@@ -49,16 +50,18 @@ PRESETS = {
 }
 
 # ------------------------------------------------------------------ tasks
+# The eight benchmark tasks' own start entries (held, predug, kit, stones) are in their folders, tasks/<task>/setup.py
+# (task_entry); the other tasks' are here.
 TASKS = {
-    "penetrate-marked": dict(preset="bed", held=dict(both="spade"), robots=("mobile-fr3-duo",),
+    "penetrate-marked": dict(preset="bed", robots=("mobile-fr3-duo",),
         instruction="Push the spade blade vertically into the bed at the white paint mark until the blade's cutting edge "
                     "is at least 15 cm below the surface, keeping the blade within 10 degrees of vertical and both hands "
                     "on the spade, without a protective stop."),
-    "spit-to-tarp": dict(preset="bed", held=dict(both="spade"), robots=("mobile-fr3-duo",),
+    "spit-to-tarp": dict(preset="bed", robots=("mobile-fr3-duo",),
         instruction="Dig one spadeful (a spit) of soil from the bed at the white mark and dump it on the blue tarp on the "
                     "walkway: at least 1.5 kg of bed soil must end up on the tarp and no more than 15 % of what was lifted "
                     "may be spilled elsewhere."),
-    "planting-hole": dict(preset="bed", held=dict(both="spade"), robots=("mobile-fr3-duo",),
+    "planting-hole": dict(preset="bed", robots=("mobile-fr3-duo",),
         instruction="Dig a planting hole for a #1 container shrub (root ball 165 mm across, 160 mm tall) centred on the "
                     "white mark: 160 +- 20 mm deep, 330-500 mm across at the top, with a firm floor of undisturbed soil "
                     "(no loose crumbs left on the bottom); put the spoil on the tarp, not on the walkway."),
@@ -67,7 +70,7 @@ TASKS = {
         "The shrub has been set in its planting hole. Backfill around the root ball with the soil on the tarp and firm it: "
         "leave no air pockets, keep the root ball's top 0-50 mm above grade and free of soil, and finish the backfill "
         "level with the surrounding grade (+-20 mm)."),
-    "cable-trench": dict(preset="trench", held=dict(both="trench_shovel"), robots=("mobile-fr3-duo",),
+    "cable-trench": dict(preset="trench", robots=("mobile-fr3-duo",),
         instruction="Dig a trench for a low-voltage path-light cable along the white line between the two path lights: "
                     "at least 16 cm deep (150 mm cover) over 90 % of its 1.5 m, 6-20 cm wide, centred within 5 cm of the "
                     "line, the turf cut through, the spoil on the lawn-side tarp, and the robot staying on the walkway."),
@@ -75,17 +78,15 @@ TASKS = {
         instruction="Dig a post hole at the stake with the clamshell post-hole digger: at least 60 cm deep at the centre, "
                     "20-30 cm across at mid-depth, the floor firm, the spoil on the tarp."),
     # the verifier's operationalisation of "plumb and solid on its own" (brace release, push load, tolerances) is in
-    # task.Evaluator._set_post and params.POST_TEST, not in the instruction
-    "set-post": dict(preset="post", held=dict(right="trowel", left="tamper"), robots=("mobile-fr3-duo",),
-        predug=dict(kind="post_hole", post=True), kit=["trench_shovel"], instruction=
+    # tasks/set-post/verifier.py and params.POST_TEST, not in the instruction
+    "set-post": dict(preset="post", robots=("mobile-fr3-duo",), instruction=
         "The 4x4 post stands in its dug hole, held plumb by temporary braces. Backfill around it with the soil on the "
         "tarp, back up to grade, tamping the fill firm with the 2x4, so that the post stands plumb and solid on its own "
         "once the braces come off."),
-    "break-hardpan": dict(preset="hardpan", held=dict(right="mattock"), robots=("mobile-fr3-duo", "mobile-fr3-single"),
-        stones=(3, 6), instruction=
+    "break-hardpan": dict(preset="hardpan", robots=("mobile-fr3-duo", "mobile-fr3-single"), instruction=
         "Break up the compacted ground inside the marked square with the hand mattock: loosen it at least 8 cm deep over "
         "80 % of the square and put at least 4 kg of the broken soil on the tarp."),
-    "auger-holes": dict(preset="bulbs", held=dict(both="drill"), robots=("mobile-fr3-duo",),
+    "auger-holes": dict(preset="bulbs", robots=("mobile-fr3-duo",),
         instruction="Drill five bulb holes at the five white marks with the drill-mounted planting auger: each at least "
                     "18 cm deep and 70-95 mm wide at 5 cm depth, centred within 2 cm of its mark and left open; keep hold "
                     "of the drill and avoid protective stops. The trigger is squeezed by the gripper."),
@@ -94,12 +95,30 @@ TASKS = {
         "The repaired irrigation lateral lies exposed in its trench. Bed and haunch the pipe with the sand in the pail, "
         "cover it with at least 5 cm of sand, then backfill the native soil from the tarp in lifts no thicker than 10 cm, "
         "tamping each, to grade (+-20 mm). Do not strike the pipe."),
-    "expose-line": dict(preset="irrigation", held=dict(right="trowel"), robots=("mobile-fr3-duo", "mobile-fr3-single"),
+    "expose-line": dict(preset="irrigation", robots=("mobile-fr3-duo", "mobile-fr3-single"),
         instruction="Hand-dig to expose the marked irrigation lateral (purple marks, about 30 cm deep): uncover its crown "
                     "over at least 15 cm of length without striking it, digging only inside the marked tolerance zone; "
                     "put the spoil on the tarp."),
 }
 TASK_ORDER = tuple(TASKS)
+PACKAGE = "soil_excavation"
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task in TASKS and task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task in TASKS and task_folders.exists(PACKAGE, task) else None
+
+
+def task_entry(task):
+    """The task's TASKS entry with its start entries (held; predug, kit and stones where it has them): a benchmark
+    task's own are its setup.py setup() (tasks/<task>/), the other tasks' are in TASKS."""
+    s = task_setup(task)
+    return TASKS[task] if s is None else dict(TASKS[task], **s.setup())
 
 
 def preset_of(task):
@@ -226,7 +245,7 @@ def setup(task, seed=0, moisture=None, topsoil=None, stones=None):
     """The episode spec of one task variation (seeded; the same task/seed/variant always gives the same yard)."""
     if task not in TASKS:
         raise ValueError(f"Unknown task {task!r}; choose from {sorted(TASKS)}")
-    T = TASKS[task]
+    T = task_entry(task)
     preset = T["preset"]
     pr = PRESETS[preset]
     rng = _rng(task, seed)

@@ -10,6 +10,9 @@ against the unlock chain's 1 mm deadband), the plug angle of a key seated at the
 withdrawal (remove-key) and the flat key's tilt from its stand orientation (return-key). Success predicates are
 unchanged. The unlock task's own chain reading of the state is reported as `unlock_chain_reading`, not as
 top-level `lock_progress`/`stage`.
+
+Each task's success and progress are its verifier.py's verify (tasks/<task>/), as for lockkey-tasks-v1 (scoring.py);
+its WITHDRAWAL_FROM_START and TILT_FROM_START re-base the withdrawal and the key tilt on the start.
 """
 
 import math
@@ -21,7 +24,7 @@ from lockkey.newton15.evaluation import (
     STAND_SLIDE, STAND_ACROSS, STAND_HEIGHT, STAND_TILT_DEG, FAIL_SCORE_SCALE,
 )
 from lockkey.newton15.shackle import geometry_state
-from .catalogue import UNLOCK_CONTRACT, validate
+from .catalogue import UNLOCK_CONTRACT, task_verifier, validate
 from .catalogue_v2 import CONTRACT, task_id
 from .scoring import clip, insertion
 
@@ -67,9 +70,11 @@ class TaskProgress(UnlockProgress):
         # update, which the environment runs on the start state itself.
         self.seated_start = bool(on_axis and key[0] <= SEAT_X and not env.released)
         self.turn_zero = None
-        self.withdraw_zero = self.withdrawal_start_x+WITHDRAW_IDLE if task == "remove-key" else SEAT_X
+        own = task_verifier(task)
+        self.withdraw_zero = (self.withdrawal_start_x+WITHDRAW_IDLE if getattr(own, "WITHDRAWAL_FROM_START", False)
+                              else SEAT_X)
         self.tilt_zero = (max(STAND_TILT_DEG+10., min(90., stand_tilt(key, self.start["key"]))-TILT_IDLE_DEG)
-                          if task == "return-key" else 90.)
+                          if getattr(own, "TILT_FROM_START", False) else 90.)
 
     def update(self, env, plug_angle):
         if self.turn_zero is None:
@@ -93,25 +98,13 @@ class TaskProgress(UnlockProgress):
         stow = .3*out+.7*back
         turn = clip((plug_angle-self.turn_zero)/(RELEASE_DEG-self.turn_zero))
         chain = .8+.2*swing if unlocked else 0. if released else insert*(.5+.3*turn)
-        if self.task == "swing-open":
-            success, progress = opened and other_back, swing if unlocked else 0.
-        elif self.task == "turn-to-open":
-            success, progress = opened and other_back, clip((chain-.5)/.5)
-        elif self.task == "insert-key":
-            # Read the seat NOW; opening and subsequently removing the key is not insertion.
-            success, progress = seated and not held and other_back, insert
-        elif self.task == "return-key":
-            success, progress = key_back and other_back, back
-        elif self.task == "remove-key":
-            success, progress = key_back and opened and other_back, stow*swing if unlocked else 0.
-        elif self.task == "which-key":
-            success, progress = opened and other_back, chain
-        else:  # unlock-and-stow: returning the key before unlocking earns nothing.
-            success = unlocked and opened and key_back and other_back
-            progress = .6*chain + (.4*stow if unlocked else 0.)
-        key_needed = self.task in ("insert-key", "return-key", "remove-key", "unlock-and-stow") or not unlocked
+        own = task_verifier(self.task)
+        success, progress = own.verify(seated=seated, held=held, key_back=key_back, other_back=other_back,
+                                       released=released, unlocked=unlocked, opened=opened, insert=insert,
+                                       turn=turn, swing=swing, back=back, out=out, stow=stow, chain=chain)
+        key_needed = own.KEY_ALWAYS_NEEDED or not unlocked
         lost = key_needed and self.off_bench(env, poses, key_body)
-        bad_release = self.task not in ("insert-key", "return-key") and released and not unlocked
+        bad_release = own.NEEDS_UNLOCK and released and not unlocked
         progress = 0. if lost or bad_release else clip(progress)*base["other_key_factor"]
         base = dict(base)
         chain_progress, chain_stage = base.pop("lock_progress"), base.pop("stage")

@@ -735,7 +735,9 @@ class BagPurchaseVerifierTest(unittest.TestCase):
         self.assertEqual((torn[3]["score"], torn[4]["score"]), (0., 0.))
         # not released: an item still touched in the window keeps its progress but not success
         held, failed = self.judge(c.open, done, contact_rows=750)
-        self.assertEqual((failed, held["score"]), (["hands_off_window"], self.c.T.FAILED_SCORE_FACTOR))
+        from gym_anything_robotics import task_folders
+        factor = task_folders.verifier("gift_bags", "bag-purchase").FAILED_SCORE_FACTOR
+        self.assertEqual((failed, held["score"]), (["hands_off_window"], factor))
         # the opened bag knocked onto its back on the mat: only its openness counts
         back = np.c_[c.X[:, 0], c.X[:, 2] - c.H/2, -c.X[:, 1]] + np.array([c.cx, c.cy, c.mid0 + c.G/2])
         knocked, _ = self.judge(back)

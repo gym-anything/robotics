@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/injection/draw-dose/contract-syringe-tasks-v2/seed-0",
+  "name": "draw-dose",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "injection",
+    "task": "draw-dose",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+  },
+  "description": "Draw 2.5 mL of the blue medication from the vial into the 3 mL syringe (with its 18 G x 38 mm blunt fill needle), without air in the syringe. Leave the vial standing upright on the counter where you found it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

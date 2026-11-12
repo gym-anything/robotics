@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/aim/tighten-tasks-v2/seed-0",
+  "name": "aim",
+  "env_id": "tighten-codex",
+  "split": "train",
+  "selection": {
+    "task": "aim",
+    "seed": 0,
+    "contract": "tighten-tasks-v2"
+  },
+  "description": "Aim and lock the photoelectric sensor. The frame is already secured; the loose W4F at its arc-slot end misses the white flag. Secure both M3 screws with the green 2.5 mm/0.35 N m driver until it clicks on each. Leave the sensor detecting the flag at its original home position and holding on its own after release. The flag slides aside for tool access.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

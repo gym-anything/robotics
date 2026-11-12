@@ -104,7 +104,7 @@ class NewtonFilletingBackend(RoboticsBackend):
         from filleting.variants import resolve, PRESET_SLUG, TASK_SLUG
         from filleting.world import Config
         from filleting.env import FilletingEnv
-        from filleting.task import Evaluator
+        from filleting.task import has_evaluator
         try:
             chosen = resolve(preset, task, seed)
         except KeyError as exc:                                   # the resolver's unknown-preset path
@@ -115,11 +115,12 @@ class NewtonFilletingBackend(RoboticsBackend):
         except ValueError as exc:
             raise UnsupportedConfigurationError(str(exc)) from exc
         values.update(preset=chosen["preset"], task=chosen["task"], seed=chosen["seed"], robot=robot)
-        from filleting.variants import CONTACT_TASKS
-        if chosen["task"] in CONTACT_TASKS:
+        from filleting.variants import collision_profile
+        profile = collision_profile(chosen["task"])
+        if profile is not None:
             # the cutting tasks' recipe: libfranka's contact-task collision thresholds, as every cutting demonstration
             # and runtime measurement used (an explicit config value is kept)
-            values.setdefault("collision_profile", "contact")
+            values.setdefault("collision_profile", profile)
         if device is not None:
             values["device"] = device
         self.config = Config(**values)                                   # unknown fields fail (TypeError)
@@ -154,7 +155,7 @@ class NewtonFilletingBackend(RoboticsBackend):
         self.finger_effort_limit = float(w.joints[finger]["effort_limit"])
         finger_upper = float(w.joints[finger]["upper"])
         tissue_dt = float(w.config.tissue_dt)
-        has_eval = hasattr(Evaluator, f"_eval_{self.config.task}")
+        has_eval = has_evaluator(self.config.task)
         c = self.config
         self.capabilities = Capabilities(
             "filleting", "newton", robot, self.kinds,
@@ -524,7 +525,7 @@ class NewtonFilletingBackend(RoboticsBackend):
                            ("scale", LY.SCALE)):
             if preset in spec.get("presets", ()):
                 items[name] = dict(kind="box", size_m=list(spec["size"]), center_xy_m=list(spec["center"]))
-        if self.config.task in LY.FRAME_PAN["tasks"]:
+        if "FRAME_PAN" in LY.task_props(self.config.task):
             items["frame_pan"] = dict(kind="tray", size_m=list(LY.FRAME_PAN["size"]),
                                       center_xy_m=list(LY.FRAME_PAN["center"]), rim_m=LY.FRAME_PAN["rim"],
                                       taper_m=LY.FRAME_PAN["taper"])

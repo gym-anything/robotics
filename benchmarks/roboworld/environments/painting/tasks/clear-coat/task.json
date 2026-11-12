@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/spray/clear-coat/painting-tasks-v2/seed-0",
+  "name": "clear-coat",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "spray",
+    "task": "clear-coat",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+  },
+  "description": "Clear-coat the photo print lying in the spray box evenly with the aerosol lacquer, keeping overspray inside the box.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

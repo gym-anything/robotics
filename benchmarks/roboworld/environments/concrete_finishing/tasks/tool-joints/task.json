@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "concrete-finishing/v1/b012/tool-joints/concrete-tasks-v2/seed-0",
+  "name": "tool-joints",
+  "env_id": "concrete-finishing",
+  "split": "train",
+  "selection": {
+    "preset": "b012",
+    "task": "tool-joints",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+  },
+  "description": "Tool the joints of the new block concave. Fill anything short first.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -12,12 +12,16 @@ BENCHES = Path(__file__).resolve().parents[1]/"evidence"/"benches"
 # every module the scene, the world or the evaluator imports, so that two records with one digest come from the same
 # code. Among them are dressing.py (the props' collision boxes are authored there, beside their pictures), startcache.py
 # (which start-state file a world loads) and robot_setup.py (which rig a name resolves to).
+# The benchmark tasks' own start and outcome code (tasks/<task>/setup.py and verifier.py) is called by the scene and
+# the evaluator, so it is listed too.
 PHYSICS_FILES = ("ipcworld.py", "params.py", "bagnet.py", "handles.py", "wrapmap.py", "giftbox.py", "tape_bonds.py",
                  "carton.py", "g1.py", "variants.py", "world.py", "rig.py", "scene.py", "task.py", "env.py",
-                 "kinematics.py", "config.py", "dressing.py", "startcache.py", "robot_setup.py")
-# imported by a physics source without taking part in the physics: the start-state build table (readiness only)
-# and the artwork and scanned models (pictures)
-NOT_PHYSICS = ("prebuild.py", "artwork.py", "visual_assets.py")
+                 "kinematics.py", "config.py", "dressing.py", "startcache.py", "robot_setup.py") + tuple(
+    sorted(p.relative_to(Path(__file__).resolve().parents[1]).as_posix()
+           for p in (Path(__file__).resolve().parents[1]/"tasks").glob("*/*.py")))
+# imported by a physics source without taking part in the physics: the start-state build table (readiness only),
+# the artwork and scanned models (pictures) and the task-set catalogues (contract names)
+NOT_PHYSICS = ("prebuild.py", "artwork.py", "visual_assets.py", "task_set_catalog.py", "task_set_v2_catalog.py")
 
 
 def physics_digest():

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/wall/roll-strip/painting-tasks-v2/seed-0",
+  "name": "roll-strip",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "wall",
+    "task": "roll-strip",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+  },
+  "description": "Roll the strip of wall between the two blue tape marks, from the brushed band under the ceiling down to the band above the baseboard, to full hide, joining the wet strip on its left and keeping paint off the ceiling, trim and outlet plate; leave the roller resting in the tray. The wall already has its first coat of this colour (dry); this is the second, finish coat.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/wall/rebar-relocate/drilling-tasks-v2/seed-0",
+  "name": "rebar-relocate",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "wall",
+    "task": "rebar-relocate",
+    "seed": 0,
+    "contract": "drilling-tasks-v2"
+  },
+  "description": "Drill the four 1/2-inch anchor holes at the crosses on the two channel lines, square to the wall, 108 to 125 mm deep. If a hole hits reinforcement, stop without cutting the bar and leave that hole unfilled; drill its replacement on the same channel line at least twice the stopped hole's depth from it and no more than 150 mm from it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

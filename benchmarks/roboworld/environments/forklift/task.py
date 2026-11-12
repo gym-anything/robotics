@@ -4,6 +4,9 @@ A start state fixes the truck's pose and condition (engine, key, parking brake, 
 the loads and their poses, and the floor condition along the route. Seeds vary them within stated ranges;
 every resolved start is built, settled by physics (env.settle) and checked before tick 0. Nothing in a start state is
 authored geometry standing in for earlier work: a load "on the forks" is placed in the fork openings and settled.
+
+A benchmark task's own start is in its task folder (tasks/<task>/setup.py) and its own checks in
+tasks/<task>/verifier.py; resolve() and evaluator.evaluate() call them. The other tasks' starts are here.
 """
 
 import math
@@ -11,7 +14,22 @@ import zlib
 
 import numpy as np
 
+from gym_anything_robotics import task_folders
+
 from . import params as P
+
+PACKAGE = "forklift"
+
+
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
 
 INSTRUCTIONS = {
     "start-and-park": "Start the truck, release the parking brake, drive to the truck parking bay at the west end of the "
@@ -63,7 +81,6 @@ SPLITS = dict(train=(0, 799), validation=(800, 899), test=(900, 999))
 # which a general warehouse's loads may exceed); the yard
 # tasks' 900-1,300 kg about a 1,200 kg load (authored); the loads already in a trailer 500-900 kg.
 # Every drawn height keeps the unit under 72 in (1.83 m) with its 5.5 in pallet.
-DUNNAGE_Y = 0.13      # bale dunnage strips at +-0.13 m from the bale centre line: inside the blades (inner edges 0.242 m)
 
 
 def blade_bottom_for(lift):
@@ -76,20 +93,14 @@ def blade_bottom_for(lift):
 
 # Seed variation of the work order: which lane, bay, rack location, dock door, trailer side. Drawn from
 # a stream of its own, so that facility.build (the rack location must be left empty) and resolve agree without a layout.
-RACK_FACES = {"1": ("A-e", "B-w"), "2": ("B-e", "C-w")}     # the two rack faces along each working aisle (row-face)
+# A benchmark task's own draws are its setup.py's: target(rng), and put-away-rack's rack location.
 FLOOR_BAYS = ("B-01", "B-02", "B-03", "B-04", "B-05", "B-07", "B-08", "B-09", "B-10", "B-11")
 # (B-06 and B-12, the bays beside lane 2, are not targets: from the receiving lanes the truck leaves lane 2 with a
 # right-angle turn and would have to turn again into those bays within ~2 m, with no straight run-in to square up)
-STAGING_LANES = ("S1", "S2", "S3", "S4")
-UNSECURED_SHARE = 0.2                                       # load-trailer seeds whose trailer arrives unsecured
 LOAD_DOORS = ("door1", "door2", "door3", "door4")           # load-trailer, load-trailer-chocked, unload-trailer
-BALE_DOORS = ("door3", "door4")                             # load-bales: the two doors nearest the bale row, both spotted
-PARK_STARTS = ("main aisle east", "main aisle west", "lane 1")
-# aisle-cruise, feed-conveyor, ramp-up-loaded, ramp-down-loaded and yard-route vary within what the facility offers
-CRUISE_DIRECTIONS = ("east", "west")       # aisle-cruise: the main aisle either way, to the far end's white line
+# feed-conveyor, ramp-up-loaded and yard-route vary within what the facility offers
 FEED_STARTS = ("lane 2", "R1", "R2", "R3")  # feed-conveyor: from travel lane 2 north of the conveyor, or a receiving lane
 RAMP_SIDES = ("L", "R")                    # ramp-up-loaded: the nose pallet position, left or right facing the nose
-DROP_ZONES = ("east", "west")              # ramp-down-loaded: the painted yard drop zone either side of the ramp's lane
 YARD_ROUTES = ("to the ramp", "to the apron")  # yard-route: the marked lane either way, to the line at its far end
 
 
@@ -97,53 +108,34 @@ def _target_rng(config):
     return np.random.default_rng([int(config.seed), zlib.crc32(("target:" + config.task).encode())])
 
 
-def rack_target(config):
-    """put-away-rack's location of (task, seed): one of the four rack faces along the two working aisles, bay 1-7, the
-    first beam level in two seeds of three and the second in one, either pallet position. Returns (name, aisle)."""
-    rng = _target_rng(config)
-    aisle = ("1", "2")[int(rng.integers(0, 2))]
-    rowface = RACK_FACES[aisle][int(rng.integers(0, 2))]
-    bay = int(rng.integers(1, 8))
-    level = 1 if rng.random() < 2 / 3 else 2
-    slot = int(rng.integers(0, 2))
-    return f"{rowface}-{bay:02d}-{level}-{slot}", aisle
-
-
 def reserved_locations(config):
-    """Rack locations the task needs empty (the facility leaves them free of stored loads): the put-away slot only; its
-    neighbour on the same beams is stocked like any other location (a stored load in four of five)."""
-    if config.task == "put-away-rack":
-        return {rack_target(config)[0]}
+    """Rack locations the task needs empty (the facility leaves them free of stored loads): those a benchmark task's
+    setup.py names (its reserved_locations(config)); none for every other task."""
+    folder = task_setup(config.task)
+    if folder is not None and hasattr(folder, "reserved_locations"):
+        return folder.reserved_locations(config)
     return set()
 
 
 def _target(config):
-    """The work order's target of (task, seed) for the tasks whose target varies (drawn from _target_rng)."""
+    """The work order's target of (task, seed) for the tasks whose target varies (drawn from _target_rng). A benchmark
+    task's own draws are its setup.py's target(rng)."""
     rng = _target_rng(config)
     t = config.task
-    if t == "drive-to-pallet":
-        return dict(lane=STAGING_LANES[int(rng.integers(0, len(STAGING_LANES)))])
+    folder = task_setup(t)
     if t in ("carry-to-floor-bay", "carry-loose-stack"):
         return dict(bay=FLOOR_BAYS[int(rng.integers(0, len(FLOOR_BAYS)))])
     if t in ("load-trailer", "load-trailer-chocked", "unload-trailer"):
         out = dict(door=LOAD_DOORS[int(rng.integers(0, len(LOAD_DOORS)))], side="LR"[int(rng.integers(0, 2))])
-        if t == "load-trailer":
-            # in one seed of five the trailer at the door is not secured (no restraint hooked, no chocks): the door's
-            # restraint signal shows red and the job is to stop short of the leveler
-            out["secured"] = bool(rng.random() >= UNSECURED_SHARE)
+        if folder is not None:                   # load-trailer: whether the trailer is secured (its setup.py)
+            out.update(folder.target(rng))
         return out
-    if t == "load-bales":
-        return dict(door=BALE_DOORS[int(rng.integers(0, len(BALE_DOORS)))])
-    if t == "start-and-park":
-        return dict(start_from=PARK_STARTS[int(rng.integers(0, len(PARK_STARTS)))])
-    if t == "aisle-cruise":
-        return dict(cruise=CRUISE_DIRECTIONS[int(rng.integers(0, len(CRUISE_DIRECTIONS)))])
+    if folder is not None:
+        return folder.target(rng) if hasattr(folder, "target") else {}
     if t == "feed-conveyor":
         return dict(start_from=FEED_STARTS[int(rng.integers(0, len(FEED_STARTS)))])
     if t == "ramp-up-loaded":
         return dict(side=RAMP_SIDES[int(rng.integers(0, len(RAMP_SIDES)))])
-    if t == "ramp-down-loaded":
-        return dict(drop_zone=DROP_ZONES[int(rng.integers(0, len(DROP_ZONES)))])
     if t == "yard-route":
         return dict(route=YARD_ROUTES[int(rng.integers(0, len(YARD_ROUTES)))])
     return {}
@@ -185,8 +177,29 @@ def _wet_patch(rng, s, keep_clear, x_range=(22.0, 34.0)):
             return
 
 
+class Start:
+    """What a benchmark task's setup.py builds its start on. resolve() makes one and calls the task's setup(start) where
+    the task's branch is (carry-to-floor-bay after the start it shares with carry-loose-stack, the dock tasks once the
+    trailer bed is drawn).
+
+    config      the session's Config (preset, task, seed)
+    s           the start state so far (resolve's dict); setup adds the truck's pose and condition, loads and targets
+    rng, j      the generator seeded by (task, seed), and j(a): a draw uniform in +-a from it
+    zones       the facility layout's zones
+    target      the work order's target of (task, seed) (_target)
+    keep_clear  boxes the wet patch's sign must stay out of (truck start, routes); setup adds its own
+    wet_x       the x range of a warehouse wet patch; setup may narrow it
+    dock tasks also: bed (the trailer floor relative to the dock floor), door (the work order's door) and door_zone (its
+    zone), nose_y (the trailer's nose at that door) and trailers (door -> bed_z, restraint, chocks: the work order's
+    door, restrained and chocked, unless setup replaces it)"""
+
+    def __init__(self, config, s, rng, j, zones, target, keep_clear, wet_x):
+        self.config, self.s, self.rng, self.j = config, s, rng, j
+        self.zones, self.target, self.keep_clear, self.wet_x = zones, target, keep_clear, wet_x
+
+
 def resolve(config, layout):
-    """Resolved start state of (preset, task, seed)."""
+    """Resolved start state of (preset, task, seed). A benchmark task's own part is its setup.py (Start above)."""
     rng = np.random.default_rng(config.seed * 7919 + zlib.crc32(config.task.encode()) % 1000)
     t = config.task
     j = lambda a: float(rng.uniform(-a, a))
@@ -196,51 +209,17 @@ def resolve(config, layout):
     tg = _target(config)
     keep_clear = []                      # boxes the wet patch's sign must stay out of (truck start, routes)
     wet_x = (22.0, 34.0)
-    if t == "start-and-park":
-        # the truck stopped at a travel position, key off; the job: start it and return it to the parking bay
-        s["start_from"] = tg["start_from"]
-        if tg["start_from"] == "lane 1":                     # in travel lane 1, heading north toward the main aisle
-            s.update(truck=(22.0 + j(0.3), 19.5 + j(1.5), math.pi / 2 + j(math.radians(4))))
-            wet_x = (9.0, 17.0)
-        else:                                                # in the main aisle, heading west toward the bay
-            x0 = 28.5 if tg["start_from"] == "main aisle east" else 14.5
-            s.update(truck=(x0 + j(2.5), 28.25 + j(0.25), math.pi + j(math.radians(4))))
-            wet_x = (9.0, max(9.5, s["truck"][0] - 4.5))     # on the way to the bay
-        s.update(engine="off", key="off")
-        keep_clear.append(((0.0, 6.5), (26.0, 30.5)))       # the parking bay
-    elif t == "aisle-cruise":
-        s["cruise"] = tg["cruise"]
-        if tg["cruise"] == "east":                           # from the parking bay at the aisle's west end
-            s.update(truck=(3.5 + j(0.4), 28.25 + j(0.3), j(math.radians(5))), park=True, lift=0.10)
-        else:                                                # from the aisle's east end (counterweight >= 0.5 m off the
-            s.update(truck=(46.8 + j(0.3), 28.25 + j(0.3), math.pi + j(math.radians(5))), park=True, lift=0.10)  # wall)
-    elif t == "drive-to-pallet":
-        s["lane"] = tg["lane"]
-        st = Z["staging"][tg["lane"]]
-        px = (st["x"][0] + st["x"][1]) / 2 + j(0.3)
-        py = 34.6 + j(0.2)
-        # the pallet's pose: +-0.3 m and +-10 deg
-        s["loads"].append(dict(kind="pallet", name="target", pose=(px, py, math.pi / 2 + j(math.radians(10)))))
-        s.update(truck=(px - 9.0 + j(1.5), 28.25 + j(0.4), j(math.radians(10))))
-        keep_clear.append(((px - 4.0, px + 1.5), (26.0, 31.0)))     # the turn into the lane
-    elif t in ("carry-to-floor-bay", "carry-loose-stack"):
+    folder = task_setup(t)
+    st = Start(config, s, rng, j, Z, tg, keep_clear, wet_x)
+    if t in ("carry-to-floor-bay", "carry-loose-stack"):
         lane = Z["receiving"]["R2"]
         s.update(truck=(45.5 + j(0.5), (lane["y"][0] + lane["y"][1]) / 2 + j(0.3), math.pi + j(math.radians(6))),
                  lift=0.15, tilt_deg=-3.0)
-        if t == "carry-to-floor-bay":
-            s["load_on_forks"] = dict(kind="wrapped", mass=float(rng.uniform(600.0, 1200.0)),
-                                      height=float(rng.uniform(0.9, 1.5)))
+        if folder is not None:                   # carry-to-floor-bay: its setup.py puts its load on the forks
+            folder.setup(st)
         else:
             s["load_on_forks"] = dict(kind="stack", layers=5)
         s["bay"] = tg["bay"]
-    elif t == "put-away-rack":
-        loc, aisle = rack_target(config)
-        xa, xb = Z["aisles"][aisle]
-        # at the aisle's entry from the main aisle, heading down it
-        s.update(truck=((xa + xb) / 2 + j(0.25), 24.6 + j(0.3), -math.pi / 2 + j(math.radians(6))), lift=0.15, tilt_deg=-3.0)
-        s["load_on_forks"] = dict(kind="wrapped", mass=float(rng.uniform(600.0, 1000.0)), height=float(rng.uniform(0.9, 1.2)))
-        s["rack_location"] = loc
-        s["aisle"] = aisle
     elif t == "feed-conveyor":
         s["start_from"] = tg["start_from"]
         if tg["start_from"] == "lane 2":                     # in travel lane 2 north of the conveyor, heading south
@@ -259,12 +238,11 @@ def resolve(config, layout):
         door = tg["door"]
         d = Z["doors"][door]
         nose_y = d["face_y"] + BUMPER + 0.106 + P.TRAILER_INSIDE["L"]
-        if t == "load-bales":
-            trailers = {dn: dict(bed_z=bed, restraint=True, chocks=True) for dn in BALE_DOORS}
-        elif t == "load-trailer" and not tg["secured"]:
-            trailers = {door: dict(bed_z=bed, restraint=False, chocks=False)}      # held by its own spring brakes only
-        else:
-            trailers = {door: dict(bed_z=bed, restraint=(t != "load-trailer-chocked"), chocks=True)}
+        trailers = {door: dict(bed_z=bed, restraint=(t != "load-trailer-chocked"), chocks=True)}
+        if folder is not None:                   # load-trailer, load-bales: their trailers (and load-bales' work order)
+            st.bed, st.door, st.door_zone, st.nose_y, st.trailers = bed, door, d, nose_y, trailers
+            folder.setup(st)
+            trailers = st.trailers
         if t in ("load-trailer", "load-trailer-chocked", "unload-trailer"):
             rows = 1            # one row across the nose: the unload target must be reachable without moving another load
             for r in range(rows):
@@ -284,31 +262,6 @@ def resolve(config, layout):
         elif t == "unload-trailer":
             s.update(truck=(d["x"] + j(0.3), 12.0 + j(0.4), math.pi / 2 + j(math.radians(4))), lift=0.10)
             s["target"] = dict(door=door, pallet=f"trailer_1{tg['side']}", lane=f"lane{door[-1]}")
-        elif t == "load-bales":
-            br = Z["bale_row"]
-            bs = P.BALE["size"]                         # 60 x 30 x 48 in: the 60 in along the forks (42 in blades)
-            dl, dw, dh = P.DUNNAGE["size"][2], P.DUNNAGE["size"][0], P.DUNNAGE["size"][1]
-            for k in range(3):
-                # side by side along the row, every bale's 60 in end facing the dock floor to the west
-                bx = br["x"][0] + 1.5
-                by = (br["y"][0] + br["y"][1]) / 2 + 1.8 * (k - 1)
-                # two 4x4 strips along the fork direction, inside the blades (+-293 mm) so the forks can enter
-                for dd, sy in (("a", -1), ("b", 1)):
-                    s["loads"].append(dict(kind="box", name=f"dunnage_{k}{dd}", centre=(bx, by + sy * DUNNAGE_Y, 0.0),
-                                           size=(dl, dw, dh), mass=P.DUNNAGE["mass"], mu=0.5, material="dunnage"))
-                s["loads"].append(dict(kind="box", name=f"bale_{k}", centre=(bx, by, dh),
-                                       size=(bs[0], bs[1], bs[2]), mass=float(rng.uniform(*P.BALE["mass"])),
-                                       mu=P.BALE["mu"], material="bale"))
-            # the same strips pre-laid at the target trailer's nose, one pair per bale position, side by side across the
-            # trailer (left and right as seen facing the nose; strips along the trailer)
-            for side, sx in (("L", -1), ("R", 1)):
-                cx = d["x"] + sx * (bs[1] / 2 + 0.03)
-                for dd, sy in (("a", -1), ("b", 1)):
-                    s["loads"].append(dict(kind="box", name=f"nose_dunnage_{side}{dd}",
-                                           centre=(cx + sy * DUNNAGE_Y, nose_y - 0.03 - dl / 2, bed),
-                                           size=(dw, dl, dh), mass=P.DUNNAGE["mass"], mu=0.5, material="dunnage"))
-            s.update(truck=(16.0 + j(0.5), 6.0 + j(0.4), 0.0 + j(math.radians(5))), lift=0.10)
-            s["target"] = dict(door=door)
         s["trailers"] = trailers
         s["bed_z"] = bed
     elif config.preset == "yard":
@@ -321,14 +274,8 @@ def resolve(config, layout):
                      lift=0.15, tilt_deg=-3.0)
             s["load_on_forks"] = dict(kind="wrapped", mass=float(rng.uniform(900.0, 1300.0)), height=float(rng.uniform(1.0, 1.3)))
             s["target"] = dict(side=tg["side"])
-        elif t == "ramp-down-loaded":
-            # inside the trailer, forks toward the nose, where the load was picked: 3-9 m in from the rear sill (the
-            # truck's rear axle at least 1.4 m inside it; its forks at least 4 m short of the nose)
-            s.update(truck=(rp["x"] + j(0.1), rp["y_rear"] - float(rng.uniform(3.0, 9.0)), -math.pi / 2 + j(math.radians(2))),
-                     lift=0.15, tilt_deg=-3.0)
-            s["load_on_forks"] = dict(kind="wrapped", mass=float(rng.uniform(900.0, 1300.0)), height=float(rng.uniform(1.0, 1.3)))
-            s["truck_z"] = rp["rise"]
-            s["drop_zone"] = tg["drop_zone"]
+        elif folder is not None:                 # ramp-down-loaded: its setup.py
+            folder.setup(st)
         elif t == "yard-route":
             s["route"] = tg["route"]
             if tg["route"] == "to the ramp":
@@ -344,6 +291,9 @@ def resolve(config, layout):
                          lift=0.10)
             if rng.random() < 0.4:
                 s["floor"]["wet_yard"] = dict(centre=(24.0 + j(4.0), 10.0), half=(3.0, 2.2))
+    elif folder is not None:                     # start-and-park, aisle-cruise, drive-to-pallet, put-away-rack
+        folder.setup(st)
+        wet_x = st.wet_x
     else:
         raise ValueError(f"task {t!r} has no start state")
     if config.preset == "yard" and "wet_yard" in s["floor"]:

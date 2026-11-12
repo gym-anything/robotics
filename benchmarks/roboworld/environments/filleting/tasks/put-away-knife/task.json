@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/trout/put-away-knife/filleting-tasks-v2/seed-0",
+  "name": "put-away-knife",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "trout",
+    "task": "put-away-knife",
+    "seed": 0,
+    "contract": "filleting-tasks-v2"
+  },
+  "description": "You are done at the board. Put the fillet knife back in its slot in the knife block.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

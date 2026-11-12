@@ -132,7 +132,8 @@ class SplitBottle(unittest.TestCase):
             np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
 
     def test_progress_from_the_final_state(self):
-        from wine_pouring.task import split_progress
+        from gym_anything_robotics import task_folders
+        split_progress = task_folders.verifier("wine_pouring", "split-bottle").split_progress
         v0, leave = 320.776, 15.
         T = .5*(v0 - leave)
         p = lambda va, vb, lost=0., up=(True, True): split_progress(v0, va, vb, up[0], up[1], lost, leave)["progress"]
@@ -195,7 +196,9 @@ class SplitBottle(unittest.TestCase):
     def test_touch_rule_is_split_bottle_only(self):
         from wine_pouring import params as P
         from wine_pouring.config import TASKS
-        from wine_pouring.task import touch_rule, TOUCH_FLOOR_N
+        from gym_anything_robotics import task_folders
+        from wine_pouring.task import touch_rule
+        TOUCH_FLOOR_N = task_folders.verifier("wine_pouring", "split-bottle").TOUCH_FLOOR_N
         self.assertEqual(touch_rule("split-bottle"), (1, TOUCH_FLOOR_N))          # every tick, any touch
         for t in (t for names in TASKS.values() for t in names if t != "split-bottle"):
             self.assertEqual(touch_rule(t), (10, P.CONTACT_FORCE_TOL_N))         # the other nine: every 10th tick

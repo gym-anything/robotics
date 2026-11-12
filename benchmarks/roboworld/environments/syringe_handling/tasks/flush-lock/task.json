@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/iv-lock/flush-lock/contract-syringe-tasks-v2/seed-0",
+  "name": "flush-lock",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "iv-lock",
+    "task": "flush-lock",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+  },
+  "description": "Flush the saline lock on the training arm with 5 mL from the prefilled saline syringe on the tray. Leave the lock clamped with nothing attached.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

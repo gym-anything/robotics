@@ -1,14 +1,15 @@
 """Continuous rewards for the seven tasks other than vial-to-pad; no stepping or commanded-action access.
 
 Success still comes from task.evaluate's existing physical predicates. Explicit contract only:
-1 on success, else 0.9 * progress.
+1 on success, else 0.9 * progress. A task's own progress is progress(env) in its verifier.py (tasks/<task>/); the parts
+several tasks share are here.
 """
 import math
 
 import numpy as np
 
 from . import params as P, hydraulics as H, task as T
-from .config import EIGHT_TASK_CONTRACT
+from .config import EIGHT_TASK_CONTRACT, task_verifier
 
 FAIL_SCALE = 0.9  # vial-to-pad's partial weights also sum to 0.9
 COMMON = ("at_rest", "on_the_counter", "no_protective_stop", "spills", "needle_hygiene",
@@ -61,67 +62,25 @@ def sharps_progress(env, names):
     return progress, dict(contained=contained, flap=flap, foreign_units=others/max(assemblies, 1))
 
 
-def syringe_progress(env):
+def syringe_progress(env, graded):
+    """set-dose's and draw-dose's progress: graded(env, name, d, s, v, air, tol), the task's own (its verifier.py), from
+    the dose syringe's name and its device s, the dose d, the dose v and the air (mL) the syringe holds and the dose's
+    tolerance tol."""
     spec, fl = env.spec, env.world.fluid
     name, d = spec["dose_syringe"], spec["dose_ml"]
     s = fl.syringes[name]
     v, air = max(s.chamber.liquid - s.chamber.dead, 0.0)/H.ML, s.chamber.gas0/H.ML
     tol = T.dose_tolerance_ml(d, s.s["nominal_ml"])
-    if spec["task"] == "set-dose":
-        initial = env.start["syringe_dose_ml"][name]
-        dose = improved(abs(v - d), abs(initial - d), tol)
-        cleared = improved(air, env.start["syringe_air_ml"][name], T.AIR_LIMIT_ML)
-        # Air credit vanishes continuously before the syringe is empty; never reward discarding the dose.
-        retained = clip((v - 0.5*d)/(0.5*d))
-        return 0.5*(dose + cleared*retained), dict(dose=dose, air_cleared=cleared, retained=retained)
-    dose = clip(min(1.0, v/(d - tol)) - max(0.0, v - d - tol)/d)
-    clear = grade(air, T.AIR_LIMIT_ML, max(0.5, 0.2*d))
-    vial = fl.vials["vial"]
-    r = vial.reading(env.world)
-    moved = float(np.linalg.norm(env.world.bq[vial.body, :2] - np.asarray(env.start["vial_xy"]["vial"])))
-    # Continuous physical deviations, not a fraction of the vial's Boolean checks.
-    pose = min(grade(1.0 - r["upright_cos"], 0.01, 0.2), grade(moved, 0.03, 0.15),
-               grade(env.world.bq[vial.body, 2] - P.COUNTER_Z, 0.004, 0.10))
-    pressure = grade(abs(vial.vessel.gas_pressure() - P.P_ATM), T.VIAL_PRESSURE_PA, 100e3)
-    loss = env.start["vial_ml"]["vial"] - r["liquid_ml"] - s.chamber.liquid/H.ML
-    contents = grade(loss, 0.1, d + 0.1)
-    kept = pose*pressure*contents
-    return dose*(0.6 + 0.2*clear + 0.2*kept), dict(dose=dose, air_clear=clear, vial_pose=pose,
-                                                    vial_pressure=pressure, vial_contents=contents)
+    return graded(env, name, d, s, v, air, tol)
 
 
-def injection_progress(env):
-    fl, spec = env.world.fluid, env.spec
-    led, d, layer = fl.ledger, spec["dose_ml"], spec["layer"]
-    recs = [r for nd in fl.needles.values() for r in nd.records if r["target"] == "pad"]
-    angle = 45.0 if layer == "fat" else T.NEEDLE_ANGLE_DEG
-
-    def quality(t):
-        active = [r for r in recs if r["t"] - 1e-6 <= t <= (math.inf if r["t_out"] is None else r["t_out"] + 1e-6)]
-        return min((min(grade(r["offset_mm"], T.RING_MM, 2*T.RING_MM),
-                        grade(r["angle_deg"], angle, 2*angle)) for r in active), default=0.0)
-
-    want = f"pad:{layer}"
-    rows = [(float(m[:H.AIR].sum())/H.ML, quality(t)) for t, m, _ in led.arrivals.get(want, [])]
-    came = sum(v for v, q in rows)
-    site = sum(v*q for v, q in rows)/came if came > 0 else 0.0
-    pad = {k: led.volume(k)/H.ML for k in led.places if k.startswith("pad:")}
-    over = max(0.0, sum(pad.values()) - 1.1*d)/d
-    back = max(0.0, pad.get("pad:surface", 0.0) - 0.05*d)/d
-    volume = clip(min(1.0, pad.get(want, 0.0)/(0.9*d)) - max(over, back))
-    rate = grade(T._tissue_window(led, 2.0), 0.3, T.RATE_ZERO_ML)
-    given = volume*site*rate
-    name = spec["dose_syringe"]
-    cleared, parts = sharps_progress(env, [name, f"{name}_needle"])
-    # Disposal is work only in proportion to a delivered dose; no fixed >0.1 step.
-    used = clip(given/0.1)
-    return 0.8*given + 0.2*used*cleared, dict(volume=volume, site=site, rate=rate, given=given,
-                                            used=used, cleared=cleared, sharps=parts)
-
-
-def lock_progress(env):
+def lock_progress(env, work=None, sp=None, timed=None):
+    """The iv-lock tasks' progress, with the task's own part from its verifier.py: either work(env, F, K, parts), the
+    task's own work (flush-lock) from F, the share of the flush in, and K, the lock clamped with nothing on it; or a
+    dose of sp first (slow-push, fast-bolus), where timed(env, sp, D, parts) is how much of D, the share of the dose
+    that reached the vein, counts by its rate and time. Times the line pressure's and the air's grades."""
     w, spec = env.world, env.spec
-    fl, task = w.fluid, spec["task"]
+    fl = w.fluid
     led, lk = fl.ledger, fl.locks["lock"]
     saline = sum(float(m[P.SPECIES.index("saline")]) for _, m, _ in led.arrivals.get("lock:in", []))/H.ML
     F = clip(saline/(0.95*spec["flush_ml"]))
@@ -133,41 +92,23 @@ def lock_progress(env):
     detached = 1.0 if lk.female.mate is None else 1.0 - clip(lk.female.mate.depth(w)/P.LUER["d_seat"])
     K = clamped*detached
     parts = dict(flush=F, pressure=pressure, air=air, closed_detached=K)
-    if task == "flush-lock":
-        work = clip(lk.peak_gauge/1e3) if lk.blocked else F
-        parts["tried" if lk.blocked else "delivered"] = work
-        progress = work*(0.5 + 0.5*K)
+    if work is not None:
+        progress = work(env, F, K, parts)
     else:
-        sp = "medication" if task == "slow-push" else "contrast"
         D = clip(led.volume("vein", sp)/H.ML/(0.95*spec["dose_ml"]))
-        if task == "slow-push":
-            full = 1.5*15*spec["dose_ml"]/spec["dose_s"]
-            R = grade(led.rate_window("vein", sp, 15.0)/H.ML, full, 2*full)
-            span = led.span("vein", sp, 0.05, 0.95)
-            timing = clip((span[1] - span[0])/(0.8*0.9*spec["dose_s"])) if span else 0.0
-            delivered = D*R*timing
-            parts.update(rate=R, time=timing)
-        else:
-            span = led.span("lock:in", sp, 0.05, 0.95)
-            timing = grade(span[1] - span[0], 0.9*spec["bolus_s"], 2*spec["bolus_s"]) if span else 0.0
-            delivered = D*timing
-            parts["time"] = timing
+        delivered = timed(env, sp, D, parts)
         parts["dose"] = D
         progress = delivered*(1.0 + F + F*K)/3.0
     return progress*pressure*air, parts
 
 
 def reward(env, criteria, success):
+    """1 on success, else 0.9 x the progress (the task's verifier.py: progress(env) -> (raw progress, parts)) x the
+    housekeeping factor."""
     task = env.spec["task"]
-    if task == "sharps-away":
-        names = list(env.spec["syringes"])
-        raw, parts = sharps_progress(env, names + [f"{n}_needle" for n in names])
-    elif task in ("set-dose", "draw-dose"):
-        raw, parts = syringe_progress(env)
-    elif task == "inject":
-        raw, parts = injection_progress(env)
-    elif task in ("flush-lock", "slow-push", "fast-bolus"):
-        raw, parts = lock_progress(env)
+    task_progress = getattr(task_verifier(task), "progress", None)
+    if task_progress is not None:
+        raw, parts = task_progress(env)
     else:
         raise ValueError(f"No {EIGHT_TASK_CONTRACT} reward for {task!r}; vial-to-pad uses its own evaluator")
     failed = [k for k in COMMON if not criteria[k]["ok"]]

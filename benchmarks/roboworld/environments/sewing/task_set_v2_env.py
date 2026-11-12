@@ -9,7 +9,8 @@ instruction, time limit and task_contract.
 from dataclasses import replace
 
 from .env import SewingEnv
-from .task_set_env import TaskEnvironment as ReleasedTaskEnvironment, SquareConfig
+from .task import task_setup
+from .task_set_env import TaskEnvironment as ReleasedTaskEnvironment
 from .task_set_v2 import BASE_TASK, CONTRACT, TIME_LIMIT_S, choose_contract, instruction
 from .task_set_v2_scoring import TaskEvaluator
 
@@ -20,14 +21,15 @@ class TaskEnvironment(ReleasedTaskEnvironment):
         if self.task_contract != CONTRACT:
             raise ValueError(f"this adapter is for {CONTRACT} only")
         self.catalogue_config = config
-        physical = replace(config, task=BASE_TASK.get(config.task, config.task))
-        if config.task == "square-plies":
-            # Unique cache: never restore an aligned load state as the slipped one.
-            physical = SquareConfig(**vars(config))
+        start = task_setup(config.task)
+        if start is not None:                 # a benchmark task: its setup.py gives the Config the world is built from
+            physical = start.setup(self, config)
+        else:
+            physical = replace(config, task=BASE_TASK.get(config.task, config.task))
         SewingEnv.__init__(self, physical, output_dir=output_dir)
         self.config = config
-        if config.task == "square-plies":
-            self.start_state = "tray_slipped"
+        if hasattr(start, "START_STATE"):
+            self.start_state = start.START_STATE
         self.evaluator = TaskEvaluator(self)
 
     def get_state(self, evaluate=True):

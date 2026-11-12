@@ -3,7 +3,8 @@
 A selection opts in with "contract": "titration-tasks-v2"; without it every selection keeps
 the released behaviour. Under this contract the seven tasks other than titration run the
 released catalogue unchanged (presets in task_presets, instructions in task_catalogue,
-evaluators in task_evaluators, sessions in task_session) and differ in one thing, the fix:
+evaluators in task_evaluators, sessions in task_session, each with the task's own code in
+its folder, tasks/<task>/) and differ in one thing, the fix:
 they report the single contract string `titration-tasks-v2` (the task is the evaluation's
 `task` field) instead of `titration-tasks-v1/<task>`. Titration keeps its released selection
 {"variation_id": 0} and contract `titration-progress-v1`.

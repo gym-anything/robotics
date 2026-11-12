@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/load-fixture/pencap-tasks-v2",
+  "name": "load-fixture",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "load-fixture",
+    "contract": "pencap-tasks-v2"
+  },
+  "description": "Stand the yellow pen in the capping fixture, tail end down, ready for its cap.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

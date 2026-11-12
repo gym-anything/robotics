@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/move-teacher-desk/classroom-tasks-v2/seed-0",
+  "name": "move-teacher-desk",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "move-teacher-desk",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+  },
+  "description": "Make room for a projector cart at the front: turn the teacher's desk a quarter turn and slide it toward the window wall onto its floor dots, so its long side runs along the windows. Its chair goes behind it, on the room side. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "painting/v1/spray/spray-stencil/painting-tasks-v2/seed-0",
+  "name": "spray-stencil",
+  "env_id": "painting",
+  "split": "train",
+  "selection": {
+    "preset": "spray",
+    "task": "spray-stencil",
+    "seed": 0,
+    "contract": "painting-tasks-v2"
+  },
+  "description": "Spray the number 3 through the stencil onto the crate side in the spray box with an even coat and sharp edges, keeping overspray inside the box.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

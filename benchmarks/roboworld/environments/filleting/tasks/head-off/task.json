@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/trout/head-off/filleting-tasks-v2/seed-0",
+  "name": "head-off",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "trout",
+    "task": "head-off",
+    "seed": 0,
+    "contract": "filleting-tasks-v2"
+  },
+  "description": "Remove the head with one cut behind the gill cover and pectoral fin, through a joint of the backbone.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -121,7 +121,7 @@ def test_config_task_contract_defaults_to_standing_contract():
 def test_sort_cups_needs_no_hand_off():
     """All three cups stand on the right-hand row; the right arm reaches each cup and the tray."""
     tray_centre = np.array((-.43, .375, 1.0))
-    for x, y, z in variants.SORT_CUPS_ON_COUNTER:
+    for x, y, z in variants.task_setup("sort_cups").SORT_CUPS_ON_COUNTER:
         assert y == .53 and z == .903
         assert np.linalg.norm(np.array((x, y, .99)) - BASES["right"]) < FR3_REACH_M - .15
         # Midway between two counter cans of the row, the cup rim clears each can by at least 4.5 mm.
@@ -136,11 +136,12 @@ def test_sort_cups_needs_no_hand_off():
 
 def test_lid_cans_stand_on_the_flat_roof_within_reach():
     slot_half, roof_half = (.2032, .05715), (.316, .2276)   # station.lid_mesh revision 3, rings 3 and 2
-    for k, (x, y) in enumerate(variants.LID_CANS_XY):
+    lid = variants.task_setup("lid_cans")
+    for k, (x, y) in enumerate(lid.LID_CANS_XY):
         radius = CAN_SPECS[k % 3][0] / 2
         assert abs(y) - radius - slot_half[1] >= .045 and roof_half[1] - abs(y) - radius >= .05
         assert roof_half[0] - abs(x) - radius > .1
-        world = np.array((variants.STATION_XY[0] + x, variants.STATION_XY[1] + y, variants.LID_ROOF_Z + .1))
+        world = np.array((lid.STATION_XY[0] + x, lid.STATION_XY[1] + y, lid.LID_ROOF_Z + .1))
         arm = "left" if y < 0 else "right"
         assert np.linalg.norm(world - BASES[arm]) < FR3_REACH_M - .1
         assert world[0] - radius - .12 > .2   # the start pose (robot.HOME) keeps each arm in the plane x = 0.12
@@ -148,7 +149,7 @@ def test_lid_cans_stand_on_the_flat_roof_within_reach():
 
 def test_tub_cups_stand_on_the_flat_floor_clear_of_the_cans():
     tub_centre, floor_half, rib_end_y = np.array((-.37, 0.)), (.1945 - .019, .253 - .019), .095   # tub_geometry
-    for k, (x, y, z) in enumerate(variants.TUB_CUPS):
+    for k, (x, y, z) in enumerate(variants.task_setup("tub_cups").TUB_CUPS):
         local = np.array((x, y)) - tub_centre
         assert local[1] - CUP_BASE_RADIUS > rib_end_y and abs(local[0]) + CUP_RIM_RADIUS < floor_half[0] - .03
         assert floor_half[1] - local[1] - CUP_RIM_RADIUS > .04
@@ -160,7 +161,7 @@ def test_tub_cups_stand_on_the_flat_floor_clear_of_the_cans():
 
 
 def test_paper_cups_and_landfill_mouth_are_on_the_right_arm_side():
-    for x, y, _ in variants.PAPER_CUPS:
+    for x, y, _ in variants.task_setup("sort_waste").PAPER_CUPS:
         for j, (cx, cy) in enumerate(COUNTER_CANS[:6]):
             assert np.hypot(x - cx, y - cy) - PAPER_CUP_RIM_RADIUS - CAN_SPECS[j % 3][0] / 2 > .05
         assert np.linalg.norm(np.array((x, y, .98)) - BASES["right"]) < FR3_REACH_M - .3

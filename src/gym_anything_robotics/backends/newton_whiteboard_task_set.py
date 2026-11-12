@@ -6,6 +6,7 @@ from whiteboard.task_set.catalogue import CatalogueTask, CONTRACT, preset_config
 from whiteboard.task_set.presets import apply_start, tool_poses
 from whiteboard.task_set.mechanical import read_state
 from whiteboard.task_set.verifier import evaluate
+from whiteboard.tasks import task_verifier
 
 
 class NewtonWhiteboardTaskSetBackend(NewtonWhiteboardBackend):
@@ -80,7 +81,9 @@ class NewtonWhiteboardTaskSetBackend(NewtonWhiteboardBackend):
         if not self.env.healthy:
             raise RuntimeError("Cannot evaluate a faulted whiteboard")
         with self.env._lock:
-            state = None if self.env.task.name in ("write-text", "write-in-colour", "draw-table") else read_state(self.env)
+            # The tasks judged from the board alone (READS_STATE False, their verifier.py) need no body state.
+            reads = getattr(task_verifier(self.env.task.name), "READS_STATE", True)
+            state = read_state(self.env) if reads else None
             result = evaluate(self.env.task, self.env.ink, self.config, state)
             result["task_source_sha256"] = self.task_source["sha256"]
             return result

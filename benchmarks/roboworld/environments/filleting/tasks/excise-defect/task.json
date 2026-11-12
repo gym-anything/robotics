@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/salmon-side/excise-defect/filleting-tasks-v2/seed-0",
+  "name": "excise-defect",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "salmon-side",
+    "task": "excise-defect",
+    "seed": 0,
+    "contract": "filleting-tasks-v2"
+  },
+  "description": "Cut away the dark spot, taking as little good flesh as possible.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

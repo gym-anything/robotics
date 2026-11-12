@@ -1,7 +1,13 @@
-"""Eight jobs, discoverable without importing a simulator or robot assets."""
+"""Eight jobs, discoverable without importing a simulator or robot assets.
 
+Each job has its task folder, tasks/<task>/ in this package: setup.py builds its start and verifier.py judges it
+(task_setup, task_verifier).
+"""
+
+from gym_anything_robotics import task_folders
 from lockkey.newton15.task import INSTRUCTION, DESCRIPTION
 
+PACKAGE = "lockkey"
 DEFAULT_TASK = "unlock"
 # Append to the existing catalogue; the benchmark set has its own difficulty order.
 TASKS = (DEFAULT_TASK, "swing-open", "turn-to-open", "insert-key", "return-key",
@@ -27,6 +33,16 @@ INSTRUCTIONS = {
                        "shackle open, then put the key back on its stand. Leave the other key on its stand.",
 }
 DIFFICULTY = dict(zip(TASK_SET_ORDER, ("entry", "entry", "medium", "medium", "medium", "hard", "hard", "hardest")))
+
+
+def task_setup(task):
+    """The task's setup.py (tasks/<task>/), or None for a name that is not one of the eight tasks."""
+    return task_folders.setup(PACKAGE, task) if task in TASKS else None
+
+
+def task_verifier(task):
+    """The task's verifier.py (tasks/<task>/), or None for a name that is not one of the eight tasks."""
+    return task_folders.verifier(PACKAGE, task) if task in TASKS else None
 
 
 def validate(task):

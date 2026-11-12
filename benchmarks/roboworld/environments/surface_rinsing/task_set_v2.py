@@ -5,7 +5,8 @@ The seven revised tasks of the released set (task_set/catalogue.py REVISED) take
 scene, instruction, predicates and progress as under surface-rinsing-tasks-v1, except pre-rinse-plates, which keeps
 its instruction with the temperature sentence ("Mix the water to about 49 C (110-120 F)"), as the spec says ("Keep,
 provided the temperature gate below is added"): the v2 evaluator reads the flow-weighted mean temperature of the water
-that left the spray valve (spray_temperature, a success predicate) and grades progress by it (temperature_grade).
+that left the spray valve (spray_temperature, a success predicate) and grades progress by it (temperature_grade); both
+are in the task's folder (tasks/pre-rinse-plates/verifier.py), which progress() below reads.
 Runtime: task_set_v2_runtime.py, task_set_v2_evaluator.py, task_set_v2_backend.py. Selections without this contract
 resolve through task_set/catalogue.py as released.
 """
@@ -13,7 +14,7 @@ from copy import deepcopy
 
 from .task_set import catalogue as V1
 from .task_set.catalogue import EIGHT, LEGACY_TASKS, NEW_TASK, REVISED, split_of
-from .task_set.scoring import FAIL_SCALE, clip, excess, finite, progress as v1_progress, reduction
+from .task_set.scoring import FAIL_SCALE, finite, progress as v1_progress
 
 CONTRACT = "surface-rinsing-tasks-v2"
 SPRAY_TASK = "pre-rinse-plates"
@@ -21,12 +22,6 @@ AUDITED = "scrub-rinse-pan"
 
 TASKS = deepcopy(V1.TASKS)
 TASKS[SPRAY_TASK]["instruction"] = LEGACY_TASKS[SPRAY_TASK]["instruction"]
-
-# pre-rinse-plates: "Mix the water to about 49 C (110-120 F)". The spec's spray_temperature gate: the flow-weighted
-# mean temperature of the water that left the spray valve lies in this band; progress is multiplied by a grade that is
-# 1 inside the band and falls linearly to 0 at SPRAY_GRADE_C outside it (0 when no water has left the valve).
-SPRAY_BAND_C = (40.5, 51.5)
-SPRAY_GRADE_C = 10.0
 
 # The eight exact selections, as benchmark.json task_set lists them; the pan's is splits/test.json's.
 SELECTIONS = tuple(dict(preset=V1.TASKS[t]["preset"], task=t, seed=0, contract=CONTRACT) for t in EIGHT if t in REVISED) \
@@ -72,35 +67,14 @@ def setup(task, seed=0, contract=None):
     return spec
 
 
-def temperature_grade(mean_c):
-    if mean_c is None:
-        return 0.0
-    lo, hi = SPRAY_BAND_C
-    return clip(1.0 - max(0.0, lo - mean_c, mean_c - hi)/SPRAY_GRADE_C)
-
-
 def progress(task, start, m, criteria):
-    """task_set.scoring.progress, with pre-rinse-plates' cleaning credit multiplied by the spray temperature grade."""
-    if task != SPRAY_TASK:
+    """task_set.scoring.progress, with pre-rinse-plates' cleaning credit multiplied by the spray temperature grade (its
+    folder's task_set_v2_progress)."""
+    from .layout import task_verifier
+    own = getattr(task_verifier(task), "task_set_v2_progress", None)
+    if own is None:
         return v1_progress(task, start, m, criteria)
-    passed = lambda name: float(criteria[name]["passed"])
-    items, initial = m["items"], start["items"]
-    cont = m["contamination"]
-    released = passed("water_off_and_hands_free")
-    floor = excess(cont["floor_water_mL"], 50.0)
-    soil = lambda name: excess(cont.get(name, {}).get("gauge_max_ug_cm2", 0.0), 1.0)
-    names = [n for n in initial if n.startswith("plate_")]
-    credits = {n: reduction(initial[n]["soil_gauge_max_ug_cm2"], items[n]["soil_gauge_max_ug_cm2"], 1.0)
-               for n in names}
-    c = sum(credits.values())/len(names)
-    k = passed("valve_parked") * released
-    spray = m["task_set"]["spray"]
-    g = temperature_grade(spray["mean_C"])
-    units = (sum(not v for v in criteria["placed"]["detail"].values()) + soil("clean_table") + floor)/len(names)
-    value = (c + c*k)/2.0*g - units
-    terms = dict(clean=credits, mean_clean=c, docked_released=k, spray_mean_C=spray["mean_C"],
-                 spray_volume_L=spray["volume_L"], temperature_grade=g)
-    return dict(progress=clip(value), terms=terms, collateral_units=units)
+    return own(start, m, criteria)
 
 
 def score(task, start, m, criteria, quantities=None):

@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/post/set-post/seed-0",
+  "name": "set-post",
+  "env_id": "soil-excavation",
+  "split": "test",
+  "selection": {
+    "task": "set-post"
+  },
+  "description": "The 4x4 post stands in its dug hole, held plumb by temporary braces. Backfill around it with the soil on the tarp, back up to grade, tamping the fill firm with the 2x4, so that the post stands plumb and solid on its own once the braces come off.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

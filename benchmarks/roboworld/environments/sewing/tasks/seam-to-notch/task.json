@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "sewing/v1/sample-room/seam-to-notch/sewing-tasks-v2/seed-0",
+  "name": "seam-to-notch",
+  "env_id": "sewing",
+  "split": "train",
+  "selection": {
+    "preset": "sample-room",
+    "task": "seam-to-notch",
+    "seed": 0,
+    "contract": "sewing-tasks-v2"
+  },
+  "description": "Join the two plies with a seam 10 mm from their right edges, from the far end to a point 120 mm from that end, leaving the rest open; backtack three or four stitches at both ends, trim the threads and let go of the work.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

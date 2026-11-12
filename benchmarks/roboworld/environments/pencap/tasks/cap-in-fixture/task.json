@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/cap-in-fixture/pencap-tasks-v2",
+  "name": "cap-in-fixture",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "cap-in-fixture",
+    "contract": "pencap-tasks-v2"
+  },
+  "description": "The yellow pen stands in the capping fixture. Put the blue cap on its writing tip and press it until it snaps fully into place, leaving the capped pen standing in the fixture.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

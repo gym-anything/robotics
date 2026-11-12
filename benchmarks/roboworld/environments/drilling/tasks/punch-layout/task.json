@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "drilling/v1/bench/punch-layout/drilling-tasks-v2/seed-0",
+  "name": "punch-layout",
+  "env_id": "drilling",
+  "split": "train",
+  "selection": {
+    "preset": "bench",
+    "task": "punch-layout",
+    "seed": 0,
+    "contract": "drilling-tasks-v2"
+  },
+  "description": "Centre-punch the four layout marks on the steel bar.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

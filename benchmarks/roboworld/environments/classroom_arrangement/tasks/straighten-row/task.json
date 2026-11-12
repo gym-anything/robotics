@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/straighten-row/classroom-tasks-v2/seed-0",
+  "name": "straighten-row",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "straighten-row",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+  },
+  "description": "The desks in row 3 (the third row from the board) have drifted off their places. Put each of the six desks back on its floor dots (the coloured dots under its four feet), squared to the board, and push its chair in under the desk. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

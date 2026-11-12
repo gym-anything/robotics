@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/part/part-id-hdpe/label-tasks-v2/seed-0",
+  "name": "part-id-hdpe",
+  "env_id": "label-application",
+  "split": "train",
+  "selection": {
+    "preset": "part",
+    "task": "part-id-hdpe",
+    "seed": 0,
+    "contract": "label-tasks-v2"
+  },
+  "description": "You are at a receiving bench. The thermal-transfer printer has just printed and presented the polyester ID label for the round HDPE canister standing on the bench. Take the label from the printer and apply it to the canister's side, running level around it, about half-way up.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

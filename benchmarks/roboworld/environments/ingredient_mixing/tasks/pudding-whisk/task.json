@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/bake/pudding-whisk/contract-ingredient-mixing-tasks-v2/seed-0",
+  "name": "pudding-whisk",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "bake",
+    "task": "pudding-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+  },
+  "description": "The bowl holds two cups of cold milk with a packet of instant pudding mix heaped in the middle. Whisk until the pudding is smooth, then take the whisk out. Keep the pudding in the bowl.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

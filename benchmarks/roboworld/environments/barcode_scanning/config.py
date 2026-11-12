@@ -1,12 +1,29 @@
-"""Launch configuration: preset, task, seed, robot and numerics. Unknown fields fail (unified contract)."""
+"""Launch configuration: preset, task, seed, robot and numerics. Unknown fields fail (unified contract).
+
+Every task is a benchmark task with its folder tasks/<task>/: setup.py stocks its scene, verifier.py judges its
+outcome (task_setup, task_verifier)."""
 
 from dataclasses import dataclass, fields
+
+from gym_anything_robotics import task_folders
 
 TASKS = {
     "stockroom": ("count-by-scanning", "scan-location", "count-key-quantity", "hold-scanner"),
     "counter": ("checkout-present", "checkout-bulky", "checkout-counter"),
     "library": ("library-checkin",),
 }
+
+PACKAGE = "barcode_scanning"
+
+
+def task_setup(task):
+    """The task's setup.py (tasks/<task>/), or None for a task without a folder."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """The task's verifier.py (tasks/<task>/), or None for a task without a folder."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
 
 
 RIGID_DT_S = 0.001                   # s, MuJoCo step of the FR3/Panda configurations (the FR3's 1 kHz control rate)

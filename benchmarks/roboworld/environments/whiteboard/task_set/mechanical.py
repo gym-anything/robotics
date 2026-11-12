@@ -1,12 +1,11 @@
-"""End-state tool seating/support and robot release, without simulator imports."""
+"""End-state tool seating/support and robot release, without simulator imports. (Cap seating, recap-and-tidy's own
+check, is in its verifier.py.)"""
 from functools import lru_cache
 import math
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from whiteboard.config import COLORS
 from whiteboard.geometry import tools
-from .presets import CAP_SEATED_M, CAP_START_OFFSET_M, OPEN_COLORS, tool_poses
 
 
 def read_state(env):
@@ -79,40 +78,9 @@ def tray_measure(config, name, pose, velocity, touching):
             "robot_contact": name in touching}
 
 
-def seating(barrel, cap):
-    rb, rc = Rotation.from_quat(barrel[3:]), Rotation.from_quat(cap[3:])
-    local = rb.inv().apply(np.asarray(cap[:3]) - barrel[:3])
-    axial = abs(float(local[2]) - CAP_SEATED_M)
-    lateral = float(np.linalg.norm(local[:2]))
-    angle = math.acos(np.clip(float(np.dot(rb.apply([0, 0, 1]), rc.apply([0, 0, 1]))), -1, 1))
-    axial_credit = np.clip(1 - max(0., axial - .0015) / (CAP_START_OFFSET_M - .0015), 0, 1)
-    quality = axial_credit / (1 + max(0., lateral - .0015) / .005 + max(0., angle - math.radians(5)) / .3)
-    return {"pass": bool(axial <= .0015 and lateral <= .0015 and angle <= math.radians(5)),
-            "quality": float(quality), "axial_error_m": axial, "radial_error_m": lateral,
-            "angle_deg": math.degrees(angle)}
-
-
 def mechanics(config, state, names):
     trays = {n: tray_measure(config, n, state["poses"][n], state["velocities"][n], state["touching"]) for n in names}
     standing = state["pelvis_z"] > .45
     quality = float(np.clip((state["pelvis_z"] - .30) / .15, 0, 1))
     quality *= min((r["quality"] for r in trays.values()), default=1.)
     return {"standing": standing, "returned": all(r["pass"] for r in trays.values())}, quality, trays
-
-
-def recap(config, task, state):
-    poses = state["poses"]
-    names = tuple(n for c in COLORS for n in (f"marker_{c}", f"cap_{c}"))
-    checks, quality, trays = mechanics(config, state, names)
-    seats = {c: seating(poses[f"marker_{c}"], poses[f"cap_{c}"]) for c in COLORS}
-    checks["all_caps_seated"] = all(s["pass"] for s in seats.values())
-    # Only the three authored open caps earn progress. Others are collateral.
-    # Subtract each authored start credit (including roundoff) to make idle exactly zero.
-    start = tool_poses(config, task)
-    start = {n: p.astype(np.asarray(poses[n]).dtype) for n, p in start.items()}
-    credits = []
-    for c in OPEN_COLORS:
-        s0 = seating(start[f"marker_{c}"], start[f"cap_{c}"])["quality"]
-        credits.append(float(np.clip((seats[c]["quality"] - s0) / (1 - s0), 0, 1)))
-    collateral = min(seats[c]["quality"] for c in COLORS if c not in OPEN_COLORS)
-    return checks, float(np.mean(credits)) * collateral * quality, {"seating": seats, "tray": trays}

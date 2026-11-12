@@ -14,24 +14,17 @@ from . import geometry as G
 from . import tools as T
 
 CZ = P.COUNTER_Z
-# what each task puts on the counter
-TASK_SETUP = {
-    "dry-whisk": dict(vessel="bowl5", tools=("whisk", "spatula", "spoon")),
-    "muffin-fold": dict(vessel="bowl5", tools=("spatula", "whisk", "spoon")),
-    "pancake-whisk": dict(vessel="bowl5", tools=("whisk", "spatula", "spoon")),
-    "pudding-whisk": dict(vessel="bowl5", tools=("whisk", "spatula", "spoon")),
-    "cake-mixer": dict(vessel="bowl5", tools=("spatula", "whisk", "spoon"), mixer=True),
-    "sauce-blend": dict(vessel="bowl2", tools=("spoon", "spatula", "whisk")),
-    # hob: the knob's position at the start (params.HOB levels_w: 12 is the manual's level 6.0, 1000 W; 7 is 3.5, 580 W)
-    "stir-sauce": dict(vessel="pan", tools=("stirrer", "whisk", "thermometer"), hob=12),
-    "reheat-porridge": dict(vessel="pan", tools=("stirrer", "spoon", "thermometer"), hob=7),
-}
 SLOT_ANGLES = (math.radians(270.), math.radians(30.), math.radians(150.))      # crock compartments (the robot's side first)
 
 
 def task_layout(config):
-    """Seeded placement of the station: vessel position, cart offset, mat, hob level, tool order."""
-    setup = dict(TASK_SETUP[config.task])
+    """Seeded placement of the station: vessel position, cart offset, mat, hob level, tool order. What the task puts
+    on the counter is its setup.py STATION (tasks/<task>/)."""
+    from .task import task_setup
+    folder = task_setup(config.task)
+    if folder is None:
+        raise KeyError(config.task)
+    setup = dict(folder.STATION)
     rng = np.random.default_rng([config.seed, sum(map(ord, config.task))])
     sx = P.STATION_X[config.preset]
     jit = (lambda s: float(rng.uniform(-s, s))) if config.seed else (lambda s: 0.0)
@@ -197,13 +190,15 @@ class Scene:
             self.static_cyls.append((f"fur_plant_pot{k}", pos, r, 0.5*(zb - za)))
 
     def props(self):
-        """What stands on the counter beside the work (params.PROPS for the task), each a free body with its pack's mass:
+        """What stands on the counter beside the work (its setup.py PROPS), each a free body with its pack's mass:
         a box of its outline, or for a jar, tin or bottle a twelve-sided prism of its outline; the body's frame is at
         the middle of its foot. dressing.py draws each on its body. (As static boxes, an arm that
         brushed a milk carton would be stopped by its reflex.)"""
         self.prop_list = []
         sx = P.STATION_X[self.c.preset]                      # the packets stand where the cook left them, not with the cart
-        for k, (kind, dx, y, yaw) in enumerate(P.PROPS.get(self.c.task, ())):
+        from .task import task_setup
+        folder = task_setup(self.c.task)
+        for k, (kind, dx, y, yaw) in enumerate(folder.PROPS if folder is not None else ()):
             d = P.PROP[kind]
             a = math.radians(yaw)
             (hx, hy), h, m = d["half"], d["h"], d["mass"]

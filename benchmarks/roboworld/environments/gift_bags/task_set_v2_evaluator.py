@@ -7,6 +7,7 @@ import math
 import numpy as np
 
 from . import task as T
+from .config import task_verifier
 from . import task_set_v2_scoring as S
 from .task_set_v2_catalog import CONTRACT, evaluation_contract, selected_contract
 
@@ -43,50 +44,32 @@ class Evaluator(T.Evaluator):
             _, self.start_metrics = self.measure()
 
     def measure(self):
+        """(checks, metrics) of the selected task: the hands-off window, then the task's measure(self, checks, metrics,
+        rows) from its verifier.py (tasks/<task>/)."""
         c, m = {}, {}
         rows = list(self.history.rows)
         c["hands_off_window"] = len(rows) >= self.history.n and not any(r["contact"] for r in rows)
         m["hands_off_window_s"] = len(rows)*self.env.config.dt
-        name = self.named_task
-        if name in ("open-bag", "bag-candle"):
-            # Internal task is bag-purchase: reuse every geometry correction of its evaluator, including signed normals.
-            self._eval_bag(c, m, rows)
-            self._eval_tear(c, m, 0, "bag", T.TEAR_TOL_MM)
-            self._bag_progress(c, m)
-            if name == "open-bag":
-                for k in ("candle_in_bag", "candle_upright", "candle_on_board"):
-                    c.pop(k)
-        elif name in ("lift-lid", "put-lid-on"):
-            self._eval_lid(c, m)
-            self._lid_geometry(m)
-            if name == "put-lid-on":
-                for k in ("lid_off", "lid_on_table", "base_not_lifted", "base_not_tipped"):
-                    c.pop(k)
-                c["lid_on"] = m["lid_fits"] and m["lid_overlap_mm"] >= T.LID_CLOSED_OVERLAP_MM
-                c["base_upright_on_table"] = (m["base_tilt_signed_deg"] <= T.LID_BASE_TILT_DEG
-                                               and -1. <= m["base_lowest_above_table_mm"] <= T.LID_BASE_LIFT_MM)
-        elif name == "unwrap-gift":
-            self._eval_unwrap(c, m)
-        elif name in ("open-carton", "open-flaps"):
-            from . import carton as CT
-            self._eval_carton(c, m, rows)
-            if name == "open-flaps":
-                c.pop("seam_open")
-                m["seam_tape_present"] = False
-            angles = CT.flap_angles(self.world.ipc)
-            m.update({f"{f}_angle_deg": a for f, a in angles.items()})
-            pc, Rc = self.world.ipc.body_pose(self.body["carton_body"])
-            m["carton_tilt_signed_deg"] = signed_tilt(Rc)
-            c["carton_upright"] = m["carton_tilt_signed_deg"] <= T.CARTON_TILT_DEG
-            origin = pc - Rc @ self.world.ipc.bodies[self.body["carton_body"]].render["com_offset"]
-            ds = []
-            for n in CT.CONTENTS:
-                p, _ = self.world.ipc.body_pose(self.body[n])
-                rel = Rc.T @ (p - origin)
-                nearest = np.clip(rel, (-CT.L_IN/2, -CT.W_IN/2, 2*CT.T_B), (CT.L_IN/2, CT.W_IN/2, CT.Z_END))
-                ds.append(1e3*float(np.linalg.norm(rel - nearest)))
-            m["contents_outside_distance_mm"] = ds
+        task_verifier(self.named_task).measure(self, c, m, rows)
         return {k: bool(v) for k, v in c.items()}, m
+
+    def _carton_geometry(self, c, m):
+        """open-carton and open-flaps: the flap angles, the carton's signed tilt (carton_upright) and how far each item
+        of the contents is outside the carton's inner volume."""
+        from . import carton as CT
+        angles = CT.flap_angles(self.world.ipc)
+        m.update({f"{f}_angle_deg": a for f, a in angles.items()})
+        pc, Rc = self.world.ipc.body_pose(self.body["carton_body"])
+        m["carton_tilt_signed_deg"] = signed_tilt(Rc)
+        c["carton_upright"] = m["carton_tilt_signed_deg"] <= T.CARTON_TILT_DEG
+        origin = pc - Rc @ self.world.ipc.bodies[self.body["carton_body"]].render["com_offset"]
+        ds = []
+        for n in CT.CONTENTS:
+            p, _ = self.world.ipc.body_pose(self.body[n])
+            rel = Rc.T @ (p - origin)
+            nearest = np.clip(rel, (-CT.L_IN/2, -CT.W_IN/2, 2*CT.T_B), (CT.L_IN/2, CT.W_IN/2, CT.Z_END))
+            ds.append(1e3*float(np.linalg.norm(rel - nearest)))
+        m["contents_outside_distance_mm"] = ds
 
     def _lid_geometry(self, m):
         ipc, g = self.world.ipc, self.geo["box"]
@@ -121,21 +104,22 @@ class Evaluator(T.Evaluator):
         m["frame_outside_distance_mm"] = 1e3*float(np.linalg.norm(rf - nearest))
 
     def evaluate(self):
+        """Legacy and bag-purchase-v1 selections: the released evaluation (task.Evaluator.evaluate) with their contract;
+        a gift-bags-tasks-v2 selection: its task's verifier.py (tasks/<task>/), which grades through evaluate_task."""
         label = evaluation_contract(self.selection.task, self.selection.contract)
         if not self.modern:
             return dict(super().evaluate(), contract=label)
+        return task_verifier(self.named_task).verify(self)
+
+    def evaluate_task(self, released=None, *, score_of=None, progress_of=None):
+        """A gift-bags-tasks-v2 selection: measure() and the task's progress_of(self, S, metrics) on this contract's
+        score arithmetic (S); success needs every check. Other selections: the released evaluation (task.Evaluator)."""
+        if not self.modern:
+            return super().evaluate_task(released, score_of=score_of)
+        label = evaluation_contract(self.selection.task, self.selection.contract)
         c, m = self.measure()
         name = self.named_task
-        if name in ("open-bag", "bag-candle"):
-            progress = S.bag(m, self.start_metrics, purchase=name == "bag-candle")
-        elif name in ("lift-lid", "put-lid-on"):
-            frame = 1. - .5*S.ramp(m["frame_outside_distance_mm"], 0., 50.)
-            progress = (S.lid_off if name == "lift-lid" else S.lid_on)(m, self.start_metrics, frame)
-        elif name == "unwrap-gift":
-            progress = S.unwrap(m, self.start_metrics)
-        else:
-            from .carton import FLAPS
-            progress = S.carton(m, self.start_metrics, FLAPS, taped=name == "open-carton")
+        progress = progress_of(self, S, m)
         success = all(c.values())
         m["progress"] = S.clip(progress)
         return dict(success=success, score=S.score(success, progress), checks=c, metrics=m, task=name, contract=label)

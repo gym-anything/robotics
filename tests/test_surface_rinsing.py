@@ -130,7 +130,10 @@ class ScrubRinsePanContract(unittest.TestCase):
 
     def _score(self, clean=1.0, rinsed=1.0, san_s=30.0, fail=(), fault=None, water_res=0.0):
         from types import SimpleNamespace
-        from surface_rinsing.task import Evaluator, PanTracker, PAN_TASK
+        from gym_anything_robotics import task_folders
+        from surface_rinsing.task import Evaluator
+        PAN_TASK = "scrub-rinse-pan"
+        PanTracker = task_folders.verifier("surface_rinsing", PAN_TASK).PanTracker
         gates = ("visibly_clean", "soap_free", "sanitized", "drained", "placed", "sponge_on_ledge", "faucet_closed",
                  "hands_empty")
         crit = {k: dict(passed=k not in fail) for k in gates}

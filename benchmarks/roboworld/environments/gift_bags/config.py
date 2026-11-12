@@ -3,6 +3,8 @@
 import os
 from dataclasses import dataclass, asdict, field
 
+from gym_anything_robotics import task_folders
+
 PRESETS = ("counter", "home", "receiving", "dev")
 TASKS = {
     "counter": ("open-bag", "bag-purchase"),
@@ -10,6 +12,17 @@ TASKS = {
     "receiving": ("open-carton",),
     "dev": ("pinch",),
 }
+PACKAGE = "gift_bags"
+
+
+def task_setup(task):
+    """A benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark (open-present, pinch)."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+def task_verifier(task):
+    """A benchmark task's verifier.py (tasks/<task>/); None for a task outside the benchmark (open-present, pinch)."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
 
 
 def default_device():

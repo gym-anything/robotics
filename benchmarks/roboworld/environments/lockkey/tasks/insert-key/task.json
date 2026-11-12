@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/insert-key/lockkey-tasks-v2",
+  "name": "insert-key",
+  "env_id": "lockkey",
+  "split": "train",
+  "selection": {
+    "task": "insert-key",
+    "contract": "lockkey-tasks-v2"
+  },
+  "description": "Take the key from the near (-Y) stand and put it all the way into the padlock on the chest, then let go of it. Leave the other key on its stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

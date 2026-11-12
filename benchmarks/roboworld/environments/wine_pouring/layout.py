@@ -5,11 +5,14 @@ pedestal is at y = -0.18 m, guests beyond y = 0.58 m. Delivery spots follow the 
 (params.DELIVERY_SPOTS). Seeds vary the spot, fill levels, wine, and +-15 mm / +-20 deg placement jitter.
 """
 
+import functools
 import math
 import numpy as np
+from gym_anything_robotics import task_folders
 
 from . import params as P
 
+PACKAGE = "wine_pouring"
 BAR = P.BAR_TOP_Z_M
 COASTER_BASE = 0.0015            # coaster sheet thickness under the bottle (geometry.coaster base)
 WINES = ("red_wine", "white_wine", "rose_wine")
@@ -32,51 +35,44 @@ def _bottle(rng, xy, volume, liquid="red_wine", color=None, name="bottle"):
                  color=color, liquid=liquid, volume=float(volume), role="source")]
 
 
+@functools.lru_cache(maxsize=None)
+def task_setup(task):
+    """The benchmark task's setup.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.setup(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+@functools.lru_cache(maxsize=None)
+def task_verifier(task):
+    """The benchmark task's verifier.py (tasks/<task>/), or None for a task outside the benchmark."""
+    return task_folders.verifier(PACKAGE, task) if task_folders.exists(PACKAGE, task) else None
+
+
+class Start:
+    """What a benchmark task's setup.py builds its start on (task_layout calls its setup(s)).
+
+    cfg        the selection (preset, task, seed)
+    rng        the generator seeded by (preset, task, seed), after the preset's own draws
+    items      the list the task appends its glassware to (dict(name, kind, xy, role, ...))
+    spots      the delivery spots on the bar (params.DELIVERY_SPOTS)
+    bottle_xy  service preset: the bottle's place on the bar, drawn for every service task whether it has a bottle or
+               not; None in the other presets
+
+    setup(s) returns the task's goal (layout["goal"]): what the instruction names and the evaluator judges."""
+
+    def __init__(self, cfg, rng, items, spots, bottle_xy=None):
+        self.cfg, self.rng, self.items, self.spots, self.bottle_xy = cfg, rng, items, spots, bottle_xy
+
+
 def task_layout(cfg):
     rng = _rng(cfg)
     t = cfg.task
     items, goal = [], {}
     spots = P.DELIVERY_SPOTS
+    folder = task_setup(t)
     if cfg.preset == "service":
         bottle_xy = _jit(rng, (0.02, 0.15))
-        if t == "pour-glass":
-            k = int(rng.integers(1, 5))
-            fill = float(rng.uniform(450e-6, 750e-6))
-            items += _bottle(rng, bottle_xy, fill)
-            items.append(dict(name="glass", kind="glass_pure", xy=_jit(rng, spots[k]), role="target", spot=k))
-            goal = dict(target="glass", volume=150e-6, tol=15e-6, spot=k)
-        elif t == "taste-pour":
-            k = int(rng.integers(1, 5))
-            items += _bottle(rng, bottle_xy, float(rng.uniform(600e-6, 750e-6)))
-            items.append(dict(name="glass", kind="glass_pure", xy=_jit(rng, spots[k]), role="target", spot=k))
-            goal = dict(target="glass", volume=37.5e-6, tol=7.5e-6, spot=k)
-        elif t == "split-bottle":
-            k = int(rng.integers(1, 4))
-            fill = float(rng.uniform(250e-6, 450e-6))
-            # black glass, so the wine left cannot be seen (a green bottle shows its level from the side). Appearance only: the same LEONOR geometry, mass and contact as every bottle.
-            # LEONOR geometry in black glass: Saverglass sells a black glass (Onyx), but catalogues LEONOR itself only in
-            # antique green and extra-white flint
-            items += _bottle(rng, bottle_xy, fill, color="glass_black")
-            items.append(dict(name="glass_a", kind="glass_pure", xy=_jit(rng, spots[k]), role="target", spot=k))
-            items.append(dict(name="glass_b", kind="glass_pure", xy=_jit(rng, spots[k + 1]), role="target", spot=k + 1))
-            goal = dict(targets=["glass_a", "glass_b"], share_tol=0.10, leave_max=15e-6)
-        elif t == "water-tumbler":
-            k = int(rng.integers(1, 5))
-            items.append(dict(name="carafe", kind="carafe_1l", xy=_jit(rng, (-0.10, 0.14)), liquid="water",
-                              volume=float(rng.uniform(500e-6, 800e-6)), role="source"))
-            items.append(dict(name="tumbler", kind="tumbler", xy=_jit(rng, spots[k]), role="target", spot=k))
-            goal = dict(target="tumbler", volume=250e-6, tol=25e-6, spot=k)
-        elif t == "carry-glass":
-            k = int(rng.integers(1, 5))
-            items.append(dict(name="glass", kind="glass_pure", xy=_jit(rng, (0.10, 0.14)), liquid="red_wine",
-                              volume=150e-6, role="carried"))
-            goal = dict(target="glass", deliver_spot=k, keep=150e-6)
-        elif t == "refill-glass":
-            k = int(rng.integers(1, 5))
-            items += _bottle(rng, bottle_xy, float(rng.uniform(450e-6, 700e-6)))
-            items.append(dict(name="glass", kind="glass_pure", xy=_jit(rng, spots[k]), role="target", spot=k,
-                              liquid="red_wine", volume=float(rng.uniform(40e-6, 90e-6))))
-            goal = dict(target="glass", volume=150e-6, tol=15e-6, spot=k)
+        if folder is not None:              # every service task is a benchmark task: tasks/<task>/setup.py
+            goal = folder.setup(Start(cfg, rng, items, spots, bottle_xy))
     elif cfg.preset == "tasting":
         wine = WINES[int(rng.integers(0, 3))]
         xs = (-0.16, 0.0, 0.16)
@@ -89,18 +85,11 @@ def task_layout(cfg):
             items += _bottle(rng, _jit(rng, (0.25, 0.14)), 750e-6, liquid="red_wine")
             items.append(dict(name="carafe", kind="carafe_1l", xy=_jit(rng, (-0.10, 0.20)), role="target"))
             goal = dict(target="carafe", leave_max=30e-6)
-        elif t == "dump-and-pour":
-            items += _bottle(rng, _jit(rng, (0.30, 0.14)), float(rng.uniform(600e-6, 750e-6)), liquid="white_wine")
-            items.append(dict(name="iso", kind="glass_iso", xy=_jit(rng, (0.0, 0.38), 0.01), role="target",
-                              liquid="red_wine", volume=float(rng.uniform(20e-6, 60e-6))))
-            items.append(dict(name="dump", kind="dump_bucket", xy=_jit(rng, (-0.32, 0.16)), role="dump"))
-            goal = dict(target="iso", fresh="white_wine", old="red_wine", volume=50e-6, tol=8e-6, old_max=2e-6,
-                        dump="dump")
+        elif folder is not None:            # dump-and-pour: tasks/dump-and-pour/setup.py
+            goal = folder.setup(Start(cfg, rng, items, spots))
     elif cfg.preset == "lined":
-        k = int(rng.integers(1, 5))
-        items += _bottle(rng, _jit(rng, (0.02, 0.15)), float(rng.uniform(500e-6, 750e-6)))
-        items.append(dict(name="glass", kind="glass_lined", xy=_jit(rng, spots[k]), role="target", spot=k))
-        goal = dict(target="glass", line="line_175", tol=5e-6, spot=k)
+        if folder is not None:              # lined-measure: tasks/lined-measure/setup.py
+            goal = folder.setup(Start(cfg, rng, items, spots))
     if not items:
         raise ValueError(f"No layout for {cfg.preset}/{t}")
     tgt = next((i for i in items if i["role"] in ("target", "carried")), items[0])

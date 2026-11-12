@@ -44,7 +44,8 @@ class DrillingEnv:
         is cranked with VISE_PRECLAMP_NM through its screw for 0.5 s; then the torque is removed."""
         w = self.world
         L = self.layout
-        if L["preset"] != "bench" or L["task"] != "press-blind":
+        from .layout import task_setup
+        if L["preset"] != "bench" or not getattr(task_setup(L["task"]), "VISE_PRECLAMPED", False):
             return
         vise = w.scene.tools["press_vise"]
         dof = vise.j["screw"].dof
@@ -197,9 +198,9 @@ class DrillingEnv:
             w = self.world
             joints = {n: {"position": float(w.jq[s["q"]]), "velocity": float(w.jqd[s["dof"]])} for n, s in w.joints.items()}
             finite = bool(np.isfinite(w.bq).all() and np.isfinite(w.jq).all())
-            from .task import NO_SCORE_WHEN_UNEVALUABLE
-            # a state that cannot be evaluated is no score, not score 0, where the task says so (task.py)
-            unscored = None if self.layout["task"] in NO_SCORE_WHEN_UNEVALUABLE else 0.
+            from .layout import task_verifier
+            # a state that cannot be evaluated is no score, not score 0, where the task says so (its verifier.py)
+            unscored = None if getattr(task_verifier(self.layout["task"]), "NO_SCORE_WHEN_UNEVALUABLE", False) else 0.
             ev = None
             if not w.fault and finite:
                 try:

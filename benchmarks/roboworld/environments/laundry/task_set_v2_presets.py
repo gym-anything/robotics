@@ -9,7 +9,8 @@ and settles every authored start before exposing an episode. No props added.
 import numpy as np
 
 from .garment_asset import PathRef
-from .task_set_presets import reach_report, rounded_half_fold  # noqa: F401  (reach_report re-exported)
+from .task_set import task_setup
+from .task_set_presets import reach_report  # noqa: F401  (reach_report re-exported)
 
 
 # Each tie's bunch lies on its own free distal part: past where the drape overlay
@@ -74,8 +75,10 @@ def bunched_ties(index, positions):
 
 
 def start_positions(entry, index, positions, table_top):
-    if entry.start == "folded_towel":
-        return rounded_half_fold(positions, table_top)
+    """As `task_set_presets.start_positions`, with this module's bunched ties."""
+    folder = task_setup(entry.garment, entry.name) if entry.start != "at_rest" else None
+    if folder is not None:
+        return folder.setup(index, positions, table_top)
     if entry.start == "bunched_ties":
         return bunched_ties(index, positions)
     return np.array(positions, dtype=np.float64, copy=True)

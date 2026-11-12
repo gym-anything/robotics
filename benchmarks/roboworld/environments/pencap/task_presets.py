@@ -6,7 +6,7 @@ is untouched. Apply before finalize, so resets use the same authored start.
 
 import numpy as np
 from scipy.spatial.transform import Rotation
-from .tasks import FIXTURE_TASKS, validate
+from .tasks import task_setup, validate
 
 FIXTURE_XY = (-.20, 0.)
 FIXTURE_HALF = .030
@@ -15,8 +15,6 @@ FIXTURE_HEIGHT = .070
 BORE_DEPTH = .050
 NOTEBOOK_HALF = (.074, .105)
 NOTEBOOK_TOP = .007  # scene.py pages, relative to body origin
-PASS_TIP_XY = (-.52, -.20)
-RESEAT_DEPTH = .034
 
 
 def pose(position, rotation):
@@ -31,23 +29,31 @@ def default_poses(c):
             "notebook": pose((.33, .24, c.table_top+.009), Rotation.identity())}
 
 
-def start_poses(task, c):
+def pen_in_fixture(c):
+    """The pen standing tail down in the capping fixture's bore (a fixture task's start, tasks/<task>/setup.py)."""
+    # +Y points from tip to tail, hence downward. Tail clears the bore floor
+    # by two contact gaps; nothing is pinned or welded in the nest.
+    tip = (*FIXTURE_XY, c.table_top+FIXTURE_HEIGHT-BORE_DEPTH+c.pen_length+2*c.contact_gap)
+    return pose(tip, Rotation.from_euler("x", -90, degrees=True))
+
+
+def cap_on_pen(pen, depth):
+    """The cap on the writing tip of the pen at pose `pen`, its mouth `depth` from the tip along the pen's axis."""
+    rp = Rotation.from_quat(pen[3:])
+    return pose(pen[:3]+rp.apply([0., depth, 0.]),
+                rp*Rotation.from_euler("z", 180, degrees=True))
+
+
+def start(task, c):
+    """A task's start: the parts' poses (default_poses, moved by setup in its setup.py) and its changes to the default
+    scene (setup's result: the parts it moved and its bench props; None for the scene as build.py authors it)."""
     validate(task)
     poses = default_poses(c)
-    if task == "pass-pen":
-        poses["pen"][:2] = PASS_TIP_XY
-    if task in ("unload-fixture", "cap-in-fixture"):
-        # +Y points from tip to tail, hence downward. Tail clears the bore floor
-        # by two contact gaps; nothing is pinned or welded in the nest.
-        tip = (*FIXTURE_XY, c.table_top+FIXTURE_HEIGHT-BORE_DEPTH+c.pen_length+2*c.contact_gap)
-        poses["pen"] = pose(tip, Rotation.from_euler("x", -90, degrees=True))
-    if task in ("reseat-cap", "uncap", "unload-fixture"):
-        pen = poses["pen"]
-        rp = Rotation.from_quat(pen[3:])
-        depth = RESEAT_DEPTH if task == "reseat-cap" else c.seat_u
-        poses["cap"] = pose(pen[:3]+rp.apply([0., depth, 0.]),
-                            rp*Rotation.from_euler("z", 180, degrees=True))
-    return poses
+    return poses, task_setup(task).setup(c, poses)
+
+
+def start_poses(task, c):
+    return start(task, c)[0]
 
 
 def fixture_boxes(c):
@@ -64,19 +70,16 @@ def fixture_boxes(c):
 
 
 def apply_start(builder, bodies, materials, c, task, newton, wp):
-    """Only authored object transforms and appended static task props may change."""
-    validate(task)
-    if task == "seat-cap":
+    """Only authored object transforms and appended static task props may change (the task's start: start)."""
+    poses, changes = start(task, c)
+    if changes is None:  # the scene as build.py authors it (seat-cap)
         return
     if c.scene != "studio":
         raise ValueError("The seven new pencap tasks require the studio scene")
-    poses = start_poses(task, c)
-    moved = {"pass-pen": ("pen",), "reseat-cap": ("cap",), "uncap": ("cap",),
-             "unload-fixture": ("pen", "cap"), "cap-in-fixture": ("pen",)}.get(task, ())
-    for name in moved:
+    for name in changes["moved"]:
         p = poses[name]
         builder.body_q[bodies[name]] = wp.transform(p[:3], p[3:])
-    if task in FIXTURE_TASKS:
+    if "capping_fixture" in changes["props"]:
         contact = newton.ModelBuilder.ShapeConfig(gap=c.contact_gap, mu=.35, ke=1e7, kd=5000.,
                                                  mu_torsional=0., mu_rolling=0.)
         for name, position, half in fixture_boxes(c):
@@ -95,7 +98,7 @@ def reach_report(c):
     """
     report = {}
     for task in ("pen-on-notebook", "unload-fixture", "reseat-cap", "load-fixture", "pass-pen", "uncap", "cap-in-fixture"):
-        p = start_poses(task, c)
+        p, changes = start(task, c)
         points = {}
         for name, length in (("pen", c.pen_length), ("cap", c.cap_length)):
             axis = Rotation.from_quat(p[name][3:]).as_matrix()[:, 1]
@@ -103,7 +106,7 @@ def reach_report(c):
                 points[f"{name}_{label}"] = p[name][:3]+axis*u
         points["notebook_target"] = p["notebook"][:3]+[0., 0., NOTEBOOK_TOP+.0065]
         points["relay"] = np.array([0., 0., c.table_top+.10])
-        if task in FIXTURE_TASKS:
+        if "capping_fixture" in changes["props"]:
             points["fixture_mouth"] = np.array([*FIXTURE_XY, c.table_top+FIXTURE_HEIGHT])
             points["upright_grasp"] = np.array([*FIXTURE_XY, c.table_top+.12])
         report[task] = {}

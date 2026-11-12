@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "deposit-cans/v1/sort_waste/seed-0",
+  "name": "sort_waste",
+  "env_id": "deposit-cans",
+  "split": "train",
+  "selection": {
+    "variant": "sort_waste",
+    "seed": 0
+  },
+  "description": "Guests left empty beverage cans and two used paper coffee cups on the return counter. Put the cans in the recycling bag and the paper cups in the landfill bin. Leave the reusable cups on their tray and the cans already in the bag where they are.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

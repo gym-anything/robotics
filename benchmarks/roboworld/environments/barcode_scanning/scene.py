@@ -828,23 +828,23 @@ class Scene:
         for bay in (-1, 0, 1):
             self.overstock(bay, 0)
             self.overstock(bay, 4)
-        from .stock import stock_stockroom
-        stock_stockroom(self)
+        from .config import task_setup
+        task_setup(self.c.task).setup(self)                 # the task's stock (tasks/<task>/setup.py)
 
     def counter(self):
         """Front-of-store service counter with the scanner in its presentation cradle."""
         self.counter_body(dressing="store")
         self.build_cradle()
         self._tray_keypad()
-        from .stock import stock_counter
-        stock_counter(self)
+        from .config import task_setup
+        task_setup(self.c.task).setup(self)                 # the task's stock (tasks/<task>/setup.py)
 
     def library(self):
         self.counter_body(dressing="library")
         self.build_cradle()
         self._tray_keypad()
-        from .stock import stock_library
-        stock_library(self)
+        from .config import task_setup
+        task_setup(self.c.task).setup(self)                 # the task's stock (tasks/<task>/setup.py)
 
     def counter_body(self, dressing):
         z = P.COUNTER_TOP_M

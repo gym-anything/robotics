@@ -8,6 +8,15 @@ from newton.solvers import SolverMuJoCo,SolverVBD
 from .geometry import can_mesh,bag_mesh,area,validate_surface,CAN_SPECS
 from .robot import add_robot
 
+class Start:
+    """What a task's setup.py (tasks/<variant>/, variants.task_setup) may set before the props and cans are built:
+    cup_starts, the reusable cups' bases (None: on their tray); paper_cups, the paper cups' bases (none: no paper
+    cups); place_target(c,i,h,rng) -> (centre, rotation, origin) for each target can not in the tub (None: on the
+    counter rows); place_preload(i,yaw) -> (centre, rotation) for each pre-existing can (None: upright rows in the
+    bag). config is the episode's configuration."""
+    def __init__(self,config):
+        self.config=config;self.cup_starts=None;self.paper_cups=();self.place_target=None;self.place_preload=None
+
 class Assembly:
     def __init__(self,c,*,robots=True,fixture=None,robot_setup=None):
         self.config=c;self.sources={};self.materials={};self.objects={};self.surfaces=[]
@@ -29,6 +38,9 @@ class Assembly:
         tub_pose=(fixture or {}).get('tub_pose')
         self.tub=self.make_tub(tub_pose['position_m'] if tub_pose else(-.37,0,.903),
             rotation_xyz=tub_pose.get('euler_xyz',[0.,0.,0.])if tub_pose else None)
+        from .variants import preset,task_setup
+        self.start=Start(c);own=task_setup(preset(c))
+        if own is not None:own.setup(self.start)
         from .props import build as build_props
         from .room import build as build_room
         if (fixture is None or fixture.get('keep_room',False)) and robots:
@@ -187,12 +199,8 @@ class Assembly:
     def can_inventory(self,c,fixture):
         rng=np.random.default_rng(c.seed)
         count=c.target_count+c.preload_count
-        from .variants import preset
-        # high_fill starts with its pre-existing cans lying in the bag (bag_pile.py), not as
-        # the floating upright grid below, which the reference preset keeps.
-        lying_pile=preset(c)=='high_fill' and c.scene_revision>=7
-        # lid_cans: the targets stand upright on the station lid's flat roof, 5 mm above it (the counter cans' clearance).
-        on_lid=preset(c)=='lid_cans'
+        # The task's own placements (its setup.py, Start); None keeps the counter rows and the bag rows below.
+        place_target,place_preload=self.start.place_target,self.start.place_preload
         for i in range(count):
             kind=i%3;diameter,h,_=CAN_SPECS[kind]
             v,f,t=can_mesh(kind,c.can_segments,.0015 if i%7==3 else 0.,quality_end=c.scene_revision>=2)
@@ -212,11 +220,8 @@ class Assembly:
                     from .tub_layout import pose
                     pos,rot=pose(i,c.can_segments,normal_clearance=c.scene_revision>=7)
                 origin='tub'
-            elif i<c.target_count and on_lid:
-                from .variants import STATION_XY,LID_ROOF_Z,LID_CANS_XY
-                x,y=LID_CANS_XY[i-c.tub_count]
-                pos=np.array([STATION_XY[0]+x,STATION_XY[1]+y,LID_ROOF_Z+.002+h/2+.003])
-                rot=Rotation.from_euler('z',rng.uniform(-np.pi,np.pi));origin='lid'
+            elif i<c.target_count and place_target is not None:
+                pos,rot,origin=place_target(c,i,h,rng)
             elif i<c.target_count:
                 j=i-c.tub_count
                 pos=np.array([-.60+.15*(j%4),(-.53 if j<4 else .53),.902+h/2+.003])
@@ -227,10 +232,9 @@ class Assembly:
                 # the tapered bag by up to3.69mm before any integration.
                 pos=np.array([.49+(-.225+.090*(k%6) if c.scene_revision>=3 else -.235+.092*(k%6)),-.13+.085*(k//6),.030+h/2+layer*.175])
                 yaw=rng.uniform(-np.pi,np.pi);rot=Rotation.from_euler('z',yaw);origin='preload'
-                if lying_pile:
+                if place_preload is not None:
                     # Same seeded draw, used as the spin of the lying can about its own axis.
-                    from .bag_pile import pose as pile_pose
-                    pos,rot=pile_pose(i,yaw)
+                    pos,rot=place_preload(i,yaw)
             if fixture is not None and i==0:
                 # A tub/room fixture is not an implicit single-can pose override.
                 # In particular, replacing the horizontal tub-can orientation

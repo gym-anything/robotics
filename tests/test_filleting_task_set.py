@@ -497,17 +497,17 @@ def test_scale_monitor_requires_one_released_supported_piece(monkeypatch):
     ev.env.frags = {0: frag(.15, [0, 1, 2])}
     w.tissue.x.value[:] = [*LY.SCALE["center"], LY.TABLE["top_z"] + LY.SCALE["size"][2]]
     for _ in range(3):
-        ev._monitor_scale()
+        LY.task_verifier("B5")._monitor_scale(ev)
     assert ev.weighed == {(0, 1, 2)}
     ev.weighed.clear()
     w.tissue.x.value[:, 2] += .1
     for _ in range(3):
-        ev._monitor_scale()
+        LY.task_verifier("B5")._monitor_scale(ev)
     assert not ev.weighed
     w.tissue.x.value[:, 2] -= .1
     ev._robot_touch = lambda pts: np.ones(len(pts), bool)
     for _ in range(3):
-        ev._monitor_scale()
+        LY.task_verifier("B5")._monitor_scale(ev)
     assert not ev.weighed
 
 

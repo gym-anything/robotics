@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/bake/muffin-fold/contract-ingredient-mixing-tasks-v2/seed-0",
+  "name": "muffin-fold",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "bake",
+    "task": "muffin-fold",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+  },
+  "description": "The bowl holds the blended dry ingredients with milk, egg and oil poured into a well in the middle. Fold the wet and dry ingredients together until just combined: no dry flour left, and no more mixing than that. Keep the batter in the bowl.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "concrete-finishing/v1/b012/patch-flush/concrete-tasks-v2/seed-0",
+  "name": "patch-flush",
+  "env_id": "concrete-finishing",
+  "split": "train",
+  "selection": {
+    "preset": "b012",
+    "task": "patch-flush",
+    "seed": 0,
+    "variant": "default",
+    "contract": "concrete-tasks-v2"
+  },
+  "description": "Finish the floor patch flush with the slab and give it a float finish.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

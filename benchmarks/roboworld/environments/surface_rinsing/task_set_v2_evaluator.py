@@ -3,11 +3,14 @@
 For pre-rinse-plates it tracks the water that leaves the spray valve every tick (volume and volume x mixed temperature,
 frozen during the settle branch, kept in checkpoints), adds the spray_temperature predicate and scores with the
 temperature-graded progress (task_set_v2.score). It only reads the outlet's flow and temperature: no physics change.
-Every other task is judged exactly as under surface-rinsing-tasks-v1; results report surface-rinsing-tasks-v2.
+Every other task is judged exactly as under surface-rinsing-tasks-v1; results report surface-rinsing-tasks-v2. The
+outlet (SPRAY_OUTLET), the measure (task_set_v2_measure) and the predicate (task_set_v2_criteria) are the task's, in
+its folder (tasks/pre-rinse-plates/verifier.py).
 """
 from . import params as P
+from .layout import task_verifier
 from .task_set.evaluator import Evaluator as TaskSetEvaluator
-from .task_set_v2 import CONTRACT, SPRAY_BAND_C, SPRAY_TASK, score
+from .task_set_v2 import CONTRACT, score
 
 
 class Evaluator(TaskSetEvaluator):
@@ -17,8 +20,9 @@ class Evaluator(TaskSetEvaluator):
         # pre-rinse-plates: water (L) that left the spray valve and its volume x temperature (L C), every tick
         self.spray = dict(volume_L=0.0, heat_L_C=0.0)
         super().__init__(env)
-        if self.task == SPRAY_TASK and env.water is not None:
-            self.spray_outlet = env.water.outlets["prsv"]          # the pre-rinse station's only outlet
+        outlet = getattr(task_verifier(self.task), "SPRAY_OUTLET", None)        # pre-rinse-plates' (its verifier.py)
+        if outlet is not None and env.water is not None:
+            self.spray_outlet = env.water.outlets[outlet]
 
     def _track(self, world):
         if self.frozen or self.env.water is None:
@@ -42,20 +46,16 @@ class Evaluator(TaskSetEvaluator):
 
     def measure(self):
         m = super().measure()
-        if self.task == SPRAY_TASK:
-            v = self.spray["volume_L"]
-            m["task_set"]["spray"] = dict(volume_L=v, mean_C=self.spray["heat_L_C"]/v if v > 0.0 else None)
+        own = getattr(task_verifier(self.task), "task_set_v2_measure", None)
+        if own is not None:
+            own(self, m)
         return m
 
     def criteria(self, m):
         criteria = super().criteria(m)
-        if self.task == SPRAY_TASK:
-            spray = m["task_set"]["spray"]
-            t = spray["mean_C"]
-            criteria["spray_temperature"] = dict(
-                passed=bool(t is not None and SPRAY_BAND_C[0] <= t <= SPRAY_BAND_C[1]),
-                detail=dict(spray, band_C=list(SPRAY_BAND_C), rule="flow-weighted mean temperature of the water that "
-                            "left the spray valve since reset"))
+        own = getattr(task_verifier(self.task), "task_set_v2_criteria", None)
+        if own is not None:
+            own(self, m, criteria)
         return criteria
 
     def _score(self, criteria, m):

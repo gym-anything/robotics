@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/dock/load-trailer/forklift-tasks-v2/seed-0",
+  "name": "load-trailer",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "load-trailer",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+  },
+  "description": "Load the pallet on your forks into the trailer at door 1: left side, directly behind the two pallets at the nose. Then back out onto the dock. Before you drive onto the dock leveler, check the restraint signal beside the door: enter only on green. On red the trailer is not secured: drive up to the door and wait there, past the end of the staging lane and short of the leveler, with the direction lever in neutral and the parking brake set.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

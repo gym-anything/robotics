@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/receiving/open-carton/gift-bags-tasks-v2/seed-0",
+  "name": "open-carton",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "receiving",
+    "task": "open-carton",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v2"
+  },
+  "description": "You are at the receiving table in a back room. A supply carton sealed with brown packing tape stands on the stainless table. Open it and leave all four top flaps open, the contents inside and the carton upright where it is. The tape has a folded-back tab; no knife is provided. Release everything when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

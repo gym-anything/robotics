@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/tee/turn_face_down/laundry-tasks-v2",
+  "name": "turn_face_down",
+  "env_id": "laundry",
+  "split": "train",
+  "selection": {
+    "garment": "tee",
+    "task": "turn_face_down",
+    "contract": "laundry-tasks-v2"
+  },
+  "description": "A T-shirt lies face up on the table. Turn it over so it lies face down, laid out flat. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

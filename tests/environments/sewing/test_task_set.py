@@ -12,8 +12,11 @@ import pytest
 
 from sewing import task, variations
 from sewing.task_set import CONTRACT, CURVE, LEGACY, TASK_SET, REVISED, task_resolve, choose_contract
-from sewing.task_set_scoring import TaskEvaluator, layer_count, seam_path, weighted_coverage
+from sewing.task_set_scoring import TaskEvaluator, seam_path, weighted_coverage
 from tests.packages import PACKAGES
+
+layer_count = task.task_verifier('square-plies').layer_count
+slip_top = task.task_setup('square-plies').slip_top
 
 ROOT = PACKAGES
 
@@ -328,7 +331,7 @@ def test_slipped_placement_and_reach_against_existing_grid():
         centre=np.array([-.2+dx,-.17+dy+.21])
         xy=(X+[-.4+dx,-.17+dy]-centre)@R.T+centre
         p=np.column_stack([xy,np.full(5,.001)])
-        slipped=module.slip_top(p)
+        slipped=slip_top(p)
         assert np.allclose(np.linalg.norm(slipped[1]-slipped[0]),.2)
         assert (slipped[:,0]>TABLE['x'][0]).all() and (slipped[:,0]<0.).all()
         on_bed=(slipped[:,0]>=BED['x'][0]) & (slipped[:,1]>=BED['y'][0]) & (slipped[:,1]<=BED['y'][1])
@@ -387,7 +390,7 @@ def test_square_placement_is_before_preparation_and_preserves_other_particles():
           restore=lambda snap:saved.update(snap))
     e.world=NS(cloth=cl,ply_ids=[0,1])
     module.TaskEnvironment._make_start(e)
-    assert np.allclose(saved['x'][:4],module.slip_top(x[:4]))
+    assert np.allclose(saved['x'][:4],slip_top(x[:4]))
     assert np.array_equal(saved['x'][4],x[4]) and saved['other']=='preserved'
     assert e.prepared_config is c
     assert e.assisted_log[-1]['initial_condition']==module.SQUARE_SETUP

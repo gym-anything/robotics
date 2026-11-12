@@ -1,7 +1,14 @@
-"""Eight jobs; importing/resolving this catalogue never constructs a simulator."""
+"""Eight jobs; importing/resolving this catalogue never constructs a simulator.
+
+Every task has its folder, tasks/<task>/ in the titrate package (gym_anything_robotics.task_folders): its setup.py
+builds the task's start and its verifier.py checks the outcome. task_setup and task_verifier load them.
+"""
+
+from gym_anything_robotics import task_folders
 
 from .task import REWARD_CONTRACT, description as titration_description
 
+PACKAGE = 'titrate'
 CONTRACT = 'titration-tasks-v1'
 TASKS = {
     'titration': 'hardest',
@@ -22,6 +29,16 @@ def task_name(value):
     if not isinstance(value, str) or value not in TASKS:
         raise ValueError(f'Unknown titration task {value!r}; choose {tuple(TASKS)}')
     return value
+
+
+def task_setup(name):
+    """The task's setup.py (tasks/<name>/)."""
+    return task_folders.setup(PACKAGE, task_name(name))
+
+
+def task_verifier(name):
+    """The task's verifier.py (tasks/<name>/)."""
+    return task_folders.verifier(PACKAGE, task_name(name))
 
 
 def contract(name):

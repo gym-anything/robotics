@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/position-torch/seed-0",
+  "name": "position-torch",
+  "env_id": "welding",
+  "split": "train",
+  "selection": {
+    "preset": "steel-cell",
+    "task": "position-torch"
+  },
+  "description": "Bring the welding torch to the start of the near-side seam (the end on the robots' right, which is the right end in the bench camera's image) ready to weld: wire pointing at the root of the joint, 45 degree work angle, 5 to 10 degree push angle, 3/4 inch (19 mm) contact tip to work. Do not strike an arc; the nozzle must not touch the parts (touching them with the wire to find the seam is fine).",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

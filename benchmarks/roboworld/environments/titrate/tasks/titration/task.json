@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/titration-n15-0000",
+  "name": "titration",
+  "env_id": "titration",
+  "split": "test",
+  "selection": {
+    "variation_id": 0
+  },
+  "description": "Titrate the 10 mL acid aliquot in the flask, diluted with 15 mL water and phenolphthalein, using 0.1 mol/L sodium hydroxide. Stop at the endpoint: the first faint pink that persists throughout the solution for 30 seconds.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

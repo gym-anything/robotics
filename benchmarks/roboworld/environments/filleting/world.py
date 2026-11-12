@@ -79,8 +79,9 @@ class Config:
     # default, the robot's own press cut through a 25 mm fish block stopped at 15 N m on joint 2
     collision_profile: str = "default"
     knife_in_hand: bool = True
-    knife_start: str = None        # "hand" | "block" | None: automatic (task A0: the knife stands in the block's slot,
-                                   # otherwise knife_in_hand decides)
+    knife_start: str = None        # "hand" | "block" | None: automatic (the task's start may name one,
+                                   # layout.task_start: take-knife's knife stands in the block's slot; otherwise
+                                   # knife_in_hand decides)
     grip_force: float = 35.       # N per finger on the knife (70 N total: the Franka Hand's continuous rating)
     workpiece: str = None          # None (rigid only), "coupon", or a preset generator ("trout", ...)
     phantom_rig: bool = False      # ASSISTED owner-side runs only (demos/probes; the GAR backend rejects it): the knife
@@ -208,7 +209,7 @@ class World:
         self._no_pinch = 0
         self._pinch_ticks = 0
         self._blade_air = 0             # consecutive ticks MuJoCo owns the knife with no tissue load on its blade
-        start = c.knife_start or ("block" if c.task == "A0" else ("hand" if c.knife_in_hand else "park"))
+        start = c.knife_start or LY.task_start(c.task).get("knife") or ("hand" if c.knife_in_hand else "park")
         if start not in ("hand", "block", "park"):
             raise ValueError(f"knife_start must be 'hand' or 'block', got {start!r}")
         self.knife_start = start

@@ -5,7 +5,7 @@ The inherited action, checkpoint, restore and final-evaluation code runs unchang
 """
 from dataclasses import asdict
 
-from .config import Config as LegacyConfig
+from .config import Config as LegacyConfig, task_setup
 from .env import GiftBagsEnv as LegacyEnv
 from .task_set_catalog import BASE_TASK, CONTRACT, instruction, selected_contract, evaluation_contract
 from .task_set_evaluator import Evaluator
@@ -19,18 +19,15 @@ class GiftBagsEnv(LegacyEnv):
         values = asdict(config)
         values.pop("contract")
         values["task"] = BASE_TASK.get(config.task, config.task)
-        if modern and config.task == "open-bag":
-            values["task"] = "bag-purchase"  # bag-purchase's geometry/contact logic, but keep open-bag's candle placement
+        folder = task_setup(config.task)
+        world = getattr(folder, "TASK_SET_WORLD", None) if modern else None
+        if world is not None:
+            values["task"] = world  # another task's world, with this task's own start (its setup.py)
         hook = None
         if config.task in BASE_TASK:
             hook = lambda spec: prepare(spec, config.task)
-        elif modern and config.task == "open-bag":
-            def hook(spec):
-                from .scene import CANDLE_XY, CANDLE_XY_PURCHASE
-                import numpy as np
-                # The seed transform is around the candle's own centre, so its translation is unchanged.
-                b = next(b for b in spec.bodies if b.name == "candle")
-                b.p[:2] += np.asarray(CANDLE_XY) - CANDLE_XY_PURCHASE
+        elif world is not None:
+            hook = lambda spec: folder.setup(spec, CONTRACT)
         super().__init__(LegacyConfig(**values), output_dir=output_dir, assisted_scene_hook=hook)
         self.assisted = False  # no running assistance: all subsequent actions are the inherited robot controls
         self.world.c = config  # renderer/trace metadata names the selected task; physical fields are identical

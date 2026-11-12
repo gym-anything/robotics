@@ -3,8 +3,8 @@
 Same tasks, scenes, starts, instructions and time limits as filleting-tasks-v1. What differs (render-check fix round):
 - a selection scored under this contract carries it in its task id, before the seed
   (filleting/v1/<preset>/<task>/filleting-tasks-v2/seed-<n>);
-- take-knife's success is the original right-hand verdict (task.Evaluator._eval_A0); its progress measures the knife,
-  whichever hand holds it, so a left-hand hold earns progress but never success;
+- take-knife's success is the original right-hand verdict (released_checks in tasks/take-knife/verifier.py); its
+  progress measures the knife, whichever hand holds it, so a left-hand hold earns progress but never success;
 - only head-off accepts a knife put down; portion, medallions, excise-defect and remove-chain keep their original
   checks.
 A v2 selection names the contract explicitly (bare put-away-knife stays filleting-tasks-v1). fillet-whole-fish keeps its

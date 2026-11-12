@@ -36,8 +36,8 @@ REPORT = "ingredient_mixing/robot_setup.py: robot configurations"
 # One arm on the right mount: the tasks worked with a tool from the crock (which stands to the vessel's right) in a
 # bowl that nobody holds. Scripted rollouts did dry-whisk, sauce-blend, muffin-fold and pancake-whisk this way
 # (the left arm parked; the bowl moved 0.02 to 11.5 mm against a limit of 50 mm); pudding-whisk is the same bowl,
-# whisk, crock and start layout as pancake-whisk (scene.TASK_SETUP) and is offered on that ground, without a rollout
-# of its own by any rig.
+# whisk, crock and start layout as pancake-whisk (their setup.py STATION) and is offered on that ground, without a
+# rollout of its own by any rig.
 RIGHT_TASKS = ("dry-whisk", "sauce-blend", "muffin-fold", "pancake-whisk", "pudding-whisk")
 # One arm on the left mount: offered for no task. The hand mixer stands on its heel to the vessel's left and the left
 # hand takes and carries it, but the task as the maker describes it needs a second hand: the mixer is held in the

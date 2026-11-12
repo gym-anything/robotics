@@ -10,7 +10,7 @@ from forklift import evaluator as E
 from forklift import params as P
 from forklift.catalogue import BALE_CONTRACT, CONTRACT, SET_TASKS, TASK_SET, resolve_contract
 from forklift.events import Events
-from forklift.task import TIME_LIMIT_S, instruction
+from forklift.task import TIME_LIMIT_S, instruction, task_verifier
 from forklift.task_progress import TaskProgress, measurements, progress, workmanship
 from forklift.variants import resolved_start, task_resolve
 from tests.packages import PACKAGES
@@ -156,7 +156,7 @@ def test_floor_placement_is_continuous_at_painted_lines_and_floor():
 def test_cruise_short_band_motion_is_not_full_section():
     w, st = world_for('aisle-cruise')
     TaskProgress(w, st)
-    a, b = E.CRUISE_SECTIONS[st['cruise']][0]
+    a, b = task_verifier('aisle-cruise').CRUISE_SECTIONS[st['cruise']][0]
     w.events.traj = [(0, a + .1, 28.25, 0, 2.0), (1, a + .11, 28.25, 0, 2.0)]
     now = measurements(w, st, E.evaluate(w, st))
     assert 0 < now['sections'][0] < .01
@@ -233,7 +233,8 @@ def test_constructed_success_keeps_one_and_exact_predicates(task):
     elif task == 'put-away-rack':
         w, st = _put_away_world(0)
     elif task in ('carry-to-floor-bay', 'ramp-down-loaded'):
-        zone = w.scene.zones['bays'][st['bay']] if task == 'carry-to-floor-bay' else w.scene.zones[E.DROP_ZONE[st['drop_zone']]]
+        zone = (w.scene.zones['bays'][st['bay']] if task == 'carry-to-floor-bay' else
+                w.scene.zones[task_verifier('ramp-down-loaded').DROP_ZONE[st['drop_zone']]])
         w.q[w.names['carried']] = [np.mean(zone['x']), np.mean(zone['y']), 0, 0, 0, math.sin(math.pi/4), math.cos(math.pi/4)]
         w.q[w.names['sideshift'], 2] = .10 - .104
     elif task == 'drive-to-pallet':
@@ -245,11 +246,11 @@ def test_constructed_success_keeps_one_and_exact_predicates(task):
     elif task == 'aisle-cruise':
         way = st['cruise']
         rows = []
-        for a, b in E.CRUISE_SECTIONS[way]:
+        for a, b in task_verifier('aisle-cruise').CRUISE_SECTIONS[way]:
             rows.extend((len(rows)+i, x, 28.25, 0, 2.0) for i, x in enumerate(np.linspace(a, b, 100)))
         w.events.traj = rows
         w.events.crossings = [dict(zone=n, speed=1.0, since_horn=1.0) for n in ('I1', 'I2')]
-        w.q[w.names['chassis'], 0] = w.scene.zones['stop_lines'][E.CRUISE_END[way]]['x']
+        w.q[w.names['chassis'], 0] = w.scene.zones['stop_lines'][task_verifier('aisle-cruise').CRUISE_END[way]]['x']
     elif task == 'load-trailer':
         door = st['target']['door']
         tr, to, TR = E._trailer_frame(w, door)
@@ -274,7 +275,7 @@ def test_constructed_red_wait_success():
     w, st = world_for('load-trailer', 4)
     adapter = TaskProgress(w, st)
     lane = w.scene.zones['staging']['lane' + st['target']['door'][4:]]
-    y = lane['y'][1] - E.REACH_LOADED + .1
+    y = lane['y'][1] - task_verifier('load-trailer').REACH_LOADED + .1
     dy = y - w.q[w.names['chassis'], 1]
     for name in ('chassis', 'carried', 'sideshift'):
         w.q[w.names[name], 1] += dy

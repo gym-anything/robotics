@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/hardpan/break-hardpan/soil-tasks-v2/seed-0",
+  "name": "break-hardpan",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "break-hardpan",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+  },
+  "description": "Break up the compacted ground inside the marked square with the hand mattock, at least 8 cm deep, and put the broken soil you lift out on the tarp.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

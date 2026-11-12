@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "whiteboard/whiteboard-tasks-v1/erase-board",
+  "name": "erase-board",
+  "env_id": "whiteboard",
+  "split": "train",
+  "selection": {
+    "task": "erase-board",
+    "contract": "whiteboard-tasks-v1"
+  },
+  "description": "Wipe the whiteboard clean and leave the wiper resting in the tray.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/yard/ramp-down-loaded/forklift-tasks-v2/seed-0",
+  "name": "ramp-down-loaded",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "ramp-down-loaded",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+  },
+  "description": "Bring the pallet on your forks out of the trailer, down the yard ramp, and set it down in the painted yard drop zone east of the ramp, then back out and lower the forks.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

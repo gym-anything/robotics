@@ -19,16 +19,16 @@ Every task is scored by the continuous progress reward (REWARD_CONTRACTS, Evalua
 of the checks is reported beside it (reward.mean_of_checks).
 
 tube-label: the instruction is set at the point of collection and states which end of the label goes to the cap;
-success adds two placement checks its instruction states (the label over the manufacturer's label, _place_tube_label;
-the patient's name toward the cap); the score is tube-wrap's take-and-apply progress rule with the viewing window read
-from where the label is going. The skew factor reads which end of the label is heading for the cap, a label lost off
-the bench zeroes integrity, and a label still bonded to anything is never counted lost.
+success adds two placement checks its instruction states (the label over the manufacturer's label; the patient's name
+toward the cap: tasks/tube-label/verifier.py); the score is tube-wrap's take-and-apply progress rule with the viewing
+window read from where the label is going. The skew factor reads which end of the label is heading for the cap, a
+label lost off the bench zeroes integrity, and a label still bonded to anything is never counted lost.
 """
 
 import math
 import numpy as np
 
-from .config import LADDER_TASKS, REPAIR_TASKS, START_CREDIT_TASKS, base_task
+from .config import LADDER_TASKS, REPAIR_TASKS, START_CREDIT_TASKS, base_task, task_verifier
 
 INSTRUCTIONS = {
     "carrier-top": (
@@ -119,12 +119,9 @@ TUBE_SKEW_ZERO_DEG = 45.
 # Registration factors of the seven other tasks (progress-v2, Evaluator.registration), read from the label
 # part lying in the task's zone and extrapolated over the label (as tube-label's): each is 1 where the task's own
 # placement check passes and falls linearly to 0 where the placement stops being a label in that place. The bands
-# repeat the success checks' tolerances (_place_*); the far ends are the item's own geometry or a diagonal label.
+# repeat the success checks' tolerances (the placement rules); the far ends are the item's own geometry or a diagonal
+# label. gs1-case-side's and part-id-hdpe's bands are in their verifier.py (tasks/<task>/).
 LABEL_SKEW_ZERO_DEG = TUBE_SKEW_ZERO_DEG   # bars / label edge 45 deg off: a diagonal label (gs1, canister)
-GS1_BAR_BOTTOM_BAND = (.026, .038)  # m, barcode_bottom_32+-6mm_above_base; 0 where the label reaches the base / top
-GS1_EDGE_CLEARANCE = .019           # m, barcode_>=19mm_from_vertical_edges; 0 with the symbol at the vertical edge
-CANISTER_MID_TOL = .030             # m, middle_within_30mm_of_mid_height; 0 where the label reaches the wall's end
-CANISTER_END_MARGIN = .020          # m, the same check's 20 mm from the top and the bottom; 0 at the wall's end
 # The six take-and-apply tasks credit the take, the first clause of each instruction ("Take the label from the
 # printer ..."), with weight TAKE_CREDIT: progress = integrity x R x (TAKE_CREDIT x s + (1 - TAKE_CREDIT) x credited
 # area), s the share of the label area that lay on the printer at the start and is now off it without being stuck in
@@ -182,10 +179,9 @@ TUBE_STRIP_TOL = 2e-3
 # the other take-and-apply tasks; only tube-label applies this rule.
 LOST_LABEL_ZEROES = ("tube-label",)
 
-# labelled item per task; part-id-match reads its target from the scene (seeded plate)
-TARGET = {"carrier-top": "carton", "gs1-case-side": "carton", "cover-old-label": "carton", "press-down": "carton",
-          "tube-wrap": "tube", "part-id-hdpe": "part", "part-id-match": None,
-          "smooth-corner": "carton", "finish-securing": "carton", "tube-label": "tube"}
+# labelled item of the tasks outside the benchmark; a benchmark task's is its verifier.py TARGET (tasks/<task>/)
+# (part-id-match reads its target from the scene, the seeded plate)
+TARGET = {"cover-old-label": "carton", "tube-wrap": "tube"}
 
 
 def vertex_normals(x, tris):
@@ -284,36 +280,6 @@ def _level_factor(tilt_deg):
     return float(np.clip((LABEL_SKEW_ZERO_DEG - tilt_deg)/(LABEL_SKEW_ZERO_DEG - 5.), 0., 1.))
 
 
-def gs1_registration_factors(bottom, clearance, tilt_deg, label_low, label_high, H):
-    """gs1-case-side registration factors for a label whose SSCC symbol's printed bottom edge is `bottom` m above the
-    carton's base, the symbol with its quiet zones `clearance` m from the nearer vertical edge, its bars tilt_deg off
-    vertical, and the label itself spanning label_low..label_high m above the base on a side H m tall. Each is 1
-    where the placement check passes: the barcode height falls linearly to 0 where the label would reach the base (or
-    the top edge) by moving the same way, the edge clearance to 0 with the symbol at the edge, the bars to 0 at 45 deg."""
-    lo, hi = GS1_BAR_BOTTOM_BAND
-    if lo <= bottom <= hi:
-        r_h = 1.
-    elif bottom < lo:
-        r_h = float(np.clip(label_low/(lo - bottom + label_low), 0., 1.)) if label_low > 0 else 0.
-    else:
-        room = H - label_high
-        r_h = float(np.clip(room/(room + bottom - hi), 0., 1.)) if room > 0 else 0.
-    r_e = float(np.clip(clearance/GS1_EDGE_CLEARANCE, 0., 1.))
-    return r_h, r_e, _level_factor(tilt_deg)
-
-
-def canister_registration_factors(mean_z, top_margin, bottom_margin, tilt_deg):
-    """part-id-hdpe registration factors for a label whose nodes' mean height is mean_z m from the canister's
-    mid-height, leaving top_margin / bottom_margin m of side wall above / below it, its long side tilt_deg off level.
-    Each is 1 where the placement check passes: mid-height falls linearly to 0 where the label would reach the end of
-    the wall by moving the same way, the margin to 0 at the wall's end, level to 0 at 45 deg."""
-    r_margin = float(np.clip(min(top_margin, bottom_margin)/CANISTER_END_MARGIN, 0., 1.))
-    off = abs(mean_z) - CANISTER_MID_TOL
-    room = top_margin if mean_z > 0 else bottom_margin
-    r_mid = 1. if off <= 0 else (float(np.clip(room/(room + off), 0., 1.)) if room > 0 else 0.)
-    return r_mid, r_margin, _level_factor(tilt_deg)
-
-
 def lifted_material_area(X, tris, gap, band=CONTACT_BAND, rect=None):
     """Area where the piecewise-linear nodal gap exceeds band, optionally inside
     a material-space rectangle ((u0,u1),(v0,v1)). Integrate clipped triangles,
@@ -351,7 +317,8 @@ class Evaluator:
         self.start_presented = (np.isin(lab.bond, [i for i, c in enumerate(cols) if c.role in ("liner", "plate")])
                                 if cols is not None and hasattr(lab, "bond") else None)
         task = world.config.task
-        self.target = getattr(world.scene, "target", None) or TARGET[task]
+        folder = task_verifier(task)
+        self.target = getattr(world.scene, "target", None) or (folder.TARGET if folder is not None else TARGET[task])
         self.last_optical = None
 
     def _band(self, width):
@@ -377,6 +344,17 @@ class Evaluator:
         return best_d, best_n
 
     def evaluate(self, optical=None):
+        """The evaluation of the current state: a benchmark task's verifier.py (tasks/<task>/) decides (verify(e,
+        optical), through evaluate_task); the tasks outside the benchmark (cover-old-label, tube-wrap) are judged by
+        evaluate_task. optical: the reader's verdict (dict with "match"), or None."""
+        folder = task_verifier(self.world.config.task)
+        if folder is not None:
+            return folder.verify(self, optical)
+        return self.evaluate_task(optical)
+
+    def evaluate_task(self, optical=None):
+        """The checks every task shares, the task's placement rules (placement()), the repair rungs' area and edge
+        checks, the optical verdict, and the progress reward (progress())."""
         w = self.world
         lab = w.label
         task = w.config.task
@@ -424,8 +402,7 @@ class Evaluator:
         moved = {n: float(np.linalg.norm(w.body_pose(n)[0] - p0)) for n, p0 in self.initial_items.items()}
         resting = self.resting(target_name)
         hands = self.hands_off(target_name)
-        placement = (self._place_repair_rung if task in REPAIR_TASKS else self._place_tube_label if task == "tube-label"
-                     else getattr(self, "_place_" + base_task(task).replace("-", "_")))(on_target)
+        placement = self.placement(on_target)
         checks = {
             "wet_out>=90%_of_standard_application": frac >= WET_OUT_FRACTION,
             "edge_band_wet_out>=90%_of_standard_application": band_frac >= WET_OUT_FRACTION,
@@ -497,6 +474,15 @@ class Evaluator:
         out["reward"] = reward
         return out
 
+    def placement(self, on_target):
+        """The task's placement rules, dict(checks, metrics): a benchmark task's verifier.py (placement(e, on_target));
+        cover-old-label and tube-wrap: _place_cover_old_label, _place_tube_wrap."""
+        task = self.world.config.task
+        folder = task_verifier(task)
+        if folder is not None:
+            return folder.placement(self, on_target)
+        return getattr(self, "_place_" + base_task(task).replace("-", "_"))(on_target)
+
     # ------------------------------------------------------------------ progress reward (every task; REWARD_CONTRACTS)
     def _contact_state(self):
         """Per label node: bonded to the target, wet-out relative to the standard on the bonded surface, gap to the
@@ -515,50 +501,36 @@ class Evaluator:
         return on_target, rel, gap, facing
 
     def zone(self, on_target=None):
-        """Label nodes that lie where the task lets the label go (item frame, per node). The carton-top tasks: on the
-        carton top, on the right flap half, off the seam tape and clear of the top's edge bevel (the carrier placement
-        rules, node by node); the flap half is the one holding the label (flap_half) on the repair rungs and
-        carrier-top (either half is accepted), the one the label was laid on for press-down ("where it lies") and the
-        one carrying the old label for cover-old-label. tube-wrap and tube-label: on the tube wall clear of its bottom
-        9 mm (clear_of_tube_bottom). gs1-case-side: on the long side face holding the label (gs1_face). part-id-hdpe:
-        on the canister's side wall (not its lid or base). part-id-match: on the target plate's upper face, inside
-        its footprint. The remaining placement rules enter the reward through registration()."""
+        """Label nodes that lie where the task lets the label go (item frame, per node): a benchmark task's verifier.py
+        (zone(e, on_target)); cover-old-label: the carton top on the flap half carrying the old label (carton_top_zone);
+        tube-wrap: tube_zone. The remaining placement rules enter the reward through registration()."""
         task = self.world.config.task
+        folder = task_verifier(task)
+        if folder is not None:
+            return folder.zone(self, on_target)
         base = base_task(task)
-        if task in REPAIR_TASKS or base in ("carrier-top", "press-down", "cover-old-label"):
-            g = self.world.scene.task_geometry["carton"]
-            q = self._item_local("carton")
-            if task in REPAIR_TASKS or base == "carrier-top":
-                side = self.flap_half(q, on_target)
-            elif base == "press-down":
-                side = float(np.sign(self.world.scene.task_geometry["laid_label"]["centre"][1]))
-            else:
-                side = float(self.world.scene.task_geometry["old_label"]["side"])
-            c = CARTON_TOP_EDGE_CLEARANCE - 1e-12
-            return ((q[:, 2] > g["H"]/2 - 2e-3) & (np.abs(q[:, 0]) <= g["L"]/2 - c)
-                    & (side*q[:, 1] >= g["tape_half"]) & (side*q[:, 1] <= g["W"]/2 - c))
+        if base == "cover-old-label":
+            return self.carton_top_zone(lambda q: float(self.world.scene.task_geometry["old_label"]["side"]))
         if base == "tube-wrap":
-            g = self.world.scene.task_geometry["tube"]
-            q = self._item_local("tube")
-            return q[:, 2] >= -g["L"]/2 + TUBE_BOTTOM_CLEAR
-        if base == "gs1-case-side":
-            g = self.world.scene.task_geometry["carton"]
-            q = self._item_local("carton")
-            side = self.gs1_face(q, on_target)
-            # the on_a_long_side_face rule node by node: beyond that face's plane less 2 mm, inside the face
-            return ((side*q[:, 1] > g["W"]/2 - 2e-3) & (np.abs(q[:, 0]) <= g["L"]/2)
-                    & (np.abs(q[:, 2]) <= g["H"]/2))
-        if base == "part-id-hdpe":
-            it = self.world.scene.items["part"]
-            q = self._item_local("part")
-            # the on_side rule node by node (radius > r - 1 mm), between the lid and the base
-            return (np.hypot(q[:, 0], q[:, 1]) > it["radius"] - 1e-3) & (np.abs(q[:, 2]) < it["height"]/2)
-        if base == "part-id-match":
-            sx, sy, sz = self.world.scene.items[self.target]["size"]
-            q = self._item_local(self.target)
-            # the on_target_plate_upper_face rule node by node
-            return (q[:, 2] > sz/2 - 1e-3) & (np.abs(q[:, 0]) <= sx/2) & (np.abs(q[:, 1]) <= sy/2)
+            return self.tube_zone()
         raise ValueError(f"{task} has no progress zone")
+
+    def carton_top_zone(self, flap_side):
+        """The carton-top tasks' zone: on the carton top, on the flap half flap_side(q) names (+1 / -1, the sign of
+        carton-local y; q the label nodes in the carton frame), off the seam tape and clear of the top's edge bevel (the
+        carrier placement rules, node by node)."""
+        g = self.world.scene.task_geometry["carton"]
+        q = self._item_local("carton")
+        side = flap_side(q)
+        c = CARTON_TOP_EDGE_CLEARANCE - 1e-12
+        return ((q[:, 2] > g["H"]/2 - 2e-3) & (np.abs(q[:, 0]) <= g["L"]/2 - c)
+                & (side*q[:, 1] >= g["tape_half"]) & (side*q[:, 1] <= g["W"]/2 - c))
+
+    def tube_zone(self):
+        """tube-wrap and tube-label: on the tube wall clear of its bottom 9 mm (clear_of_tube_bottom)."""
+        g = self.world.scene.task_geometry["tube"]
+        q = self._item_local("tube")
+        return q[:, 2] >= -g["L"]/2 + TUBE_BOTTOM_CLEAR
 
     def flap_half(self, q=None, on_target=None):
         """Repair rungs and carrier-top: the carton-top flap half (+1 / -1, the sign of carton-local y) holding the
@@ -574,18 +546,6 @@ class Evaluator:
             return float(np.sign(s))
         lay = self.world.scene.task_geometry.get("laid_label")
         return float(np.sign(lay["centre"][1])) if lay is not None else 1.
-
-    def gs1_face(self, q=None, on_target=None):
-        """gs1-case-side: the long side face (-1: front, -y; +1: back, +y) holding the label, i.e. the one with more
-        label area bonded to the carton within 2 mm of its plane; with nothing bonded there, the front (nothing is
-        credited then). Either long side is accepted (on_a_long_side_face)."""
-        lab = self.world.label
-        g = self.world.scene.task_geometry["carton"]
-        q = self._item_local("carton") if q is None else q
-        if on_target is None:
-            on_target = self._contact_state()[0]
-        a = {s: float((lab.vertex_area*on_target*(s*q[:, 1] > g["W"]/2 - 2e-3)).sum()) for s in (-1., 1.)}
-        return 1. if a[1.] > a[-1.] else -1.
 
     def node_credit(self, state=None):
         """Per label node, in [0, 1]: one half for lying adhesive-down on the target surface inside the zone
@@ -753,18 +713,21 @@ class Evaluator:
 
     def registration(self, placed, on_target=None):
         """How well the label part lying in the task's zone (`placed` nodes) is registered, as a product of factors in
-        [0, 1], each 1 where the task's own placement check passes: tube-wrap and tube-label, _tube_registration;
-        gs1-case-side, _gs1_registration; cover-old-label, _cover_registration; part-id-hdpe, _canister_registration;
-        part-id-match, _plate_registration. carrier-top's and press-down's zone already holds every placement rule
-        (factor 1). Fewer than 3 placed nodes, or collinear ones, leave nothing to register (factor 1; progress is
-        then about 0 anyway)."""
-        base = base_task(self.world.config.task)
-        fn = dict(zip(("tube-wrap", "gs1-case-side", "cover-old-label", "part-id-hdpe", "part-id-match"),
-                      (self._tube_registration, self._gs1_registration, self._cover_registration,
-                       self._canister_registration, self._plate_registration))).get(base)
-        if fn is None:
-            return dict(factor=1., note="the zone holds every placement rule")
-        return fn(placed) if base == "tube-wrap" else fn(placed, on_target)
+        [0, 1], each 1 where the task's own placement check passes: a benchmark task's verifier.py (registration(e,
+        placed, on_target): gs1-case-side, part-id-hdpe, part-id-match, tube-label); tube-wrap, _tube_registration;
+        cover-old-label, _cover_registration. carrier-top's and press-down's zone (the repair rungs' too) already holds
+        every placement rule (factor 1). Fewer than 3 placed nodes, or collinear ones, leave nothing to register (factor
+        1; progress is then about 0 anyway)."""
+        task = self.world.config.task
+        fn = getattr(task_verifier(task), "registration", None)
+        if fn is not None:
+            return fn(self, placed, on_target)
+        base = base_task(task)
+        if base == "tube-wrap":
+            return self._tube_registration(placed)
+        if base == "cover-old-label":
+            return self._cover_registration(placed, on_target)
+        return dict(factor=1., note="the zone holds every placement rule")
 
     def _fit(self, coords, placed):
         """Affine map from label material coordinates (u, v) to item-frame coordinates `coords` (one row per placed
@@ -786,35 +749,6 @@ class Evaluator:
         inside = (uv[:, 0] >= -e) & (uv[:, 0] <= lab.length + e) & (uv[:, 1] >= -e) & (uv[:, 1] <= lab.width + e)
         return float(inside.mean())
 
-    def _gs1_registration(self, placed, on_target=None):
-        """gs1-case-side: the label part on the long side face, fitted over the label (_fit on the face's along / up
-        coordinates), gives the SSCC symbol's printed bottom-edge height above the base, its clearance (quiet zones
-        included) from the nearer vertical edge and the bars' tilt from vertical, measured as _place_gs1_case_side
-        measures them, and the label's own height span; gs1_registration_factors turns them into factors."""
-        g = self.world.scene.task_geometry["carton"]
-        lab = self.world.label
-        q = self._item_local("carton")
-        coef = self._fit(q[placed][:, [0, 2]], placed)
-        if coef is None:
-            return dict(factor=1., note="fewer than 3 label nodes (or collinear ones) on the side face: nothing to register")
-        (u0, u1), (v0, v1) = self.bar_u, self.bar_v
-        n = 25
-        bottom_uv = np.stack([np.full(n, u0), np.linspace(v0, v1, n)], 1)
-        edge_uv = np.concatenate([bottom_uv, np.stack([np.full(n, u1), np.linspace(v0, v1, n)], 1),
-                                  np.stack([np.linspace(u0, u1, n), np.full(n, v0)], 1),
-                                  np.stack([np.linspace(u0, u1, n), np.full(n, v1)], 1)])
-        P = lambda uv: np.c_[uv, np.ones(len(uv))] @ coef                  # (along, up) in the carton frame
-        bottom = float((P(bottom_uv)[:, 1] + g["H"]/2).mean())
-        clearance = float(g["L"]/2 - np.abs(P(edge_uv)[:, 0]).max())
-        d = coef[0]                                                      # the label's MD (bars) direction on the face
-        tilt = float(np.degrees(np.arccos(min(1., abs(d[1])/max(np.linalg.norm(d), 1e-12)))))
-        span = P(np.array([[0., 0.], [0., lab.width], [lab.length, 0.], [lab.length, lab.width]]))[:, 1] + g["H"]/2
-        r_h, r_e, r_t = gs1_registration_factors(bottom, clearance, tilt, float(span.min()), float(span.max()), g["H"])
-        return dict(factor=r_h*r_e*r_t, barcode_height=r_h, edge_clearance=r_e, bars_vertical=r_t,
-                    face="front(-y)" if self.gs1_face(q, on_target) < 0 else "back(+y)",
-                    predicted_barcode_bottom_above_base_m=bottom, predicted_barcode_edge_clearance_m=clearance,
-                    fitted_bar_tilt_deg=tilt, predicted_label_span_above_base_m=(float(span.min()), float(span.max())))
-
     def _cover_registration(self, placed, on_target=None):
         """cover-old-label: the share of the old label (the old_label_fully_covered check's 17 x 13 points) that the
         label lying on the carton top covers, extrapolated over the label (_fit, _fitted_cover): a label laid from one
@@ -828,41 +762,7 @@ class Evaluator:
         c = self._fitted_cover(coef, np.stack([uu.ravel(), vv.ravel()], 1))
         return dict(factor=c, old_label_covered=c, predicted_old_label_covered_fraction=c)
 
-    def _canister_registration(self, placed, on_target=None):
-        """part-id-hdpe: the label part on the side wall, unrolled round the canister (_unrolled_along_label) and fitted
-        over the label, gives its mean height, its margins to the wall's top and bottom and its long side's tilt from
-        level (as _place_part_id_hdpe measures them); canister_registration_factors turns them into factors."""
-        it = self.world.scene.items["part"]
-        lab = self.world.label
-        q = self._item_local("part")
-        if placed.sum() < 3:
-            return dict(factor=1., note="fewer than 3 label nodes on the side wall: nothing to register")
-        sz = self._unrolled_along_label(q, placed, it["radius"] + .5*lab.stock.thickness)
-        coef = self._fit(sz, placed)
-        if coef is None:
-            return dict(factor=1., note="label nodes on the side wall are collinear: no registration fit")
-        z = np.c_[lab.X, np.ones(lab.n)] @ coef[:, 1]
-        top, bottom = float(it["height"]/2 - z.max()), float(z.min() + it["height"]/2)
-        d = coef[1]                                                      # the label's CD (long side) round the wall
-        tilt = float(np.degrees(np.arctan2(abs(d[1]), abs(d[0]))))
-        r_mid, r_margin, r_level = canister_registration_factors(float(z.mean()), top, bottom, tilt)
-        return dict(factor=r_mid*r_margin*r_level, mid_height=r_mid, end_margin=r_margin, level=r_level,
-                    predicted_mean_height_m=float(z.mean()), predicted_margins_m=(top, bottom), fitted_tilt_deg=tilt)
-
-    def _plate_registration(self, placed, on_target=None):
-        """part-id-match: 1 - the share of the target plate's marking (the marking_not_covered check's 13 x 5 points)
-        that the label lying on its face covers, extrapolated over the label (_fit, _fitted_cover)."""
-        it = self.world.scene.items[self.target]
-        q = self._item_local(self.target)
-        coef = self._fit(q[placed][:, :2], placed)
-        if coef is None:
-            return dict(factor=1., note="fewer than 3 label nodes (or collinear ones) on the plate face: nothing to register")
-        mk = it["marking"]
-        uu, vv = np.meshgrid(np.linspace(*mk["u"], 13), np.linspace(*mk["v"], 5))
-        c = self._fitted_cover(coef, np.stack([uu.ravel(), vv.ravel()], 1))
-        return dict(factor=1. - c, marking_clear=1. - c, predicted_marking_covered_fraction=c)
-
-    def _tube_registration(self, placed):
+    def _tube_registration(self, placed, predicted=None):
         """tube-wrap and tube-label: how well the label lying on the tube is registered, from the label part on the tube
         (`placed` nodes) extrapolated over the whole label through an affine fit of their unrolled tube position on
         their material coordinates (a partly laid label is judged by where it is going). Each factor is 1 inside
@@ -870,12 +770,13 @@ class Evaluator:
         cap-end alignment (band 0.5 mm capward to 2 mm below the manufacturer label's cap-side edge; 0 with the
         label's cap-side edge on the cap, TUBE_CAP_SKIRT, or its far end at the 9 mm bottom clearance), skew (1 up to
         5 deg, 0 at 45 deg, a diagonal label), viewing window. tube-wrap: window / 5 mm, from the placed triangles
-        only. tube-label: the window the whole label will leave where the fit says it is going
-        (_predicted_tube_window), so the order in which its long edges went down does not enter; 1 while at most TUBE_STRIP_TOL of the bare strip is covered (its over_mfr_label check),
-        falling linearly to 0 with the whole strip covered. The patient name's end (tube-label's
-        patient_name_end_toward_cap): the skew ramp reads the signed angle of the label's name axis from the tube's +z,
-        0-180 deg, so a label heading for the reversed placement gets 0 at every stage and a label turned past 90 deg in
-        its plane does not climb back toward full credit; no new constant."""
+        only. tube-label (predicted: its verifier.py's predicted_window(self, q, g, placed, coef, r, dv) gives the
+        window, the bare strip, the skew reading and extra metrics): the window the whole label will leave where the fit
+        says it is going, so the order in which its long edges went down does not enter; 1 while at most TUBE_STRIP_TOL
+        of the bare strip is covered (its over_mfr_label check), falling linearly to 0 with the whole strip covered. The
+        patient name's end (tube-label's patient_name_end_toward_cap): the skew ramp reads the signed angle of the
+        label's name axis from the tube's +z, 0-180 deg, so a label heading for the reversed placement gets 0 at every
+        stage and a label turned past 90 deg in its plane does not climb back toward full credit; no new constant."""
         g = self.world.scene.task_geometry["tube"]
         lab = self.world.label
         q = self._item_local("tube")
@@ -893,15 +794,8 @@ class Evaluator:
         skew = float(np.degrees(np.arctan2(abs(dv[0]), abs(dv[1]))))
         extra = {}
         skew_read = skew
-        if self.world.config.task == "tube-label":
-            window, bare = self._predicted_tube_window(q, g, placed, coef, r)
-            # the skew ramp reads the SIGNED angle between the label's name axis (+v, the end where the printed name
-            # begins; see _place_tube_label) and the tube's +z toward the cap, 0-180 deg: the same as tube-wrap's
-            # reading for a label heading name end capward, 0 for one heading for the reversed placement
-            skew_read = float(np.degrees(np.arctan2(abs(dv[0]), dv[1])))
-            extra = dict(window_from="predicted extent of the whole label", bare_strip_m=bare,
-                         window_full_credit_from_m=bare - TUBE_STRIP_TOL, name_axis_from_cap_deg=skew_read,
-                         name_end_heading="cap" if dv[1] > 0 else "tube bottom")
+        if predicted is not None:
+            window, bare, skew_read, extra = predicted(self, q, g, placed, coef, r, dv)
         else:
             T = self._alive_tris()
             T = T[placed[T].all(1)]
@@ -911,21 +805,6 @@ class Evaluator:
         return dict(factor=r_cap*r_skew*r_win, cap_end=r_cap, skew=r_skew, window=r_win,
                     predicted_top_edge_from_cap_end_m=top, fitted_skew_deg=skew, window_m=window, cap_end_ramp_m=ramp,
                     **extra)
-
-    def _predicted_tube_window(self, q, g, placed, coef, r):
-        """tube-label: (window, bare strip) the label would leave lying where the affine fit of its placed nodes'
-        unrolled tube position on their material coordinates puts every node (the fit _tube_registration makes for cap
-        end and skew), measured by _tube_window over all of its triangles. For a finished label it equals the measured
-        window to within about 0.02 mm; for a partly laid one it is where that label is going (read from the placed
-        triangles only, a label laid edge-first would be scored by which long edge went down first, and finishing a
-        wrap onto the strip would lower its score)."""
-        lab = self.world.label
-        ang = np.arctan2(q[placed, 1], q[placed, 0])
-        gm = math.atan2(float(np.sin(ang).mean()), float(np.cos(ang).mean()))   # _unrolled_along_label's origin
-        pred = np.c_[lab.X, np.ones(lab.n)] @ coef
-        a = gm + pred[:, 0]/r
-        window, bare, _ = self._tube_window(np.c_[r*np.cos(a), r*np.sin(a), pred[:, 1]], g)
-        return float(window), float(bare)
 
     def _unrolled_along_label(self, q, nodes, r):
         """(arc length, axial z) of the label nodes `nodes` on the tube, the angle unwrapped edge by edge along the label
@@ -1023,7 +902,7 @@ class Evaluator:
             c0 = w.scene.task_geometry.get("start_credit")
             if c0 is None:
                 # worlds built without LabelEnv (constructed-state harnesses): the start as constructed, every node
-                # lying in the zone at tack (env.lay_label_on_carton; the settle tacks it)
+                # lying in the zone at tack (tasks/press-down/setup.py lay_label_on_carton; the settle tacks it)
                 from . import materials as M
                 pr = lab.colliders[self._target_colliders()[0]].surface.p_rough
                 rel_tack = (1. - np.exp(-M.P_TACK/pr))/(1. - np.exp(-(P_STANDARD_APPLICATION + M.P_TACK)/pr))
@@ -1177,16 +1056,6 @@ class Evaluator:
                             "clear_of_top_edge_bevel": margin >= CARTON_TOP_EDGE_CLEARANCE - 1e-12},
                     metrics=dict(edge_margin_m=margin))
 
-    def _place_press_down(self, on_target):
-        """The laid label must end where the carrier rules allow, on the flap half it was laid on ("entirely on that
-        flap half")."""
-        base = self._place_carrier_top(on_target)
-        side = np.sign(self.world.scene.task_geometry["laid_label"]["centre"][1])
-        q = self._item_local("carton")
-        checks = {k: v for k, v in base["checks"].items() if k != "one_flap_half"}
-        checks["on_the_flap_half_it_was_laid_on"] = bool((side*q[:, 1] > 0).all())
-        return dict(checks=checks, metrics=base["metrics"])
-
     def _place_repair_rung(self, on_target):
         """smooth-corner, finish-securing: carrier-top's rules (on the top, off the seam tape, on one flap half, clear
         of the edge bevel). Either flap half is accepted: these instructions ask to smooth down or finish securing
@@ -1229,34 +1098,6 @@ class Evaluator:
             d3 = (A_[:, 0]-C_[:, 0])*(p[1]-C_[:, 1]) - (A_[:, 1]-C_[:, 1])*(p[0]-C_[:, 0])
             hit[k] = (((d1 >= 0) & (d2 >= 0) & (d3 >= 0)) | ((d1 <= 0) & (d2 <= 0) & (d3 <= 0))).any()
         return float(hit.mean())
-
-    def _place_gs1_case_side(self, on_target):
-        g = self.world.scene.task_geometry["carton"]
-        lab = self.world.label
-        q = self._item_local("carton")
-        front = bool((q[:, 1] < -g["W"]/2 + 2e-3).all())
-        back = bool((q[:, 1] > g["W"]/2 - 2e-3).all())
-        X = lab.X
-        # the printed symbol's own edges, interpolated through the mesh (outermost vertices inside the symbol sit up to
-        # one mesh cell inside its printed edge)
-        (u0, u1), (v0, v1) = self.bar_u, self.bar_v
-        n = 25
-        bottom_uv = np.stack([np.full(n, u0), np.linspace(v0, v1, n)], 1)
-        edge_uv = np.concatenate([bottom_uv, np.stack([np.full(n, u1), np.linspace(v0, v1, n)], 1),
-                                  np.stack([np.linspace(u0, u1, n), np.full(n, v0)], 1),
-                                  np.stack([np.linspace(u0, u1, n), np.full(n, v1)], 1)])
-        pts, _ = material_points(lab, np.concatenate([bottom_uv, edge_uv]))
-        ql = self._local("carton", pts)
-        base_height = float((ql[:n, 2] + g["H"]/2).mean())
-        edge = float(g["L"]/2 - np.abs(ql[n:, 0]).max())
-        # bars vertical: label MD axis vs carton vertical
-        md = q[X[:, 0] > lab.length - lab.h*.5].mean(0) - q[X[:, 0] < lab.h*.5].mean(0)
-        tilt = float(np.degrees(np.arccos(abs(md[2])/max(np.linalg.norm(md), 1e-12))))
-        return dict(checks={"on_a_long_side_face": front or back, "barcode_bottom_32+-6mm_above_base": abs(base_height - .032) <= .006,
-                            "bars_vertical_within_5deg": tilt <= 5., "barcode_>=19mm_from_vertical_edges": edge >= .019},
-                    metrics=dict(face="front(-y)" if front else "back(+y)" if back else None,
-                                 barcode_bottom_above_base_m=base_height, md_tilt_from_vertical_deg=tilt,
-                                 barcode_edge_clearance_m=edge))
 
     def _tube_unrolled(self, q, r):
         """Label vertices on the tube surface, unrolled: (arc length around the tube from the label's mean angle,
@@ -1361,60 +1202,3 @@ class Evaluator:
                             "clear_of_tube_bottom>=9mm": bottom_clear >= 9e-3},
                     metrics=dict(top_edge_from_cap_end_m=top_from_cap, skew_deg=skew, window_m=window,
                                  bare_strip_m=bare, window_stations=stations, bottom_clearance_m=bottom_clear))
-
-    def _place_tube_label(self, on_target):
-        """tube-label: tube-wrap's placement rules (unchanged, _place_tube_wrap) plus the two requirements its
-        instruction states that those rules do not check:
-        - over the tube manufacturer's label: at the narrowest station along the label, at most
-          TUBE_STRIP_TOL of the manufacturer label's bare strip lies under it (bare strip less the window that
-          _tube_window measures). tube-wrap's window >= 5 mm alone would let a label turned 80 deg, a third of it on bare
-          PET over 59 % of the strip, pass;
-        - the patient's name at the end toward the cap. The name is printed from the label art's
-          left edge (artwork.specimen_label), which the renderer maps to the label's v = width end (render.export:
-          s = 1 - v/width), so that end is at the cap when the label's CD axis runs toward the cap: dz/dv > 0 in the
-          tube frame (+z toward the cap), from an affine fit of the nodes' axial position on their material
-          coordinates. symbol_rect maps image x to v the other way; the symbol is centred across
-          the label, so its rectangle is the same either way."""
-        base = self._place_tube_wrap(on_target)
-        lab = self.world.label
-        q = self._item_local("tube")
-        m = base["metrics"]
-        intrusion = float(m["bare_strip_m"] - m["window_m"])
-        dz_dv = float(np.linalg.lstsq(np.c_[lab.X, np.ones(lab.n)], q[:, 2], rcond=None)[0][1])
-        checks = dict(base["checks"])
-        checks["over_mfr_label(<=2mm_onto_viewing_strip)"] = intrusion <= TUBE_STRIP_TOL + 1e-12
-        checks["patient_name_end_toward_cap"] = dz_dv > 0.
-        return dict(checks=checks, metrics=dict(m, viewing_strip_covered_m=intrusion,
-                                                strip_tolerance_m=TUBE_STRIP_TOL, name_end_dz_dv=dz_dv,
-                                                name_end="cap" if dz_dv > 0. else "tube bottom"))
-
-    def _place_part_id_hdpe(self, on_target):
-        g = self.world.scene.items["part"]
-        lab = self.world.label
-        q = self._item_local("part")
-        side = bool((np.hypot(q[:, 0], q[:, 1]) > g["radius"] - 1e-3).all())
-        z = q[:, 2]
-        centred = bool(abs(z.mean()) < .03 and z.max() < g["height"]/2 - .02 and z.min() > -g["height"]/2 + .02)
-        cd = q[lab.X[:, 1] > lab.width - lab.h*.5].mean(0) - q[lab.X[:, 1] < lab.h*.5].mean(0)
-        tilt = float(np.degrees(np.arcsin(min(1., abs(cd[2])/max(np.linalg.norm(cd), 1e-12)))))
-        return dict(checks={"on_side": side, "middle_within_30mm_of_mid_height": centred, "horizontal_within_5deg": tilt <= 5.},
-                    metrics=dict(mean_height_m=float(z.mean()), tilt_deg=tilt))
-
-    def _place_part_id_match(self, on_target):
-        name = self.target
-        it = self.world.scene.items[name]
-        sx, sy, sz = it["size"]
-        q = self._item_local(name)
-        on_face = bool((q[:, 2] > sz/2 - 1e-3).all() and (np.abs(q[:, 0]) <= sx/2).all() and (np.abs(q[:, 1]) <= sy/2).all())
-        mk = it["marking"]
-        uu, vv = np.meshgrid(np.linspace(*mk["u"], 13), np.linspace(*mk["v"], 5))
-        covered = self._covered(q[:, :2], self._alive_tris(), np.stack([uu.ravel(), vv.ravel()], 1))
-        lab = self.world.label
-        bonded = {}
-        if hasattr(lab, "colliders"):                    # (absent in the geometry harness)
-            cols = [c.name for c in lab.colliders]
-            for b in lab.bond[lab.bond >= 0]:
-                bonded[cols[b]] = bonded.get(cols[b], 0) + 1
-        return dict(checks={"on_target_plate_upper_face": on_face, "marking_not_covered": covered == 0.},
-                    metrics=dict(target_plate=name, target_part_number=it["part_number"], marking_covered_fraction=covered,
-                                 nodes_bonded_per_surface=bonded))

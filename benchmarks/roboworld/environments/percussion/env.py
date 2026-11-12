@@ -82,16 +82,12 @@ class PercussionEnv:
         self.timing["settle_s"] = time.perf_counter() - t0
 
     def _schedule_task_events(self):
+        """The task's events in the episode (the loudspeaker stimulus, the cue light): its folder's schedule(env, g)."""
+        from .layout import task_setup
         g = self.layout["goal"]
-        if self.config.task == "echo" and self.world.acoustics is not None:
-            from .task import echo_stimulus
-            sig, onsets = echo_stimulus(g)
-            sp = self.world.scene.fixtures["speaker"]["position"]
-            start = int(round(g["start_s"]*P.AUDIO_FS))
-            self.world.acoustics.add_point_source(np.asarray(sp, float), sig, start)
-            self.stimulus = dict(onsets_s=[g["start_s"] + t for t in onsets], start_s=g["start_s"])
-        if self.config.task == "strike-and-stop":
-            self.cue = dict(on=False, at=None, delay=float(g["cue_delay_s"]), surface=f"rbar_{g['bar']}")
+        schedule = getattr(task_setup(self.config.task), "schedule", None)
+        if schedule is not None:
+            schedule(self, g)
 
     # ------------------------------------------------------------------ checkpoints
     def checkpoint(self):
@@ -193,10 +189,7 @@ class PercussionEnv:
                 w.step()
                 self._track_still()
                 self.evaluator.rim_check()
-                if self.config.task == "strike-and-stop":
-                    self.evaluator.sample_vibration()
-                elif self.config.task == "melody":
-                    self.evaluator.sample_ring()
+                self.evaluator.tick()
                 if w.tick % 10 == 0:
                     self.evaluator.monitor()
                 if self.cue.get("delay") is not None and self.cue.get("at") is None:

@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/warehouse/aisle-cruise/forklift-tasks-v2/seed-0",
+  "name": "aisle-cruise",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "aisle-cruise",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+  },
+  "description": "Drive the main aisle westward at the posted 8 km/h, slow down and sound the horn at both intersections, and stop at the white line at the far end of the aisle.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

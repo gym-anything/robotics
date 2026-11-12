@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/iv-lock/fast-bolus/contract-syringe-tasks-v2/seed-0",
+  "name": "fast-bolus",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "iv-lock",
+    "task": "fast-bolus",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+  },
+  "description": "Inject the 10 mL of amber contrast through the saline lock in under 8 seconds, then flush with 5 mL of saline. Leave the lock clamped with nothing attached.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,6 +1,10 @@
-"""GAR's task session factory; no changes to physics-hashed source modules."""
+"""GAR's task session factory; no changes to physics-hashed source modules.
 
-from .task_catalogue import task_name
+make_session builds a task's session with its setup.py (tasks/<task>/): titration's is the released
+session.ApparatusSession, every other task's is catalogue_session below.
+"""
+
+from .task_catalogue import task_name, task_setup
 from .task_presets import preset
 
 
@@ -32,43 +36,21 @@ def apply_rigid_start(world, setup):
     world._validate_initial_contacts()
 
 
-def precharge_chemistry(liquid, setup):
-    """A prepared, mixed starting sample, not a reaction-time intervention.
-
-    Volume moved from burette to flask was included in the ordinary lattice
-    initialization. Preserve original aliquot, tracer, all sodium/chloride and
-    analytical H/OH totals; initialize the already reacted amount explicitly.
-    """
-    import numpy as np
-    base0 = setup['base0_ml']
-    if not base0:
-        return
-    from .liquid_charge import Reagents
-    r = Reagents(**setup['nominal_reagents'])
-    v0 = r.aliquot_ml+r.dilution_ml
-    volume = v0+base0
-    first, last = liquid.initial_groups['flask']
-    chem = liquid.chemistry
-    chem.charge(slice(first, last), acid_m=r.acid_molar*r.aliquot_ml/volume,
-                base_m=r.base_molar*base0/volume, indicator_m=r.indicator_molar*v0/volume)
-    liquid.initial_totals = chem.observe()['totals_mol']
-    n = chem.moles.numpy()
-    reacted = np.minimum(n[:, 0], n[:, 1])
-    n[:, 0] -= reacted
-    n[:, 1] -= reacted
-    chem.moles.assign(n)
-    chem.next.assign(n)
-    chem.reacted.assign(reacted)
-    chem.next_reacted.assign(reacted)
-
-
 def make_session(config=None, *, task='titration', **kwargs):
-    from .session import ApparatusSession
+    from .session import ApparatusSession  # noqa: F401  (a missing simulator fails before the task is checked)
     task_name(task)
-    if task == 'titration':
-        return ApparatusSession(config, **kwargs)
+    return task_setup(task).setup(config, **kwargs)
+
+
+def catalogue_session(task, config=None, **kwargs):
+    """The session of a task other than titration, from make_session's arguments: the dry apparatus with the task's
+    preset start (task_presets.preset, its setup.py's arrange), then the liquid with the preset charge (prepared by
+    its setup.py's precharge_chemistry, if it has one), the readings and the task's CatalogueEvaluator, which must
+    start valid, unsuccessful and at score zero."""
+    from .session import ApparatusSession
     from .lab_config import LabConfig
     from .liquid_charge import Reagents
+    folder = task_setup(task)
     config = config or LabConfig()
     reagents = kwargs.get('reagents') or Reagents()
     numerics = kwargs.get('liquid_numerics')
@@ -87,13 +69,16 @@ def make_session(config=None, *, task='titration', **kwargs):
         if numerics.dt_s != session.dt_s or numerics.device != config.device:
             raise ValueError('Rigid/liquid timestep and device must agree exactly; no substep substitution')
         session.liquid = LaboratoryLiquid(session.world, numerics, Reagents(**setup['reagents']))
-        precharge_chemistry(session.liquid, setup)
+        precharge = getattr(folder, 'precharge_chemistry', None)
+        if precharge is not None:          # a flask that starts part-titrated (finish-titration)
+            precharge(session.liquid, setup)
         session.task_readings = CatalogueReadings(session.liquid, setup)
         initial = session.task_readings.read()
         # Rebase against the represented float state, so tick zero is exactly 0.
         setup['distance0_m'] = initial['flask_distance_m']
-        if task == 'finish-titration':
-            setup['base0_ml'] = initial['base_in_flask_ml']
+        rebase = getattr(folder, 'rebase', None)
+        if rebase is not None:
+            rebase(setup, initial)
         session.evaluator = CatalogueEvaluator(task, session.dt_s, reagents, setup)
         result = session.evaluator.update(0, **initial)
         if result['success'] or result['score'] != 0. or not result['valid']:

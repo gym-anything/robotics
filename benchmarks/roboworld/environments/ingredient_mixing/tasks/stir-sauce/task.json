@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/hob/stir-sauce/seed-0",
+  "name": "stir-sauce",
+  "env_id": "ingredient-mixing",
+  "split": "test",
+  "selection": {
+    "preset": "hob",
+    "task": "stir-sauce"
+  },
+  "description": "The saucepan on the hob holds a cold slurry of milk, corn starch and sugar; the hob is on. Cook the sauce, stirring, until it thickens and comes to a simmer, without letting it catch on the bottom. Then turn the hob off. Keep the sauce in the pan and the pan on the hob. A probe thermometer stands in the crock.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

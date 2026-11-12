@@ -1,9 +1,10 @@
 """Deterministic verifiers and reward for the football drills (catalogue: football/newton15/variants.py).
 
 The `goal` and the `free-kick` (whose verifier is goal's, unchanged) use task.PitchAwareGoalDetector. The
-other six drills subclass it here: every tick FootballWorld passes the same inputs as for goal (ball centre and
-velocity at the end of the tick, the pitch's support, the robot links that pushed on the ball), plus, for trap, the
-robot's pelvis and feet (FootballWorld.robot_pose). Instructions state the job; the rules below are the verifier's.
+other six drills subclass it through Drill below, each in its task folder (tasks/<task>/verifier.py): every tick
+FootballWorld passes the same inputs as for goal (ball centre and velocity at the end of the tick, the pitch's
+support, the robot links that pushed on the ball), plus, for trap, the robot's pelvis and feet
+(FootballWorld.robot_pose). Instructions state the job; the rules below are the verifier's.
 
 Shared rules.
 - Score = 1 on success, else 0.9 x progress (goal's contract), so every failure stays below every success.
@@ -25,7 +26,7 @@ Shared rules.
   the distance still to go and d0 its start value, progress = clip(1 - d / (d0 - 1 m)). A ball within a metre of
   where it lay has not been played away.
 
-Per-task rules (thresholds from variants.layout):
+Per-task rules (code in tasks/<task>/verifier.py, thresholds from tasks/<task>/setup.py via variants.layout):
 - clearance: success when the whole ball passes the penalty-area line's outer edge upfield (centre x < -16.5 - r,
   interpolated, the first crossing final) with a leg as the last touch; the ball need not stop. d = how far the
   centre still is from x = -16.5 - r. A whole-ball crossing of the goal line inside the frame is an own goal
@@ -63,8 +64,9 @@ Per-task rules (thresholds from variants.layout):
 
 import math
 
-from football.football_math import is_finite, lerp, norm
+from football.football_math import is_finite, lerp
 from .task import FAIL_SCORE_SCALE, TOUCH_PRECEDENCE, PitchAwareGoalDetector, link_group
+from .variants import task_verifier
 
 CONTRACT = "football-drills-v1"
 PLAYED_AWAY_M = 1.0
@@ -245,298 +247,12 @@ class Hold:
         return time_s - getattr(self, key) >= self.params["hold_s"] - 1e-9
 
 
-class Clearance(Drill):
-    task = "clearance"
-
-    def _reset_drill(self):
-        self.line_x_m = None
-        self.start_distance_m = None
-        self.line_crossing = None
-
-    def begin(self, position):
-        self.line_x_m = self.params["line_outer_x_m"] - self.ball.radius_m
-        self.start_distance_m = position[0] - self.line_x_m
-
-    def distance(self, x):
-        return max(x - self.line_x_m, 0.0)
-
-    def live(self, time_s, position, velocity):
-        self.distance_m = self.distance(position[0])
-        self.progress = self._capped(self.approach(self.distance_m, self.start_distance_m))
-
-    def advance(self, p0, v0, t0, p1, v1, t1):
-        if p0[0] > self.line_x_m >= p1[0]:
-            t, centre, velocity = between(p0, v0, t0, p1, v1, t1, (p0[0] - self.line_x_m) / (p0[0] - p1[0]))
-            self.line_crossing = {"time_s": t, "center_world_m": centre, "velocity_world_m_s": velocity}
-            if self.kicked():
-                self.finish(t, "cleared", success=True)
-            else:
-                self.live(t, centre, velocity)
-                self.finish(t, "not_kicked")
-            return
-        super().advance(p0, v0, t0, p1, v1, t1)
-
-    def goal_line(self, time_s, centre, velocity, entry):
-        if entry["inside"]:
-            self.progress = 0.0
-            self.finish(time_s, "own_goal")
-        else:
-            self.finish(time_s, "out_over_goal_line")
-
-    def details(self):
-        return {"line_center_x_m": self.line_x_m, "credited_distance_to_line_m": self.distance_m,
-                "start_distance_to_line_m": self.start_distance_m, "line_crossing": self.line_crossing}
-
-
-class PassGate(Drill):
-    task = "pass-gate"
-
-    def _reset_drill(self):
-        self.start_distance_m = None
-        self.gate_crossing = None
-
-    def side(self, p):
-        (cx, cy), (nx, ny) = self.params["centre_m"], self.params["normal"]
-        return (p[0] - cx) * nx + (p[1] - cy) * ny
-
-    def along(self, p):
-        (cx, cy), (tx, ty) = self.params["centre_m"], self.params["tangent"]
-        return (p[0] - cx) * tx + (p[1] - cy) * ty
-
-    def miss(self, p):
-        return math.hypot(max(abs(self.along(p)) - self.params["half_width_m"], 0.0),
-                          max(p[2] - self.params["max_height_m"], 0.0))
-
-    def window_distance(self, position):
-        return math.hypot(max(-self.side(position), 0.0), self.miss(position))
-
-    def begin(self, position):
-        self.start_distance_m = self.window_distance(position)
-
-    def live(self, time_s, position, velocity):
-        self.distance_m = self.window_distance(position)
-        self.progress = self._capped(self.approach(self.distance_m, self.start_distance_m))
-
-    def advance(self, p0, v0, t0, p1, v1, t1):
-        s0, s1 = self.side(p0), self.side(p1)
-        if s0 < 0.0 <= s1:
-            t, centre, velocity = between(p0, v0, t0, p1, v1, t1, s0 / (s0 - s1))
-            miss = self.miss(centre)
-            self.gate_crossing = {"time_s": t, "center_world_m": centre, "velocity_world_m_s": velocity,
-                                  "along_gate_m": self.along(centre), "miss_m": miss}
-            if miss == 0.0 and self.kicked():
-                self.finish(t, "through_gate", success=True)
-                return
-            self.distance_m = miss
-            self.progress = self._capped(self.approach(miss, self.start_distance_m))
-            wide = abs(self.along(centre)) > self.params["half_width_m"]
-            self.finish(t, "wide_of_gate" if wide else "over_gate" if miss > 0.0 else "not_kicked")
-            return
-        super().advance(p0, v0, t0, p1, v1, t1)
-
-    def details(self):
-        return {"credited_distance_to_gate_m": self.distance_m, "start_distance_to_gate_m": self.start_distance_m,
-                "gate_crossing": self.gate_crossing}
-
-
-class Trap(Hold, Drill):
-    task = "trap"
-    touch_rule = "receive"
-    uses_robot_pose = True
-
-    def _reset_drill(self):
-        self.received = False
-        self.hold_since_s = None
-        self.start_feet_distance_m = None
-        self.factors = None
-
-    def on_legal_touch(self):
-        self.received = True
-
-    def feet_distance(self, position):
-        if self.robot is None:
-            return None
-        feet = self.robot["feet_midpoint_m"]
-        return math.hypot(position[0] - feet[0], position[1] - feet[1])
-
-    def begin(self, position):
-        self.start_feet_distance_m = self.feet_distance(position)
-
-    def live(self, time_s, position, velocity):
-        d = self.feet_distance(position)
-        if d is None or self.start_feet_distance_m is None:
-            self.progress, self.factors = 0.0, None
-            return
-        p = self.params
-        radius, speed = p["feet_radius_m"], norm(velocity)
-        pelvis_z, up_z = self.robot["pelvis_m"][2], self.robot["pelvis_up_z"]
-        span = self.start_feet_distance_m - radius
-        self.factors = {
-            "T": 1.0 if self.received else 0.0,
-            "C": clip01(1.0 - (d - radius) / span) if span > 0.0 else float(d <= radius),
-            "S": clip01(1.0 - speed / p["speed_scale_m_s"]),
-            "U": clip01((pelvis_z - p["pelvis_zero_z_m"]) / (p["pelvis_min_z_m"] - p["pelvis_zero_z_m"])),
-            "feet_distance_m": d,
-            "speed_m_s": speed,
-            "pelvis_z_m": pelvis_z,
-            "pelvis_up_z": up_z,
-        }
-        f = self.factors
-        self.progress = f["T"] * f["C"] * f["S"] * f["U"]
-        upright = pelvis_z >= p["pelvis_min_z_m"] and up_z >= math.cos(math.radians(p["max_tilt_deg"]))
-        if self.held(time_s, self.received and speed < p["rest_speed_m_s"] and d <= radius and upright):
-            self.finish(time_s, "controlled", success=True)
-
-    def details(self):
-        return {"received": self.received, "factors": self.factors, "hold_since_s": self.hold_since_s,
-                "start_feet_distance_m": self.start_feet_distance_m}
-
-
-class PassSquare(Hold, Drill):
-    task = "pass-square"
-
-    def _reset_drill(self):
-        self.start_distance_m = None
-        self.hold_since_s = None
-        self.factors = None
-
-    def square_distance(self, p):
-        (cx, cy), h = self.params["centre_m"], self.params["half_side_m"]
-        return math.hypot(max(abs(p[0] - cx) - h, 0.0), max(abs(p[1] - cy) - h, 0.0))
-
-    def begin(self, position):
-        self.start_distance_m = self.square_distance(position)
-
-    def live(self, time_s, position, velocity):
-        e, speed = self.square_distance(position), norm(velocity)
-        self.factors = {"C": self.approach(e, self.start_distance_m),
-                        "S": clip01(1.0 - speed / self.params["speed_scale_m_s"]),
-                        "distance_to_square_m": e, "speed_m_s": speed}
-        self.progress = self._capped(self.factors["C"] * self.factors["S"])
-        if self.held(time_s, e == 0.0 and speed < self.params["rest_speed_m_s"] and self.kicked()):
-            self.finish(time_s, "stopped_in_square", success=True)
-
-    def details(self):
-        return {"factors": self.factors, "hold_since_s": self.hold_since_s,
-                "start_distance_to_square_m": self.start_distance_m}
-
-
-class CornerTarget(Drill):
-    task = "corner-target"
-
-    def _reset_drill(self):
-        self.start_distance_m = None
-        self.sheet_entry = None
-
-    @property
-    def opening_y_m(self):
-        r = self.ball.radius_m
-        return self.params["opening_inner_y_m"] + r, self.params["opening_outer_y_m"] - r
-
-    @property
-    def opening_z_m(self):
-        return self.params["opening_top_m"] - self.ball.radius_m
-
-    def opening_miss(self, y, z):
-        low, high = self.opening_y_m
-        return math.hypot(max(low - abs(y), 0.0, abs(y) - high), max(z - self.opening_z_m, 0.0))
-
-    def window_distance(self, position):
-        x, y, z = position
-        return math.hypot(max(self.whole_ball_x_m - x, 0.0), self.opening_miss(y, z))
-
-    def begin(self, position):
-        self.start_distance_m = self.window_distance(position)
-
-    def live(self, time_s, position, velocity):
-        self.distance_m = self.window_distance(position)
-        self.progress = self._capped(self.approach(self.distance_m, self.start_distance_m, played_away=0.0))
-
-    def planes(self, p0, v0, t0, p1, v1, t1, at_x):
-        sheet = self.params["sheet_x_m"]
-        if p0[0] <= sheet < p1[0]:
-            t, centre, _ = at_x(sheet)
-            allowance, r = self.params["contact_allowance_m"], self.ball.radius_m
-            through = (abs(centre[1]) >= self.params["opening_inner_y_m"] + r - allowance
-                       and centre[2] <= self.params["opening_top_m"] - r + allowance)
-            self.sheet_entry = {"time_s": float(t), "center_world_m": tuple(map(float, centre)),
-                                "through_opening": bool(through)}
-        elif p1[0] <= sheet < p0[0]:
-            self.sheet_entry = None
-
-    def goal_line(self, time_s, centre, velocity, entry):
-        through = self.sheet_entry is not None and self.sheet_entry["through_opening"]
-        # a miss is measured where the ball passed the frame, or the sheet if the frame let it through
-        reference = self.sheet_entry if entry["inside"] and self.sheet_entry else entry
-        _, y, z = reference["center_world_m"]
-        miss = 0.0 if entry["inside"] and through else self.opening_miss(y, z)
-        self.distance_m = miss
-        self.progress = self._capped(self.approach(miss, self.start_distance_m, played_away=0.0))
-        if not entry["inside"]:
-            self.finish(time_s, "wide_or_over")
-        elif not through:
-            self.finish(time_s, "not_through_opening")
-        elif self.kicked():
-            self.finish(time_s, "goal_through_opening", success=True)
-        else:
-            self.finish(time_s, "not_kicked")
-
-    def details(self):
-        return {"credited_distance_to_opening_m": self.distance_m,
-                "start_distance_to_opening_m": self.start_distance_m,
-                "frame_entry": self.frame_entry, "sheet_entry": self.sheet_entry}
-
-
-class Save(Hold, Drill):
-    task = "save"
-    touch_rule = "keeper"
-
-    def _reset_drill(self):
-        self.rest_since_s = None
-        self.goal_speed_m_s = None
-
-    def incoming_speed(self):
-        return max(norm(self.first_touch["incoming_velocity_m_s"]), self.params["rest_speed_m_s"])
-
-    def live(self, time_s, position, velocity):
-        if self.first_touch is None:
-            self.progress = 0.0
-        else:
-            self.progress = 0.5 * clip01(1.0 - max(velocity[0], 0.0) / self.incoming_speed())
-
-    def advance(self, p0, v0, t0, p1, v1, t1):
-        self.live(t1, p1, v1)
-        p = self.params
-        if self.held(t1, norm(v1) < p["rest_speed_m_s"], key="rest_since_s"):
-            self.finish(t1, "saved_ball_at_rest", success=True)
-        elif p1[0] < p["area_line_x_m"] and v1[0] < 0.0:
-            self.finish(t1, "saved_cleared_upfield", success=True)
-        elif self.left_sector(p1):
-            self.finish(t1, "saved_out_of_play", success=True)
-        elif t1 >= p["deadline_s"] - 1e-9:
-            self.finish(t1, "saved_until_deadline", success=True)
-
-    def goal_line(self, time_s, centre, velocity, entry):
-        if not entry["inside"]:
-            self.finish(time_s, "saved_out_over_goal_line", success=True)
-            return
-        self.goal_speed_m_s = norm(velocity)
-        self.progress = 0.0 if self.first_touch is None else 0.5 * clip01(
-            1.0 - self.goal_speed_m_s / self.incoming_speed())
-        self.finish(time_s, "goal_conceded")
-
-    def details(self):
-        return {"incoming_speed_m_s": None if self.first_touch is None else self.incoming_speed(),
-                "goal_speed_m_s": self.goal_speed_m_s, "rest_since_s": self.rest_since_s,
-                "frame_entry": self.frame_entry}
-
-
-DRILLS = {cls.task: cls for cls in (Clearance, PassGate, Trap, PassSquare, CornerTarget, Save)}
-
-
 def make_verifier(config, layout):
-    """goal and free-kick: goal's detector exactly as before; the other drills: their verifier above."""
-    if config.task in ("goal", "free-kick"):
-        return PitchAwareGoalDetector(require_kick=config.robot)
-    cls = DRILLS[config.task]
+    """The task's verifier: verify(config, layout) of its folder (tasks/<task>/verifier.py); goal and free-kick get
+    goal's detector exactly as before, the other drills their Drill subclass (drill_verifier)."""
+    return task_verifier(config.task).verify(config, layout)
+
+
+def drill_verifier(cls, config, layout):
+    """A drill's verifier with its layout's parameters; the kick rule holds for rule "kick" drills with a robot."""
     return cls(layout["verifier"], require_kick=bool(config.robot) and cls.touch_rule == "kick")

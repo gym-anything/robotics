@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/towel/spread_flat",
+  "name": "spread_flat",
+  "env_id": "laundry",
+  "split": "train",
+  "selection": {
+    "garment": "towel",
+    "task": "spread_flat",
+    "contract": "laundry-tasks-v1"
+  },
+  "description": "The bath towel lies folded in half on the table. Unfold it and lay it out flat. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

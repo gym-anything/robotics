@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "label-application/v1/parcel/smooth-corner/seed-0",
+  "name": "smooth-corner",
+  "env_id": "label-application",
+  "split": "train",
+  "selection": {
+    "preset": "parcel",
+    "task": "smooth-corner",
+    "seed": 0
+  },
+  "description": "You are at a shipping pack bench, beside a sealed carton with its shipping label on top. Smooth down the lifted corner of this shipping label.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -10,7 +10,7 @@ import numpy as np
 from . import params as P
 from .events import STRIKE_N, STRIKE_NS          # 2,000 N, 50 N s: the strike force and impulse (the latches use them too)
 from .mathx import quat_to_R
-from .task import TIME_LIMIT_S
+from .task import TIME_LIMIT_S, task_verifier
 
 IMPACT_SPEED = 0.10
 STRIKE_CLASSES = {"rack", "column", "wall", "conveyor", "conveyor_guide", "conveyor_rollers", "machine", "structure",
@@ -72,9 +72,6 @@ TRUCK_HALF = dict(x=(-2.14, 1.62), y=0.66)         # truck footprint in its own 
 WALL_GAP_MAX = 0.125
 
 
-FORK_HALF_W = 0.051                 # half the blade width (asset blades 102 mm, measured)
-
-
 def C(name, value, ok, unit, threshold, source):
     v = value
     if isinstance(v, (np.floating, np.integer)):
@@ -121,15 +118,6 @@ def blades(world):
         out.append(dict(tip=tip, heel=heel, y=yc))
     axis = R[:, 0]
     return out, axis
-
-
-def front_axle_line(world):
-    t = world.tyres.telemetry
-    xs = [np.asarray(t[n]["contact"]) for n in ("wheel_fl", "wheel_fr") if t[n]["contact"] is not None]
-    if xs:
-        return np.mean(xs, axis=0)
-    p, R = world.body_pose("chassis")
-    return p
 
 
 def footprint(x, y, yaw):
@@ -265,8 +253,11 @@ def parked(world, rest_needed=2.0):
 
 # ------------------------------------------------------------------------------------------------ tasks
 def evaluate(world, start):
+    """The episode's evaluation: a benchmark task's criteria are its verifier.py's verify(world, start) (tasks/<task>/),
+    every other task's its function below."""
     t = start["task"]
-    fn = globals()["_" + t.replace("-", "_")]
+    folder = task_verifier(t)
+    fn = folder.verify if folder is not None else globals()["_" + t.replace("-", "_")]
     crit, details = fn(world, start)
     passed = sum(c["passed"] for c in crit)
     # a faulted world (non-finite or unphysical state) ends the episode without success, whatever the criteria read
@@ -285,134 +276,6 @@ def _forks_low(world, limit):
     bl, _ = blades(world)
     h = max(b["tip"][2] for b in bl) - world.scene.ground_height(*bl[0]["tip"][:2])
     return h, h <= limit
-
-
-def _start_and_park(world, start):
-    crit, det = shared(world, start)
-    bay = world.scene.zones["parking"]
-    p, R = world.body_pose("chassis")
-    fp = footprint(float(p[0]), float(p[1]), yaw_of(R))
-    worst = max(max(bay["x"][0] - x, x - bay["x"][1], bay["y"][0] - y, y - bay["y"][1]) for x, y in fp)
-    crit.append(C("in_parking_bay", dict(outside_by_m=worst, footprint=[[round(x, 3), round(y, 3)] for x, y in fp]),
-                  worst <= 0.0, "m", "the truck's footprint (counterweight to fork tips) inside the parking bay's lines",
-                  "authored"))
-    sig = world.signals
-    rest = world.events.rest_s
-    crit.append(C("stationary_2s", rest, rest >= 2.0, "s", ">= 2 s at rest", "authored"))
-    crit.append(C("parking_brake_set", sig.get("park", 0.0), sig.get("park", 0.0) > 0.5, "-", "applied",
-                  "OSHA 1910.178(m)(5)(i): brakes set (read)"))
-    crit.append(C("direction_neutral", sig.get("direction"), sig.get("direction") == 0, "-", "neutral",
-                  "OSHA 1910.178(m)(5)(i): controls neutral (read)"))
-    crit.append(C("engine_off", world.drivetrain.running, not world.drivetrain.running, "-", "off",
-                  "OSHA 1910.178(m)(5)(i): power shut off (read)"))
-    crit.append(C("key_off", sig.get("key"), sig.get("key") == "off", "-", "key in the OFF position",
-                  "Adaptalift 'How to park a forklift safely': turn the key or keyless switch to the off position (read)"))
-    h, ok = _forks_low(world, 0.020)
-    crit.append(C("forks_lowered", h, ok, "m", "fork tips <= 20 mm above the floor",
-                  "OSHA 1910.178(m)(5)(i): load engaging means fully lowered (read)"))
-    bl, axis = blades(world)
-    pitch = math.degrees(math.asin(max(-1.0, min(1.0, float(axis[2])))))
-    tips = [float(b["tip"][2] - world.scene.ground_height(*b["tip"][:2])) for b in bl]
-    # at the carriage's lower stop the blades lie almost flat: tilting the mast forward puts the tips on the floor and
-    # stalls there (blade pitch -0.07 deg with the tips touching, seed-0 demo); tilted back, the tips stand off it
-    crit.append(C("forks_tilted_to_floor", dict(blade_pitch_deg=pitch, tip_heights_m=tips),
-                  pitch <= 0.0 and max(tips) <= 0.005, "-", "both fork tips <= 5 mm above the floor (resting on it), the "
-                  "blades sloping down to them (pitch <= 0)",
-                  "Adaptalift: tilt the mast forward so the tyne tips are touching the ground; Dalhousie safe work "
-                  "instructions (2018): forks lowered to the floor surface and tilted slightly forward (both read)"))
-    return crit, det
-
-
-# the straight sections judged for the cruise speed, in the order driven: between the start and the first
-# intersection's slow-down, between the intersections, and between the second intersection and the stop (the autopilot
-# slows from 1.7 m before an intersection's entry edge and brakes to the far line at 0.6 m/s^2). Westward the start is
-# 9 m from the first intersection (16.5 m eastward), so its first section is the 3 m in which a truck accelerating at
-# 0.5 m/s^2 from the start is at speed
-CRUISE_SECTIONS = {"east": ((6.0, 18.5), (25.0, 32.5), (39.0, 45.5)),
-                   "west": ((40.0, 43.0), (26.0, 33.5), (10.0, 19.0))}
-CRUISE_END = {"east": "W1_end", "west": "west_end"}       # facility.warehouse stop_lines
-
-
-def _aisle_cruise(world, start):
-    crit, det = shared(world, start)
-    ev = world.events
-    traj = np.array(ev.traj) if ev.traj else np.zeros((0, 5))
-    way = start.get("cruise", "east")
-    sections = CRUISE_SECTIONS[way]
-    for k, (a, b) in enumerate(sections):
-        m = (traj[:, 1] >= a) & (traj[:, 1] <= b) if len(traj) else np.zeros(0, bool)
-        if m.sum() < 2:
-            crit.append(C(f"cruise_section_{k + 1}", 0.0, False, "fraction", ">= 0.80 of the section at 6.5-8.0 km/h",
-                          "authored"))
-            continue
-        x = traj[m, 1]; v = np.abs(traj[m, 4]) * 3.6
-        dx = np.abs(np.diff(x, prepend=x[0]))
-        inband = ((v >= 6.5) & (v <= 8.0)) * dx
-        frac = float(inband.sum() / max(dx.sum(), 1e-6))
-        crit.append(C(f"cruise_section_{k + 1}", frac, frac >= 0.8, "fraction", ">= 0.80 at 6.5-8.0 km/h", "authored"))
-    for zn in ("I1", "I2"):
-        cr = [c for c in ev.crossings if c["zone"] == zn]
-        if not cr:
-            crit.append(C(f"intersection_{zn}", None, False, "-", "crossed at <= 5 km/h, horn within 3 s before",
-                          "OSHA 1910.178(n)(4): slow down and sound the horn (read); numbers authored"))
-            continue
-        c0 = cr[0]
-        ok = c0["speed"] * 3.6 <= 5.0 and c0["since_horn"] is not None and c0["since_horn"] <= 3.0
-        crit.append(C(f"intersection_{zn}", dict(speed_kmh=c0["speed"] * 3.6, since_horn_s=c0["since_horn"]), ok, "-",
-                      "<= 5 km/h, horn within 3 s before",
-                      "OSHA 1910.178(n)(4): slow down and sound the horn (read); numbers authored"))
-    ycl = sum(world.scene.zones["main_aisle"]["y"]) / 2
-    if len(traj):
-        inside = traj[(traj[:, 1] > 4.0) & (traj[:, 1] < 46.0)]
-        dev = float(np.max(np.abs(inside[:, 2] - ycl))) if len(inside) else 99.0
-    else:
-        dev = 99.0
-    crit.append(C("aisle_centreline", dev, dev <= 0.6, "m", "truck centre within 0.6 m of the aisle centreline", "authored"))
-    fa = front_axle_line(world)
-    err = float(fa[0] - world.scene.zones["stop_lines"][CRUISE_END[way]]["x"])
-    crit.append(C("at_far_line", err, abs(err) <= 0.2 and ev.rest_s >= 1.0, "m", "stopped, front wheels within +-0.2 m "
-                  f"of the {way} end's white line", "authored"))
-    return crit, det
-
-
-def _drive_to_pallet(world, start):
-    crit, det = shared(world, start)
-    ev = world.events
-    crit.append(C("stationary_2s", ev.rest_s, ev.rest_s >= 2.0, "s", ">= 2 s at rest", "authored"))
-    corners, o, R = pallet_corners(world, "target")
-    g = P.GMA_PALLET
-    bl, axis = blades(world)
-    # pallet face toward the truck: the pallet end nearest the fork tips
-    px = R[:, 0]
-    ends = [o + px * g["L"] / 2, o - px * g["L"] / 2]
-    tipc = (bl[0]["tip"] + bl[1]["tip"]) / 2
-    face = min(ends, key=lambda e: np.linalg.norm(e[:2] - tipc[:2]))
-    dist = float(np.linalg.norm(face[:2] - tipc[:2]))
-    crit.append(C("tips_short_of_pallet", dist, 0.20 <= dist <= 0.30, "m", "0.20-0.30 m short of the stringer ends",
-                  "OSHA eTool: stop 8-12 in short (read)"))
-    pitch = math.degrees(math.asin(max(-1.0, min(1.0, axis[2]))))
-    crit.append(C("blades_level", pitch, abs(pitch) <= 1.0, "deg", "within +-1 deg", "derived (17 mm over the blade)"))
-    zb = [b["tip"][2] - world.scene.ground_height(*b["tip"][:2]) for b in bl]
-    crit.append(C("blade_height", zb, all(0.020 <= z <= 0.060 for z in zb), "m", "blade bottoms 20-60 mm above the floor",
-                  "derived from the GMA opening (89 mm on a 16 mm deck)"))
-    from .loads import fork_openings
-    # each blade inside its opening clear of the stringers (the asset's forks are fixed at +-293 mm, the GMA openings are
-    # centred at +-245 mm and 451 mm wide, so a centred truck has each blade 48 mm outboard of its opening centre), and
-    # the forks centred on the pallet (the load centred on the carriage)
-    clear, lat = [], []
-    for b in bl:
-        rel = R.T @ (b["tip"] - o)
-        lat.append(rel[1])
-        clear.append(max(max(ow / 2 - abs(rel[1] - oc) for oc, ow, *_ in fork_openings()) - FORK_HALF_W, -1.0))
-    crit.append(C("forks_in_openings", clear, all(v >= 0.040 for v in clear), "m",
-                  ">= 40 mm from each blade to the stringers", "authored (blade 102 mm, opening 451 mm)"))
-    centre = float(np.mean(lat))
-    crit.append(C("centred_on_pallet", centre, abs(centre) <= 0.050, "m", "fork centre within +-50 mm of the pallet centre",
-                  "authored"))
-    yaw_err = abs(math.degrees(ang_diff(math.atan2(axis[1], axis[0]), math.atan2(px[1], px[0]))))
-    yaw_err = min(yaw_err, 180.0 - yaw_err)
-    crit.append(C("square_to_pallet", yaw_err, yaw_err <= 3.0, "deg", "fork axis within 3 deg of the pallet axis", "authored"))
-    return crit, det
 
 
 def _set_down_in_bay(world, start, extra_cartons=False):
@@ -457,76 +320,8 @@ def _set_down_in_bay(world, start, extra_cartons=False):
     return crit, {}
 
 
-def _carry_to_floor_bay(world, start):
-    return _set_down_in_bay(world, start)
-
-
 def _carry_loose_stack(world, start):
     return _set_down_in_bay(world, start, extra_cartons=True)
-
-
-def _put_away_rack(world, start):
-    crit, det = shared(world, start)
-    loc = world.scene.zones["rack_locations"][start["rack_location"]]
-    corners, o, R = pallet_corners(world, "carried")
-    from .facility import BEAM_W
-    beam_x = (loc["beams"][0] + BEAM_W / 2, loc["beams"][1] - BEAM_W / 2)     # the location's front and rear beams
-    m, d = world.solver.mj_model, world.solver.mj_data
-    pal_geoms = {g for g in range(m.ngeom) if world.mj_geom_label(g).startswith("carried:")}
-    beams, other_beams = set(), set()
-    for i in range(d.ncon):
-        c = d.contact[i]
-        for ga, gb in ((c.geom1, c.geom2), (c.geom2, c.geom1)):
-            if ga in pal_geoms:
-                lab = world.mj_geom_label(gb)
-                if "_beam" in lab:
-                    parts = lab.split(":")[0].split("_")          # <row><frame>_beam<bay-1>_<level>_<x>
-                    try:
-                        bay, lv, bx = int(parts[1][4:]) + 1, int(parts[2]), float(parts[-1])
-                    except (IndexError, ValueError):
-                        continue
-                    mine = bay == loc["bay"] and lv == loc["level"] and min(abs(bx - x) for x in beam_x) < 0.01
-                    (beams if mine else other_beams).add(parts[-1])
-    crit.append(C("on_both_beams", dict(target_location=sorted(beams), elsewhere=sorted(other_beams)),
-                  len(beams) >= 2 and not other_beams, "-",
-                  f"contact on the front and the rear beam of bay {loc['bay']} at beam level {loc['level']} "
-                  f"({loc['z']:.2f} m), on no other beam", "authored"))
-    fz = [float(cz) for cz in corners[:, 2]]
-    crit.append(C("at_beam_level", fz, all(abs(z - loc["z"]) <= 0.03 for z in fz), "m",
-                  f"pallet bottom corners within 30 mm of the beam tops at {loc['z']:.2f} m", "authored"))
-    from .facility import RACK_BEAM, BAY_PITCH
-    xs = corners[:, 0]
-    overhang = float(loc["aisle_x"] - xs.min()) if loc["face"] == "w" else float(xs.max() - loc["aisle_x"])
-    crit.append(C("front_overhang", overhang, 0.051 <= overhang <= 0.101, "m", "51-101 mm past the front beam",
-                  "Steel King: 3 in nominal +-1 in (read)"))
-    slot = int(start["rack_location"].split("-")[-1])
-    yc = loc["y"] + (RACK_BEAM / 4 if slot == 0 else -RACK_BEAM / 4)
-    ys = corners[:, 1]
-    lo_face, hi_face = yc - RACK_BEAM / 2, yc + RACK_BEAM / 2
-    other = start["rack_location"][:-1] + str(1 - slot)
-    gaps = [float(ys.min() - lo_face) if slot == 0 else float(hi_face - ys.max())]
-    if other in world.scene.layout.zones["rack_locations"] and other not in world.scene.layout.reserved:
-        oy = world.scene.layout.zones["rack_locations"][other]["y"]
-        gaps.append(float((oy - P.GMA_PALLET["W"] / 2) - ys.max()) if slot == 0 else float(ys.min() - (oy + P.GMA_PALLET["W"] / 2)))
-    else:
-        gaps.append(float(hi_face - ys.max()) if slot == 0 else float(ys.min() - lo_face))
-    clear = min(gaps)
-    crit.append(C("side_clearance", clear, clear >= 0.05, "m", ">= 50 mm to the upright and the neighbouring pallet",
-                  "3-6 in between loads (read)"))
-    tilt = math.degrees(math.acos(max(-1.0, min(1.0, R[2, 2]))))
-    crit.append(C("level", tilt, tilt <= 2.0, "deg", "within 2 deg", "authored"))
-    # the stored loads that are bodies (at and beside the slot): where they were
-    moved = {n: float(np.linalg.norm(body_frame(world, info["body"])[0] - np.asarray(world.scene.load_start_pose[n])))
-             for n, info in world.scene.loads.items() if n != "carried" and not n.startswith("carried_")}
-    worst = max(moved.values()) if moved else 0.0
-    crit.append(C("stored_loads_undisturbed", dict(max_m=worst, moved={k: v for k, v in moved.items() if v > 0.005}),
-                  worst <= 0.030, "m", "every stored load within 30 mm of where it stood", "authored (as unload-trailer)"))
-    bl, _ = blades(world)
-    out_ = min(float(np.linalg.norm(b["tip"][:2] - o[:2])) for b in bl)
-    h, ok = _forks_low(world, 0.30)
-    crit.append(C("forks_withdrawn_lowered", dict(tip_to_pallet_m=out_, tip_height_m=h), out_ > 1.0 and ok, "-",
-                  "tips clear of the location and at travel height", "authored"))
-    return crit, det
 
 
 def _feed_conveyor(world, start):
@@ -571,9 +366,8 @@ SLOT_MARGIN = 0.30      # m: a load's floor contact counts as at its destination
 
 
 def _load_trailer(world, start):
-    tr0 = start["trailers"][start["target"]["door"]]
-    if start["task"] == "load-trailer" and not tr0.get("restraint") and not tr0.get("chocks"):
-        return _unsecured_trailer(world, start)
+    """A pallet loaded into a secured trailer: load-trailer-chocked, and load-trailer (its verifier.py judges an
+    unsecured trailer itself)."""
     door = start["target"]["door"]
     g = P.GMA_PALLET
 
@@ -620,261 +414,8 @@ def _load_trailer(world, start):
     return crit, det
 
 
-REACH_LOADED = 1.80     # m: a carried 48 in pallet's far edge ahead of the front axle (fork face 0.556 m + 1.219 m)
-
-
-def _unsecured_trailer(world, start):
-    """load-trailer with the trailer unsecured (restraint signal red): the job is not to board it. The truck and its
-    load never reach the leveler (the pit's inner edge), and the truck is left stopped short of it, in neutral, the
-    parking brake set, the load still on the forks."""
-    crit, det = shared(world, start)
-    d = world.scene.zones["doors"][start["target"]["door"]]
-    edge = d["face_y"] - P.LEVELER["length"]
-    traj = np.array(world.events.traj) if world.events.traj else np.zeros((0, 5))
-    reach = float(np.max(traj[:, 2] + REACH_LOADED * np.sin(traj[:, 3]))) if len(traj) else -99.0
-    crit.append(C("stayed_off_the_leveler", reach - edge, reach < edge, "m",
-                  "the truck's loaded front never past the leveler's inner edge (OSHA 1910.178(m)(7): trucks boarded "
-                  "only with brakes set and wheel chocks in place, read)", "read; reach derived"))
-    # the job is done at the door: the load brought up to it, waiting for the signal, not left where the truck started.
-    # The waiting place is between the staging lane's painted end and the leveler.
-    lane = world.scene.zones["staging"]["lane" + start["target"]["door"][4:]]
-    if len(traj):
-        t_, x_, y_, yaw_, v_ = traj[-1]
-        front = float(y_ + REACH_LOADED * math.sin(yaw_))
-    else:
-        front = -99.0
-    crit.append(C("waiting_at_the_door", front - lane["y"][1], front >= lane["y"][1], "m",
-                  "where the truck stopped, its loaded front past the end of the staging lane's lines (the load brought "
-                  "up to the door to wait for the green signal)", "authored (the work order)"))
-    sig = world.signals
-    rest = world.events.rest_s
-    ok = rest >= 2.0 and sig.get("park", 0.0) > 0.5 and sig.get("direction") == 0
-    crit.append(C("stopped_short", dict(rest_s=rest, park=sig.get("park"), direction=sig.get("direction")), ok, "-",
-                  ">= 2 s at rest, parking brake set, direction neutral", "authored"))
-    corners, o, R = pallet_corners(world, "carried")
-    bl, _ = blades(world)
-    on_forks = min(float(np.linalg.norm(b["tip"][:2] - o[:2])) for b in bl) < P.GMA_PALLET["L"]
-    crit.append(C("load_on_forks", on_forks, on_forks, "-", "the pallet still on the forks", "authored"))
-    return crit, det
-
-
 def _load_trailer_chocked(world, start):
     return _load_trailer(world, start)
-
-
-def box_corners(world, name):
-    """The 8 corners (world) of a box load from its pose and its built size."""
-    info = world.scene.loads[name]
-    o, R = body_frame(world, info["body"])
-    lx, ly, lz = info["size"]
-    return np.array([o + R @ np.array([sx * lx / 2, sy * ly / 2, sz * lz / 2])
-                     for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)]), o, R
-
-
-# load-bales: the placement is judged from the bales' and the dunnage strips' current poses, on oriented plan
-# footprints.
-BALE_NOSE_GAP = (-0.005, 0.075)    # m: front face to the nose wall; 5 mm into its plane allowed (a resting contact sits a
-#                                    fraction of a millimetre inside it)
-BALE_UPRIGHT_DEG = 5.0             # its 48 in axis within 5 deg of the trailer's vertical
-BALE_REST_TOL = 0.03               # m: its bottom to the top of the strips it rests on
-BALE_OVERLAP_TOL = 0.005           # m: penetration allowed between the two bales' footprints (contact)
-
-
-def _hull(pts):
-    """Convex hull of plan points, counter-clockwise (monotone chain); fewer than 3 distinct points are returned as they are."""
-    pts = sorted(set(map(tuple, np.round(np.asarray(pts, float).reshape(-1, 2), 9))))
-    if len(pts) < 3:
-        return np.array(pts, float).reshape(-1, 2)
-
-    def half(seq):
-        h = []
-        for p in seq:
-            while len(h) >= 2 and (h[-1][0] - h[-2][0]) * (p[1] - h[-2][1]) - (h[-1][1] - h[-2][1]) * (p[0] - h[-2][0]) <= 0:
-                h.pop()
-            h.append(p)
-        return h[:-1]
-    return np.array(half(pts) + half(pts[::-1]), float)
-
-
-def _clip(poly, by):
-    """The part of convex polygon poly inside convex counter-clockwise polygon by (Sutherland-Hodgman)."""
-    out = list(np.asarray(poly, float))
-    for i in range(len(by)):
-        a, b = by[i], by[(i + 1) % len(by)]
-        side = lambda p: (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
-        inp, out = out, []
-        for j, p in enumerate(inp):
-            q = inp[(j + 1) % len(inp)]
-            sp, sq = side(p), side(q)
-            if sp >= 0:
-                out.append(p)
-            if sp * sq < 0:
-                out.append(p + (q - p) * sp / (sp - sq))
-        if not out:
-            break
-    return np.array(out, float).reshape(-1, 2)
-
-
-def _in_convex(p, poly):
-    return len(poly) >= 3 and all((poly[(i + 1) % len(poly)][0] - poly[i][0]) * (p[1] - poly[i][1]) -
-                                  (poly[(i + 1) % len(poly)][1] - poly[i][1]) * (p[0] - poly[i][0]) >= -1e-9
-                                  for i in range(len(poly)))
-
-
-def _plan_gap(A, B):
-    """Signed plan distance between convex polygons A and B: their clearance (> 0) or minus their penetration depth."""
-    sep = []
-    for Q in (A, B):
-        for i in range(len(Q)):
-            e = Q[(i + 1) % len(Q)] - Q[i]
-            n = np.array([-e[1], e[0]]) / np.linalg.norm(e)
-            sep.append(max((B @ n).min() - (A @ n).max(), (A @ n).min() - (B @ n).max()))
-    if max(sep) <= 0:
-        return float(max(sep))
-
-    def seg(p, a, b):
-        t = max(0.0, min(1.0, float((p - a) @ (b - a) / ((b - a) @ (b - a)))))
-        return float(np.linalg.norm(p - a - t * (b - a)))
-    return min(seg(p, Q[i], Q[(i + 1) % len(Q)]) for S, Q in ((A, B), (B, A)) for p in S for i in range(len(Q)))
-
-
-def _dunnage_tops(world, door):
-    """Every dunnage strip's top face in the target trailer's frame (the nose strips and the row's: a strip carried in
-    is a strip): name, height and plan rectangle."""
-    tr, to, TR = _trailer_frame(world, door)
-    out = []
-    for n in sorted(world.scene.loads):
-        if "dunnage" in n:
-            loc = (box_corners(world, n)[0] - to) @ TR
-            top = loc[np.argsort(loc[:, 2])[4:]]
-            out.append(dict(name=n, top=float(top[:, 2].mean()), rect=_hull(top[:, :2])))
-    return out
-
-
-BOX_SIGNS = np.array([(sx, sy, sz) for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)])     # box_corners' order
-
-
-def _floor_z(world, start, x, y):
-    """The dock floor's height under a world point: 0, or on a deployed leveler's deck, rising from its rear hinge to the
-    docked trailer's bed at the door face."""
-    Ld, Wd = P.LEVELER["length"], P.LEVELER["width"]
-    for dn, t in (start.get("trailers") or {}).items():
-        d = world.scene.zones["doors"][dn]
-        if abs(x - d["x"]) <= Wd / 2 and d["face_y"] - Ld <= y <= d["face_y"]:
-            return float(t["bed_z"]) * (y - (d["face_y"] - Ld)) / Ld
-    return 0.0
-
-
-def _bale_state(world, start, name, strips, floored):
-    """One bale against the work order, in the target trailer's frame (x from the rear sill, y left, z up). floored: the
-    bales with a latched floor contact."""
-    door = start["target"]["door"]
-    tr, to, TR = _trailer_frame(world, door)
-    corners, o, R = box_corners(world, name)
-    loc = (corners - to) @ TR
-    c = (o - to) @ TR
-    tilt = math.degrees(math.acos(min(1.0, abs(float(TR[:, 2] @ R[:, 2])))))      # either way up
-    low4 = loc[np.argsort(loc[:, 2])[:4]]
-    base = _hull(low4[:, :2])                                                      # the face it stands on
-    # the strips it bears on: under its bottom face, the face's plane within BALE_REST_TOL of the strip's top at the
-    # closest point of their overlap (read at its lowest corner, a bale tilted past ~6 deg on the strips' edges hangs
-    # more than 30 mm below their tops and reads as not resting on them)
-    nb = TR.T @ R[:, 2]
-    nb = nb if nb[2] > 0 else -nb
-    plane = lambda q: low4[0, 2] - (nb[0] * (q[:, 0] - low4[0, 0]) + nb[1] * (q[:, 1] - low4[0, 1])) / nb[2]
-    under = [(s["name"], s["top"], _clip(base, s["rect"])) for s in strips]
-    under = [(n, a) for n, top, a in under if len(a) >= 3 and abs(float(plane(a).min()) - top) < BALE_REST_TOL]
-    # resting on strips: its centre of mass over the support they give it (the hull of its contact patches on them)
-    on_strips = bool(under) and _in_convex(c[:2], _hull(np.vstack([a for _, a in under])))
-    nose_gap = float(tr["L"] - loc[:, 0].max())
-    # against the front wall: the vertical face turned toward the nose (either end or side of the bale), at both of its
-    # vertical edges, each read at its nearer corner. The nearest single corner would let a bale turned 25 deg, touching
-    # the wall at one corner, pass.
-    ax = TR.T @ R[:, :2]
-    k, s = max(((k, s) for k in (0, 1) for s in (-1, 1)), key=lambda ks: ks[1] * ax[0, ks[0]])
-    edges = [float(tr["L"] - loc[(BOX_SIGNS[:, k] == s) & (BOX_SIGNS[:, 1 - k] == e), 0].max()) for e in (-1, 1)]
-    inside = bool(np.all((loc[:, 0] > 0) & (loc[:, 0] < tr["L"] + 0.005) & (np.abs(loc[:, 1]) < tr["W"] / 2)))
-    at_wall = all(BALE_NOSE_GAP[0] <= g <= BALE_NOSE_GAP[1] for g in edges)
-    placed = inside and on_strips and tilt <= BALE_UPRIGHT_DEG and at_wall
-    # resting on a floor now: a latched floor contact and, not borne by strips, its lowest corner within the rest tolerance of the floor under it (a trailer's, in that trailer's frame, or the dock's)
-    low = corners[int(np.argmin(corners[:, 2]))]
-    on_floor = False
-    if name in floored and not on_strips:
-        for tn in world.scene.trailers:
-            t_, o_, R_ = _trailer_frame(world, tn)
-            cc = (o - o_) @ R_
-            if 0.0 < cc[0] < t_["L"] and abs(cc[1]) < t_["W"] / 2:
-                on_floor = float(((corners - o_) @ R_)[:, 2].min()) < BALE_REST_TOL
-                break
-        else:
-            on_floor = float(low[2]) - _floor_z(world, start, float(low[0]), float(low[1])) < BALE_REST_TOL
-    return dict(name=name, tilt=tilt, nose_gap=nose_gap, front_edge_gaps=edges, inside=inside, on_strips=on_strips,
-                strips=[n for n, _ in under], placed=bool(placed), on_floor=bool(on_floor),
-                in_trailer=bool(0.0 < c[0] < tr["L"] and abs(c[1]) < tr["W"] / 2),
-                centre_trailer=[float(c[0]), float(c[1])], xy=[float(o[0]), float(o[1])], plan=_hull(loc[:, :2]))
-
-
-def _nose_wall_rule(door):
-    """load-bales' rule for a bale's contact with the target trailer's nose wall, the wall the work order sets the bales
-    against. The shared rule reads the bale's total speed at first contact, so a bale lowered onto its strips while
-    touching the wall would read as an impact, and it counts a resting contact's accumulated impulse, which any contact
-    that stays passes. Here: not a strike if the bale approached the wall slower than
-    IMPACT_SPEED (onset_normal, its speed toward the wall) and never pressed on it harder than its own weight; otherwise a
-    strike only above STRIKE_N. The same for a dunnage strip there; a strip's weight bound is
-    STRIKE_N. Side walls, other structures and other tasks keep the shared rule."""
-    def rule(world, mover, cls, e):
-        parts = e.get("parts") or []
-        if (cls != "trailer_wall" or not mover.startswith(("load:bale_", "load:nose_dunnage_", "load:dunnage_"))
-                or len(parts) < 2 or str(parts[1]) != f"{door}:nose"):
-            return None
-        if onset_normal(e) < IMPACT_SPEED and e["peak_N"] <= lean_limit(world, episode_load(mover, e)):
-            return False
-        return e["peak_N"] > STRIKE_N
-    return rule
-
-
-def _truck_past_face(world, door):
-    """How far the truck's farthest point (footprint corners, counterweight to fork tips, and both blade tips) stands
-    past the door's face toward the trailer (m; < 0: the whole truck behind it, on the dock or its leveler deck)."""
-    p, R = world.body_pose("chassis")
-    ys = [y for _, y in footprint(float(p[0]), float(p[1]), yaw_of(R))] + [float(b["tip"][1]) for b in blades(world)[0]]
-    return float(max(ys) - world.scene.zones["doors"][door]["face_y"])
-
-
-def _load_bales(world, start):
-    door = start["target"]["door"]
-    crit, det = shared(world, start, dest_floor=lambda n, xy: not n.startswith("bale"), strike_rule=_nose_wall_rule(door))
-    ns = next(c for c in crit if c["name"] == "no_strike")
-    ns["threshold"] += (f"; load-bales: a bale's or a dunnage strip's contact with the trailer's nose wall counts only if it "
-                        f"approached the wall at >= {IMPACT_SPEED:.2f} m/s or pressed on it harder than its own weight or "
-                        f"{STRIKE_N:.0f} N, whichever is more, and then only above {STRIKE_N:.0f} N (not by the impulse a "
-                        f"resting contact accumulates)")
-    ns["source"] += "; load-bales nose-wall rule: authored"
-    strips = _dunnage_tops(world, door)
-    floored = {n for n, _, _ in det["dropped"]}
-    bales = [_bale_state(world, start, n, strips, floored) for n in sorted(n for n in world.scene.loads if n.startswith("bale_"))]
-    at_nose = [b for b in bales if b["placed"]]
-    loaded = [b["name"] for b in bales if b["in_trailer"]]
-    gaps = [_plan_gap(a["plan"], b["plan"]) for i, a in enumerate(at_nose) for b in at_nose[i + 1:]]
-    clear = max(gaps) if gaps else None
-    ok = clear is not None and clear >= -BALE_OVERLAP_TOL and len(loaded) == 2
-    crit.append(C("two_bales_at_nose", dict(at_nose=[b["name"] for b in at_nose], bales_in_trailer=loaded, clearance_m=clear),
-                  ok, "-", "exactly two bales in the trailer, each upright (<= 5 deg) and resting on dunnage strips (its "
-                  "bottom within 30 mm of their tops, its centre over the strips it bears on), its front face <= 75 mm "
-                  "from the front wall at both front edges (5 mm into it allowed); the two not overlapping (<= 5 mm, "
-                  "oriented footprints); any two bales, either side, at any spacing",
-                  "authored"))
-    past = _truck_past_face(world, door)
-    crit.append(C("truck_back_on_dock", past, past < 0.0, "m", "the whole truck, counterweight to fork tips, behind the "
-                  "door face (measured: its farthest point past the face)", "the work order ('back out onto the dock')"))
-    # the trailer held where it was spotted while the laden truck drove in and out twice, as in load-trailer
-    mv = world.events.trailer_max_move.get(door, 0.0)
-    crit.append(C("trailer_movement", mv, mv <= 0.025, "m", "<= 25 mm from its spotted position", "authored (as load-trailer)"))
-    reward = _load_bales_reward(world, start, crit, det, bales)
-    for b in bales:
-        b.pop("plan")
-        b["progress"] = reward["bales"][b["name"]]
-    return crit, dict(det, bales=bales, reward=reward)
 
 
 # load-bales reward. The criteria average would score doing nothing 0.909 (10 of 11 rules hold untouched), one bale placed or both placed with the truck still in the
@@ -909,50 +450,11 @@ def _load_bales(world, start):
 # speed's kinetic-energy ratio (v / 0.10 m/s)^2 when it approached at 0.10 m/s or more, else by its peak force over 2 kN
 # (a press), never by the impulse a resting contact accumulates (peak forces scatter widely at one speed and put every
 # collision in one narrow band). The time limit stays a success condition only. Every number
-# here is authored.
+# here is authored. The reward is computed in tasks/load-bales/verifier.py (_load_bales_reward); the workmanship of
+# forklift-tasks-v1 (task_progress.py) grades the other tasks with the same numbers and the two event functions below.
 BALE_REWARD = dict(contract="load-bales-reward-v1", fail_scale=0.9, exit_share=0.1, exit_gate_from=0.9,
                    carry_cap=0.8, short_decay_m=0.5, carry_tilt_deg=20.0, carry_deadband_m=0.02, strike_merge_s=0.25,
                    floor_merge_s=0.3, strand_factor=0.8, brush_factor=0.9, brush_decay_s=1.0, speed_floor=0.3)
-BALE_WORKMANSHIP = {
-    "no_strike": "per contact event 1 / (1 + 0.5 log10 s) of its worst episode, s = (approach speed / 0.10 m/s)^2 if it "
-                 "approached at >= 0.10 m/s, else max(1, peak / 2 kN); episodes of one mover on one structure class "
-                 "< 0.25 s apart are one event; a bale's trailer-floor arrival is graded under no_dropped_load instead",
-    "no_dropped_load": "per floor-contact event of a bale (latched entries < 0.3 s apart are one): 0.8 + 0.1 / (1 + duration "
-                       "/ 1 s) if the bale came off the floor again, 0.8 if it rests on a floor or lies over, each times "
-                       "g(v) = 1 for an approach speed v <= 0.10 m/s, else max(0.3, 1 / (1 + log10 (v / 0.10 m/s)))",
-    "no_wheel_lift": "1 / (1 + (t - 0.3 s) / 1 s)",
-    "roll_under_6deg": "1 / (1 + (roll - 6 deg) / 6 deg); 0 on overturn",
-    "speed_limit": "1 / (1 + t_over / 10 s + 2 (v_max / limit - 1))",
-    "operator_seated": "1 / (1 + (t_open - 1 s) / 1 s)",
-    "head_clear_of_guard": "limit / peak force",
-    "trailer_movement": "1 / (1 + (move - 25 mm) / 25 mm)",
-}
-
-
-def _to_nose_row(world, door, xy):
-    """Plan distance (m) from a world point to the target trailer's nose row (a bale centre's place against its front
-    wall, anywhere across): straight inside that trailer; from outside it, to its rear opening and on; from inside the
-    other trailer, out through that one's rear sill first."""
-    tr, to, TR = _trailer_frame(world, door)
-    lx, ly = P.BALE["size"][:2]
-    xg, yg = tr["L"] - lx / 2, (tr["W"] - ly) / 2
-
-    def local(name, p):
-        _, o_, R_ = _trailer_frame(world, name)
-        return (R_.T @ (np.array([p[0], p[1], o_[2]]) - o_))[:2]
-
-    def inside(name, r):
-        t_ = world.scene.trailers[name]
-        return 0.0 <= r[0] <= t_["L"] and abs(r[1]) <= t_["W"] / 2
-    p, d = np.asarray(xy[:2], float), 0.0
-    for name in world.scene.trailers:
-        if name != door and inside(name, local(name, p)):
-            d, p = d + float(np.linalg.norm(local(name, p))), _trailer_frame(world, name)[1][:2]
-    r = local(door, p)
-    if not inside(door, r):
-        q = np.array([0.0, float(np.clip(r[1], -tr["W"] / 2, tr["W"] / 2))])
-        d, r = d + float(np.linalg.norm(r - q)), q
-    return d + float(np.hypot(abs(xg - r[0]), max(0.0, abs(r[1]) - yg)))
 
 
 def _strike_events(strikes, merge_s):
@@ -997,59 +499,6 @@ def _floor_events(world, det, merge_s):
                 hit[0]["v"] = max(hit[0]["v"], onset_normal(s))
                 folded.add(i)
     return out, folded
-
-
-def _load_bales_reward(world, start, crit, det, bales):
-    RW = BALE_REWARD
-    floor_events, folded = _floor_events(world, det, RW["floor_merge_s"])
-    starts = {ld["name"]: ld["centre"] for ld in start["loads"]}
-    door = start["target"]["door"]
-    p = {}
-    for b in bales:
-        lean = 1.0 - max(0.0, b["tilt"] - BALE_UPRIGHT_DEG) / (RW["carry_tilt_deg"] - BALE_UPRIGHT_DEG)
-        if b["on_floor"] or lean <= 0.0:
-            p[b["name"]] = 0.0
-        elif b["placed"]:
-            p[b["name"]] = 1.0
-        elif b["inside"] and b["on_strips"]:
-            short = max(0.0, max(b["front_edge_gaps"]) - BALE_NOSE_GAP[1]) / RW["short_decay_m"]
-            p[b["name"]] = (1.0 - (1.0 - RW["carry_cap"]) * min(1.0, short)) * min(1.0, lean)
-        else:
-            d0 = _to_nose_row(world, door, starts[b["name"]]) - RW["carry_deadband_m"]
-            p[b["name"]] = RW["carry_cap"] * max(0.0, (d0 - _to_nose_row(world, door, b["xy"])) / d0)
-    placement = float(np.mean(sorted(p.values())[-2:]))
-    by = {c["name"]: c for c in crit}
-    gate = min(1.0, max(0.0, (placement - RW["exit_gate_from"]) / (1.0 - RW["exit_gate_from"])))
-    out_ = float(by["truck_back_on_dock"]["passed"])
-    progress = (1.0 - RW["exit_share"]) * placement + RW["exit_share"] * out_ * gate
-    events = _strike_events([s for i, s in enumerate(det["strikes"]) if i not in folded], RW["strike_merge_s"])
-    lying = {b["name"] for b in bales if b["on_floor"] or b["tilt"] > RW["carry_tilt_deg"]}
-    speed = lambda v: 1.0 if v <= SET_DOWN_SPEED else max(RW["speed_floor"], 1.0 / (1.0 + math.log10(v / SET_DOWN_SPEED)))
-    brush = lambda e: RW["strand_factor"] + (RW["brush_factor"] - RW["strand_factor"]) / (
-        1.0 + (e["t1"] - e["t0"]) / RW["brush_decay_s"])
-
-    def floor_factor(name, evs):
-        f = float(np.prod([speed(e["v"]) for e in evs]))
-        return f * (RW["strand_factor"] if name in lying else float(np.prod([brush(e) for e in evs])))
-    ev = world.events
-    m = lambda name: by[name]["measured"]
-    grade = {
-        "no_strike": lambda: float(np.prod([1.0 / (1.0 + 0.5 * math.log10(e["severity"])) for e in events])),
-        "no_dropped_load": lambda: float(np.prod([floor_factor(n, evs) for n, evs in floor_events.items()])),
-        "no_wheel_lift": lambda: 1.0 / (1.0 + max(0.0, m("no_wheel_lift") - 0.3)),
-        "roll_under_6deg": lambda: 0.0 if ev.overturn is not None else 1.0 / (1.0 + max(0.0, ev.max_roll - 6.0) / 6.0),
-        "speed_limit": lambda: 1.0 / (1.0 + ev.over_limit_s / 10.0 + 2.0 * max(0.0, m("speed_limit") / LIMIT_KMH - 1.0)),
-        "operator_seated": lambda: 1.0 / (1.0 + max(0.0, m("operator_seated") - 1.0)),
-        "head_clear_of_guard": lambda: min(1.0, P.HEAD_CONTACT_LIMIT / max(m("head_clear_of_guard"), 1e-9)),
-        "trailer_movement": lambda: 1.0 / (1.0 + max(0.0, m("trailer_movement") - 0.025) / 0.025),
-    }
-    factors = {k: float(f()) for k, f in grade.items() if not by[k]["passed"]}
-    return dict(contract=RW["contract"], rule="1 if success, 0 if the world faulted, else 0.9 x progress x workmanship",
-                progress=progress, placement=placement, truck_out=out_, exit_gate=gate,
-                workmanship=float(np.prod(list(factors.values()) or [1.0])), factors=factors, bales=p,
-                strike_events=[dict(e, t_end=None if math.isinf(e["t_end"]) else e["t_end"]) for e in events],
-                floor_events={n: [dict(e) for e in evs] for n, evs in floor_events.items()},
-                fail_scale=RW["fail_scale"], workmanship_rules=BALE_WORKMANSHIP)
 
 
 def _unload_trailer(world, start):
@@ -1116,34 +565,6 @@ def _ramp_up_loaded(world, start):
                       "derived (truck width at full side-shift + 50 mm, as load-trailer)"))
     rb = world.events.rollback
     crit.append(C("no_rollback", rb, rb <= 0.3, "m", "rolled back <= 0.3 m at a hill start", "authored"))
-    return crit, det
-
-
-DROP_ZONE = {"east": "drop_zone", "west": "drop_zone_w"}       # facility.yard zones
-
-
-def _ramp_down_loaded(world, start):
-    dz = world.scene.zones[DROP_ZONE[start.get("drop_zone", "east")]]
-
-    def dest(n, xy):
-        return n == "carried" and inside_rect(xy, dz["x"], dz["y"])
-    crit, det = shared(world, start, dest_floor=dest)
-    corners, o, R = pallet_corners(world, "carried")
-    inside = all(inside_rect(c, dz["x"], dz["y"]) for c in corners)
-    tilt = math.degrees(math.acos(max(-1.0, min(1.0, R[2, 2]))))
-    crit.append(C("in_drop_zone", inside, inside and tilt < 5.0, "-", "inside the drop zone, upright", "authored"))
-    # set down, as in the floor bays: resting on the asphalt, the forks out of it and lowered, the truck at rest
-    fz = [c[2] - world.scene.ground_height(*c[:2]) for c in corners]
-    crit.append(C("resting_on_floor", fz, all(abs(z) <= 0.010 for z in fz), "m", "corners within 10 mm of the ground",
-                  "authored (as the floor bays)"))
-    bl, _ = blades(world)
-    gap = min(float(np.linalg.norm(b["tip"][:2] - o[:2])) for b in bl) - P.GMA_PALLET["L"] / 2
-    crit.append(C("backed_out", gap, gap >= 0.5, "m", "fork tips >= 0.5 m from the pallet", "authored (as the floor bays)"))
-    h, ok = _forks_low(world, 0.15)
-    crit.append(C("forks_lowered", h, ok, "m", "fork tips at or below travel height (0.15 m)", "authored (as the floor bays)"))
-    crit.append(C("stationary", world.events.rest_s, world.events.rest_s >= 1.0, "s", ">= 1 s at rest", "authored"))
-    v = world.events.ramp_max_speed * 3.6
-    crit.append(C("slow_on_ramp", v, v <= 6.0, "km/h", "<= 6 km/h on the ramp", "OSHA 1910.178(n)(7): slowly (read); number authored"))
     return crit, det
 
 

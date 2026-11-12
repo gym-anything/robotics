@@ -1,0 +1,18 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/seat-cap",
+  "name": "seat-cap",
+  "env_id": "pencap",
+  "split": "test",
+  "selection": {},
+  "description": "Put the blue cap on the yellow pen's writing tip and press it until it snaps fully into place, then leave the capped pen still, whether held or set down.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

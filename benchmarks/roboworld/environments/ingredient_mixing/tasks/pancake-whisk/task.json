@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/bake/pancake-whisk/contract-ingredient-mixing-tasks-v2/seed-0",
+  "name": "pancake-whisk",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "bake",
+    "task": "pancake-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+  },
+  "description": "The bowl holds beaten egg, milk and oil with the dry ingredients heaped in the middle. Whisk the dry ingredients into the liquid gently and quickly, until just combined: no dry flour left, and no more mixing than that; small lumps may stay. Keep the batter in the bowl.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

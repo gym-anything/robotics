@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/warehouse/carry-to-floor-bay/forklift-tasks-v2/seed-0",
+  "name": "carry-to-floor-bay",
+  "env_id": "forklift",
+  "split": "train",
+  "selection": {
+    "task": "carry-to-floor-bay",
+    "seed": 0,
+    "contract": "forklift-tasks-v2"
+  },
+  "description": "Take the pallet on your forks to floor storage bay B-03, set it down inside the painted lines, back out and lower the forks.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

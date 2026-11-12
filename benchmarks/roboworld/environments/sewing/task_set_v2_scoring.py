@@ -5,31 +5,39 @@
 - load and square-plies score 0.9 x progress short of success, the seam tasks 0.95 (failure_factor);
 - every evaluation reports task_contract sewing-tasks-v2.
 
+A benchmark task's own grading is in its folder's verifier.py (tasks/<task>/), as in the released module: corner-seam's
+seam_path and CORNERS, and HANDLING for the handling tasks.
+
 The released module's docstring follows.
 
 Opt-in eight-task verifiers. Pure NumPy state readers; no simulator imports.
 
-The path ledger measurement below ports Evaluator._curve_seam's runs, joins,
+The path ledger measurement below ports the curve's curve_seam (tasks/curve/verifier.py) runs, joins,
 thread links and density unchanged, with distances to a finite task polyline. The
 original curve continues to use its original evaluator and scoring implementation.
 """
 
 import numpy as np
 
-from .task import (Evaluator, _check, _polyline_distance, _triangle_under, TOL_LINE, ENDS_MEET,
+from .task import (Evaluator, _check, _polyline_distance, TOL_LINE, ENDS_MEET,
                    END_REACH, STEP_MAX, NOT_A_SKIP, THREAD_LINK_MAX, SAME_PLACE, JOIN_SECURE,
                    BACKTACK_MIN, INCH, SPI_BAND, STITCH_BOUNDS, CURVE_SOFT, CURVE_SOFT_REG,
-                   CURVE_DAMAGE, CURVE_FAULT, CURVE_PARTIAL_MAX)
+                   CURVE_DAMAGE, CURVE_FAULT, CURVE_PARTIAL_MAX, task_verifier)
 from .task_set_v2 import CONTRACT
 
 # Failure factor (task spec): the seam tasks keep the audited curve's 0.95
 # (CURVE_PARTIAL_MAX); the two handling tasks without a seam, load and square-plies, score 0.9 x progress.
+# A handling task is one whose verifier.py sets HANDLING.
 HANDLING_FACTOR = 0.9
-HANDLING_TASKS = ("load", "square-plies")
+
+
+def _verifier(task):
+    """A benchmark task's verifier.py, else None."""
+    return task_verifier(task)
 
 
 def failure_factor(task):
-    return HANDLING_FACTOR if task in HANDLING_TASKS else CURVE_PARTIAL_MAX
+    return HANDLING_FACTOR if getattr(_verifier(task), "HANDLING", False) else CURVE_PARTIAL_MAX
 
 
 def ramp(error, good, bad):
@@ -38,13 +46,15 @@ def ramp(error, good, bad):
 
 
 def seam_path(task, width, length, allowance=.010):
+    """The seam's target line in the plies' material frame: the task's own (its verifier.py seam_path), else the
+    straight full-length line 10 mm from the right edges."""
+    folder = _verifier(task)
+    if hasattr(folder, "seam_path"):
+        return folder.seam_path(width, length, allowance)
     right = width - allowance
     if task == "three-sides":
         return np.array([[right, length], [right, allowance], [allowance, allowance], [allowance, length]])
-    if task in ("pivot", "corner-seam"):
-        return np.array([[right, length], [right, allowance], [0., allowance]])
-    end = length - .120 if task == "seam-to-notch" else 0.
-    return np.array([[right, length], [right, end]])
+    return np.array([[right, length], [right, 0.]])
 
 
 def weighted_coverage(at, credit, lo, hi):
@@ -71,11 +81,9 @@ class TaskEvaluator(Evaluator):
     def __init__(self, env):
         super().__init__(env)
         self.square_start_error = None
-        if env.config.task == "square-plies" and getattr(env.world, "cloth", True) is not None:
-            self.square_start_error = max(self.ply_registration()[0], float(np.linalg.norm(
-                env.world.ply_positions(0)[:, :2] - env.world.ply_positions(1)[:, :2], axis=1).max()))
-            if self.square_start_error <= .0015:
-                raise ValueError("square-plies must start with slipped plies")
+        check_start = getattr(_verifier(env.config.task), "check_start", None)
+        if check_start is not None:           # a task whose start is checked (square-plies: the plies slipped)
+            check_start(self)
 
     def _curve_seam(self):
         # Same state ledger as the curve task; only the target path differs.
@@ -86,12 +94,10 @@ class TaskEvaluator(Evaluator):
         formed = [s for s in st if s["formed"] and s["holes"]]
         two = [s for s in formed if s["plies"] == [0, 1]]
         uv = np.array([s["holes"][k] for s in two for k in (0, 1)], float).reshape(-1, 2)
+        task_distance = getattr(_verifier(self.env.config.task), "distance", None)
         def distance(points):
-            if self.env.config.task == "seam-to-notch":
-                mark = w.config.ply_length - .120
-                lateral = abs(points[:, 0] - (w.config.ply_width - A))
-                overrun = np.maximum(mark - .0032 - points[:, 1], 0.)
-                return np.maximum(lateral, np.where(overrun > 0., TOL_LINE + overrun, 0.))
+            if task_distance is not None:     # the task's own distance from its line (seam-to-notch)
+                return task_distance(self, points, A)
             return _polyline_distance(points, line)[0]
         d = (A + distance(uv)).reshape(-1, 2)
         at2 = _polyline_distance(uv, line)[1].reshape(-1, 2)
@@ -201,6 +207,7 @@ class TaskEvaluator(Evaluator):
         c = super()._eval_curve()
         g = self._curve
         task = self.env.config.task
+        folder = _verifier(task)
         if len(g["two"]) >= 6:
             # Distances here are to the target line (encoded as A + error for the
             # inherited measurement contract), not signed edge allowances.
@@ -217,7 +224,7 @@ class TaskEvaluator(Evaluator):
                                             "<= 6 mm along the seam, each ply")
         if "reaches_left_edge" in c:
             c["joined_end"] = c.pop("reaches_left_edge")
-        if task != "pivot":
+        if getattr(folder, "BACKTACKS", True):
             # End-local backtacks, measured relative to the sewn seam's ends (which
             # themselves must reach the prescribed endpoints). Either sewing order.
             counts = [0, 0]
@@ -230,7 +237,7 @@ class TaskEvaluator(Evaluator):
             self._secured = [min(1., n/BACKTACK_MIN) for n in counts]
             for key, n in zip(("backtack_start", "backtack_end"), counts):
                 c[key] = _check(n >= BACKTACK_MIN, n, ">= 3 reverse stitches within 6.35 mm of this sewn end")
-        if task in ("pivot", "three-sides", "corner-seam"):
+        if task == "three-sides" or getattr(folder, "CORNERS", False):
             line = seam_path(task, self.env.world.config.ply_width, self.env.world.config.ply_length)
             for i, corner in enumerate(line[1:-1]):
                 # A matching corner in BOTH plies, not just a top-ply stitch.
@@ -238,18 +245,13 @@ class TaskEvaluator(Evaluator):
                          for s in g["two"]), default=float("inf"))
                 c[f"corner_{i + 1}"] = _check(d <= TOL_LINE, None if not np.isfinite(d) else d*1e3,
                                               "<= 1.6 mm from the square corner, both plies")
-        if task == "seam-to-notch":
-            mark = self.env.world.config.ply_length - .120
-            near = [min((s["holes"][k][1] for s in g["two"]), default=float("inf")) for k in (0, 1)]
-            c["stops_at_mark"] = _check(all(abs(v - mark) <= .0032 for v in near),
-                                        target="sewn end within 3.2 mm of 120 mm from far end, both plies")
-            # All punctures count here, including unformed cycles and one-ply holes.
-            c["opening_clear"] = _check(all(h.uv[1] >= mark - .0032 for h in self.env.world.machine.holes),
-                                        target="no puncture more than 3.2 mm into the opening")
+        if hasattr(folder, "extra_checks"):   # checks of the task's own (seam-to-notch: the mark and the opening)
+            folder.extra_checks(self, g, c)
         return c
 
     def _seam_progress(self, checks):
         g, M = self._curve, self.env.world.machine
+        folder = _verifier(self.env.config.task)
         broken = {t.get("cycle") for t in M.threads if t["broken"]}
         place = np.minimum(np.clip(1 - (g["dev"] - TOL_LINE)/CURVE_SOFT, 0., 1.),
                            np.clip(1 - (g["reg"] - ENDS_MEET)/CURVE_SOFT_REG, 0., 1.))
@@ -266,18 +268,14 @@ class TaskEvaluator(Evaluator):
         one_ply = np.clip(1 - (g["dev_formed"][~g["is_two"]] - TOL_LINE)/CURVE_SOFT, 0., 1.)
         strays = (float(np.sum(1 - place[dominated])) + float(np.sum(1 - one_ply))
                   + float(np.sum(g["links"] > THREAD_LINK_MAX)))
-        if self.env.config.task == "seam-to-notch":
-            mark = self.env.world.config.ply_length - .120
-            # Unformed punctures beyond the opening are rework too; formed holes
-            # already lose line credit through the finite target path.
-            strays += sum(1 - ramp(mark - h[1], .0032, .010)
-                          for s in g["stitches"] if not s["formed"] for h in s["holes"].values())/2
+        if hasattr(folder, "extra_strays"):   # rework of the task's own (seam-to-notch: punctures in the opening)
+            strays += folder.extra_strays(self, g)
         need = (g["ell"] - 2*END_REACH)/self.env.world.config.stitch_length
         rework = max(0., 1 - strays/need)
         damage = min(CURVE_DAMAGE.get(M.needle_state, 1.), CURVE_FAULT if broken else 1.)
         trimmed = M.tether == "trimmed"
         let_go = trimmed and checks["released"]["ok"]
-        finish = (.90 if self.env.config.task == "pivot" else .80 + .05*sum(self._secured))
+        finish = (folder.FINISH if hasattr(folder, "FINISH") else .80 + .05*sum(self._secured))
         finish += .05*trimmed + .05*let_go
         progress = coverage*rework*damage*finish
         self._info["progress"] = dict(coverage=coverage, strays=strays, rework=rework, damage=damage,
@@ -303,62 +301,30 @@ class TaskEvaluator(Evaluator):
         pressure = min(q)*float(np.clip(w.machine.foot_N, 0., 1.))*(w.machine.presser == "down")
         return (.8*float(np.mean(q)) + .2*pressure)*reg
 
-    def _square(self):
-        from .layout import TABLE, BED
-        w = self.env.world
-        X, tri = np.asarray(w.mesh["X"]), np.asarray(w.mesh["tri"])
-        xs = [np.asarray(w.ply_positions(k)) for k in (0, 1)]
-        off, n = self.ply_registration()
-        # Material correspondence also covers the parts for which registration has
-        # no resting triangles (lifting the mismatched portion must not hide it).
-        off = max(off, float(np.linalg.norm(xs[0][:, :2] - xs[1][:, :2], axis=1).max()))
-        samples = np.array([(u, v) for u in np.linspace(.1, .9, 4)*w.config.ply_width
-                            for v in np.linspace(.1, .9, 5)*w.config.ply_length])
-        t, *bc = _triangle_under(samples, X[tri[:, 0]], X[tri[:, 1]], X[tri[:, 2]])
-        points = sum(b[:, None]*xs[1][tri[t, j], :2] for j, b in enumerate(bc))
-        layers = [layer_count(p, tri, x, X) for p in points for x in xs]
-        p = np.vstack(xs)
-        inside = ((p[:, 0] > TABLE["x"][0]) & (p[:, 0] < BED["x"][0])
-                  & (p[:, 1] > TABLE["y"][0]) & (p[:, 1] < TABLE["y"][1]))
-        height = float(np.maximum(-.001 - p[:, 2], p[:, 2] - .002).max())
-        contacts = [self.hand_contact(a) for a in w.hand_arms]
-        c = dict(edges_aligned=_check(n >= 50 and off <= .0015,
-                                      dict(misregistration_mm=off*1000, edge_points=n), "<= 1.5 mm, >= 50 points"),
-                 single_layer=_check(all(k == 1 for k in layers), layers, "one crossing per ply at 20 samples"),
-                 on_left_table=_check(bool(inside.all()) and height <= 0., target="all vertices left of bed on table, z -1..2 mm"),
-                 released=_check(all(f < .05 for f in contacts), contacts, "< 0.05 N per hand, pad magnitudes"),
-                 no_reflex=_check(not w.reflexes, len(w.reflexes)))
-        # Continuous geometric flatness: worst height, boundary violation and signed
-        # projected triangle area. No reward for a fraction of Boolean checks.
-        boundary = max(float((TABLE["x"][0] - p[:, 0]).max()), float((p[:, 0] - BED["x"][0]).max()),
-                       float((TABLE["y"][0] - p[:, 1]).max()), float((p[:, 1] - TABLE["y"][1]).max()), 0.)
-        def area(x):
-            a, b = x[tri[:, 1], :2] - x[tri[:, 0], :2], x[tri[:, 2], :2] - x[tri[:, 0], :2]
-            return a[:, 0]*b[:, 1] - a[:, 1]*b[:, 0]
-        ratios = np.concatenate([area(x)/area(X) for x in xs])
-        flat = min(ramp(max(height, 0.), 0., .020), ramp(boundary, 0., .020),
-                   float(np.clip(ratios.min()/.2, 0., 1.)))
-        release = ramp(max(contacts, default=0.), .05, 1.)
-        progress = ramp(off, .0015, self.square_start_error)*flat*(.9 + .1*release)
-        self._info["progress"] = dict(value=progress, initial_error_m=self.square_start_error,
-                                      misregistration_m=off, flatness=flat, release=release)
-        return c, progress
-
     def evaluate(self):
+        """The episode's evaluation (verdict): a benchmark task's verifier.py (tasks/<task>/) decides, its verify(e)
+        calling verdict; a task outside the benchmark (three-sides) is a seam graded here."""
+        folder = _verifier(self.env.config.task)
+        if folder is not None:
+            return folder.verify(self)
+        return self.verdict()
+
+    def verdict(self, checks=None, *, primary=None, partial=None, outcome=None, blend=None):
+        """success: every check passes; score: 1.0 on success, otherwise the failure factor times the continuous
+        progress; primary_outcome: progress above 0. A seam is graded on its target line (_seam_checks,
+        _seam_progress), with the task's hooks from its verifier.py; outcome(e), a task's own checks and progress
+        instead of a seam (load, square-plies); blend(e, progress), the seam's progress adjusted by the task
+        (load-and-seam). checks, primary and partial are the released contract's (task.Evaluator.verdict) and are not
+        used here."""
         self._info = {}
         task = self.env.config.task
-        if task == "load":
-            checks, progress = self._eval_load(), self.load_progress()
-        elif task == "square-plies":
-            checks, progress = self._square()
+        if outcome is not None:
+            checks, progress = outcome(self)
         else:
             checks = self._seam_checks()
             progress = self._seam_progress(checks)
-            if task == "load-and-seam":
-                # Smoothly retain loading credit as a real joined span forms. A
-                # first stitch never unlocks a flat 0.2 bonus; sequence is immaterial.
-                c = self._info["progress"]["coverage"]
-                progress = max(.2*self.load_progress(), progress + .2*(1 - progress)*min(1., c/.05))
+            if blend is not None:
+                progress = blend(self, progress)
         success = all(c["ok"] for c in checks.values())
         progress = float(np.clip(progress, 0., 1.))
         self._info["continuous_progress"] = progress
@@ -366,29 +332,3 @@ class TaskEvaluator(Evaluator):
         return dict(task=task, task_contract=CONTRACT, success=success,
                     score=1. if success else failure_factor(task)*progress,
                     primary_outcome=progress > 0., checks=checks, info=self._info)
-
-
-def layer_count(point, tri, positions, material=None):
-    """Vertical crossings, deduplicating adjacent triangles on a shared edge."""
-    a = positions[tri[:, 0]]
-    v0, v1 = positions[tri[:, 1]] - a, positions[tri[:, 2]] - a
-    den = v0[:, 0]*v1[:, 1] - v1[:, 0]*v0[:, 1]
-    valid = abs(den) > 1e-18
-    a, v0, v1, den = a[valid], v0[valid], v1[valid], den[valid]
-    q = point - a[:, :2]
-    b = (q[:, 0]*v1[:, 1] - q[:, 1]*v1[:, 0])/den
-    c = (v0[:, 0]*q[:, 1] - v0[:, 1]*q[:, 0])/den
-    hit = np.minimum(np.minimum(1 - b - c, b), c) >= -1e-9
-    heights = (a[:, 2] + b*v0[:, 2] + c*v1[:, 2])[hit]
-    if material is None:
-        material = positions[:, :2]
-    T = tri[valid][hit]
-    uv = ((1 - b[hit] - c[hit])[:, None]*material[T[:, 0]]
-          + b[hit, None]*material[T[:, 1]] + c[hit, None]*material[T[:, 2]])
-    # Coincident folds still have different material points. Height alone would
-    # merge them and incorrectly call a flat fold one layer.
-    unique = []
-    for crossing in np.column_stack([uv, heights]):
-        if not any(np.max(abs(crossing - old)) < 1e-7 for old in unique):
-            unique.append(crossing)
-    return len(unique)

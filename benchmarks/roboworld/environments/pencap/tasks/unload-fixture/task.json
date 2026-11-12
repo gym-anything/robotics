@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/unload-fixture/pencap-tasks-v2",
+  "name": "unload-fixture",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "unload-fixture",
+    "contract": "pencap-tasks-v2"
+  },
+  "description": "Take the capped pen out of the capping fixture and lay it down on the bench.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

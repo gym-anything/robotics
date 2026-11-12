@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "ingredient-mixing/v1/bake/dry-whisk/contract-ingredient-mixing-tasks-v2/seed-0",
+  "name": "dry-whisk",
+  "env_id": "ingredient-mixing",
+  "split": "train",
+  "selection": {
+    "preset": "bake",
+    "task": "dry-whisk",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "ingredient-mixing-tasks-v2"
+  },
+  "description": "The bowl holds flour with sugar, baking powder and salt dumped on it in separate places. Whisk the dry ingredients until they are evenly combined. Keep them in the bowl.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

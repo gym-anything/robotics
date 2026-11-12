@@ -17,13 +17,17 @@ import numpy as np
 import pytest
 
 from tighten_codex.config import Config
-from tighten_codex.presets import (SCREWS, LOOSE_CHOICES, apply_start_coordinates,
+from tighten_codex.presets import (SCREWS, apply_start_coordinates,
                                    flag_home, loose_screw, pretightened_screws, settle_initial)
 from tighten_codex import task_set_v2 as V2
 from tighten_codex.task import (EIGHT_CONTRACT, EIGHT_INSTRUCTIONS, EIGHT_ORDER, LEGACY_CONTRACT, LEGACY_TASKS,
-                                MIXED_CONTRACT, NEW_TASKS, TASKS, contract_for, instruction, resolve, uses_eight)
+                                MIXED_CONTRACT, NEW_TASKS, TASKS, contract_for, instruction, resolve, task_setup,
+                                uses_eight)
 from tighten_codex.task_evaluation import required, track_free_rail
 from tests.packages import PACKAGES, REPO
+
+# find-loose's choices of loose screw, in its setup.py (tasks/find-loose/).
+LOOSE_CHOICES = task_setup("find-loose").LOOSE_CHOICES
 
 ROOT = PACKAGES
 CONTRACT = V2.CONTRACT

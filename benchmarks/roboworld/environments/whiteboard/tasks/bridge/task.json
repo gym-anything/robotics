@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "whiteboard/whiteboard-classroom-v1/0000",
+  "name": "bridge",
+  "env_id": "whiteboard",
+  "split": "test",
+  "selection": {
+    "variation_id": 0
+  },
+  "description": "Copy the supplied colour-coded diagram of the Golden Gate Bridge onto the whiteboard, using the markers in the tray: orange towers, red cables and hangers, black roadway and blue water. The reference image shows the whole writing surface as seen from the front; draw the diagram where it appears and at the size shown.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

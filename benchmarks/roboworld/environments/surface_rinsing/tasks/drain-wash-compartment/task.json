@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/pot-sink/drain-wash-compartment/surface-rinsing-tasks-v1/seed-0",
+  "name": "drain-wash-compartment",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "pot-sink",
+    "task": "drain-wash-compartment",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v1"
+  },
+  "description": "The wash water in the left compartment of the pot sink is spent. Drain that compartment, then close its drain so it is ready to be refilled. Leave the rinse and sanitizer compartments as they are, and finish with no water running and nothing in the hands.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

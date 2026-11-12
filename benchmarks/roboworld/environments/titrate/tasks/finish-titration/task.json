@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/finish-titration/titration-tasks-v2/titration-n15-0000",
+  "name": "finish-titration",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "finish-titration",
+    "variation_id": 0,
+    "contract": "titration-tasks-v2"
+  },
+  "description": "This titration was paused just before its endpoint: most of the base is already in and the stirred solution is still colourless. Finish it: add base until the first faint pink persists throughout the solution for 30 seconds.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

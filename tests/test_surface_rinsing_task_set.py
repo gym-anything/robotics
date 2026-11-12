@@ -328,7 +328,8 @@ class Array:
 
 def tracker_fixture():
     verifiers()
-    from surface_rinsing.task_set.sanitizer import GlassTracker
+    from gym_anything_robotics import task_folders
+    GlassTracker = task_folders.verifier("surface_rinsing", "rinse-glassware").GlassTracker
     # Two outer and two inner surface cells, one glass cavity, three sink bowls.
     eng = types.SimpleNamespace(sub=Array([-1]*4), sp=Array(np.zeros((6, 4))), gamma=Array([0.]*4),
                                 soil=Array([0.]*4), h=Array([0.]*4))

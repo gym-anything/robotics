@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/can-wash/flush-floor/surface-rinsing-tasks-v2/seed-0",
+  "name": "flush-floor",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "can-wash",
+    "task": "flush-floor",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+  },
+  "description": "Soapy water and debris cover part of the can-wash bay floor. Flush them into the floor drain with the hose without spraying the dunnage shelf, then dock the hose valve back in its wall holster.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

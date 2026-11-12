@@ -13,15 +13,11 @@ import math
 from pathlib import Path
 
 from .config import COLORS, Config, SceneLayout
-from .tasks import Task
+from .tasks import Task, task_setup
 
 VERSION = "whiteboard-classroom-v1"
 COUNT = 10000
 TEXTS = ("HELLO", "ROBOTICS", "SCIENCE", "NEWTON", "CLASS 1", "A+B", "WELCOME", "12345")
-# Bridge placement: a kinematic check of the pinned G1 puts the highest nib point a Dex3 hand can hold on the
-# board at 1.50-1.55 m. Bridge drawings keep their top at or below this height and their bottom on the writing
-# surface; the same hash draw is mapped into that range.
-BRIDGE_TOP_Z_M = 1.48
 
 
 def _integer(index, field):
@@ -48,11 +44,12 @@ def specification(index):
         robot_yaw_rad=-math.pi / 2 + between("yaw", -0.08, 0.08),
     )
     width = between("task_width", 0.48, 0.80)
+    own = task_setup(kind)          # the bridge's placement height (its setup.py)
     task = Task(
         kind=kind,
         text=TEXTS[_integer(index, "text") % len(TEXTS)],
         center_x=between("task_x", -0.35, 0.35),
-        center_z=(between("task_z", 0.955 + 0.30 * width, BRIDGE_TOP_Z_M - 0.27 * width) if kind == "bridge"
+        center_z=(own.setup(between, width) if own is not None
                   else between("task_z", 1.35, 1.65)),
         width_m=width,
     )

@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/home/put-lid-on/gift-bags-tasks-v2/seed-0",
+  "name": "put-lid-on",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "home",
+    "task": "put-lid-on",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v2"
+  },
+  "description": "A gift box stands open on the dining table with the photo frame inside and its lid on the table beside it. Put the lid back on the box and release it. Leave the frame in the box.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

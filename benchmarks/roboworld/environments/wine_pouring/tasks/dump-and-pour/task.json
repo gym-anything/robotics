@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "wine-pouring/v1/tasting/dump-and-pour/wine-tasks-v2/seed-0",
+  "name": "dump-and-pour",
+  "env_id": "wine-pouring",
+  "split": "train",
+  "selection": {
+    "preset": "tasting",
+    "task": "dump-and-pour",
+    "seed": 0,
+    "contract": "wine-tasks-v2"
+  },
+  "description": "Empty the leftover red wine from the tasting glass into the dump bucket, then pour a 50 mL tasting measure of white wine into it; spill nothing outside the bucket and glasses; bottle back on its coaster.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

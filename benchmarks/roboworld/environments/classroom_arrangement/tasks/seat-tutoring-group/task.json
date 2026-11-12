@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "classroom-arrangement/v1/room114/seat-tutoring-group/classroom-tasks-v2/seed-0",
+  "name": "seat-tutoring-group",
+  "env_id": "classroom-arrangement",
+  "split": "train",
+  "selection": {
+    "task": "seat-tutoring-group",
+    "seed": 0,
+    "contract": "classroom-tasks-v2"
+  },
+  "description": "A tutoring group of four is coming. Set the four loose chairs at the tutoring table at the back left of the room: two along the long side facing the room and one at each end, each facing the table and pulled out ready to sit. Leave the rest of the room as it is.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

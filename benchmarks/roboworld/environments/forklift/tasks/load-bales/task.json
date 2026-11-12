@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "forklift/v1/dock/load-bales/seed-0",
+  "name": "load-bales",
+  "env_id": "forklift",
+  "split": "test",
+  "selection": {
+    "task": "load-bales"
+  },
+  "description": "Load two cardboard bales from the bale row into the trailer at door 3: set them side by side on the dunnage strips laid at the nose, against the front wall, then back out onto the dock.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,66 +1,52 @@
 """GAR's task adapter; the physics-hashed SewingEnv, Config and World stay byte-identical.
 
-Only square-plies adds an initial condition. It is applied before the existing relaxation
-and cached under a separate task/setup key. Other new tasks reuse existing starts/meshes.
+A benchmark task's start is its folder's setup.py (tasks/<task>/): setup gives the Config the world is built from.
+Only square-plies adds an initial condition: its prepare applies it before the existing relaxation, and its start is
+cached under a separate task/setup key (SquareConfig). Other new tasks reuse existing starts/meshes.
 """
 
 from dataclasses import dataclass, replace
-import numpy as np
+from functools import partial
 
 from .env import SewingEnv
 from .world import Config
+from .task import TASKS, task_setup
 from .task_set import BASE_TASK, CONTRACT, choose_contract, instruction
 from .task_set_scoring import TaskEvaluator
 
-SQUARE_SETUP = "tray-slipped-40x25mm-yaw6-v1"
+SQUARE_SETUP = task_setup("square-plies").REVISION
 
 
 @dataclass
 class SquareConfig(Config):
+    """The Config of square-plies' slipped start (tasks/square-plies/setup.py builds it): task_setup_revision keys a
+    cached start state of its own."""
     task_setup_revision: str = SQUARE_SETUP
-
-
-def slip_top(positions):
-    """Rigid initial placement: +40 mm x, +25 mm y, 6 degrees about the panel centre.
-
-    Using the bounding-box centre makes the placement independent of mesh density.
-    It changes positions only, before any episode or preparation tick.
-    """
-    out = np.array(positions, copy=True)
-    centre = (out[:, :2].min(axis=0) + out[:, :2].max(axis=0))/2
-    a = np.deg2rad(6.)
-    rotation = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
-    out[:, :2] = (out[:, :2] - centre) @ rotation.T + centre + [.040, .025]
-    return out
 
 
 class TaskEnvironment(SewingEnv):
     def __init__(self, config, *, contract=None, output_dir=None):
         self.task_contract = choose_contract(config.task, contract)
         self.catalogue_config = config
-        physical = replace(config, task=BASE_TASK.get(config.task, config.task))
-        if config.task == "square-plies":
-            # Unique cache: never restore an aligned load state as the slipped one.
-            physical = SquareConfig(**vars(config))
+        start = task_setup(config.task) if config.task in TASKS else None    # corner-seam starts in sewing-tasks-v2
+        if start is not None:                 # a benchmark task: its setup.py gives the Config the world is built from
+            physical = start.setup(self, config)
+        else:
+            physical = replace(config, task=BASE_TASK.get(config.task, config.task))
         super().__init__(physical, output_dir=output_dir)
         self.config = config
-        if config.task == "square-plies":
-            self.start_state = "tray_slipped"
+        if hasattr(start, "START_STATE"):
+            self.start_state = start.START_STATE
         if self.task_contract == CONTRACT:
             self.evaluator = TaskEvaluator(self)
 
     def _make_start(self, use_cache=True):
-        if self.catalogue_config.task == "square-plies" and self.world.cloth is not None:
-            cl = self.world.cloth
-            p = cl.plies[self.world.ply_ids[1]]
-            snap = cl.snapshot()
-            idx = slice(p["v0"], p["v0"] + p["nv"])
-            snap["x"][idx] = slip_top(snap["x"][idx])
-            cl.restore(snap)
-        super()._make_start(use_cache=use_cache)
-        if self.catalogue_config.task == "square-plies":
-            self.assisted_log.append(dict(initial_condition=SQUARE_SETUP,
-                                           note="top ply displaced before relaxation; no physical parameters changed"))
+        """The start's preparation; a task with an initial condition of its own (its setup.py prepare) wraps it."""
+        prepare = getattr(task_setup(self.catalogue_config.task), "prepare", None)
+        if prepare is None:
+            super()._make_start(use_cache=use_cache)
+            return
+        prepare(self, partial(super()._make_start, use_cache=use_cache))
 
     def get_state(self, evaluate=True):
         state = super().get_state(evaluate=evaluate)

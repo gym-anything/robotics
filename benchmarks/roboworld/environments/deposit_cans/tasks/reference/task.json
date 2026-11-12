@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "deposit-cans/v1/reference/deposit-tasks-v2/seed-0",
+  "name": "reference",
+  "env_id": "deposit-cans",
+  "split": "train",
+  "selection": {
+    "variant": "reference",
+    "contract": "deposit-tasks-v2",
+    "seed": 0
+  },
+  "description": "Deposit all the empty beverage cans from the return counter and the bussing tub into the recycling bag. Leave the reusable cups on their tray, and put the empty tub back on the counter.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

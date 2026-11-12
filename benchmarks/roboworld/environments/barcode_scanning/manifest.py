@@ -20,7 +20,8 @@ ROOT = Path(__file__).resolve().parent
 KEEP = {".json", ".png", ".jpg", ".mp4", ".md", ".pdf"}
 CORE = ("world.py", "scene.py", "stock.py", "env.py", "device.py", "decoder.py", "optics.py", "render.py", "housing.py",
         "params.py", "config.py", "task.py", "scoring.py", "catalog.py", "artwork.py", "packaging.py", "dressing.py",
-        "scripted.py", "probes/fixtures.py", "render_worker.py", "skills.py", "grasping.py", "collide.py", "frontend.py")
+        "scripted.py", "probes/fixtures.py", "render_worker.py", "skills.py", "grasping.py", "collide.py", "frontend.py") \
+    + tuple(sorted(str(p.relative_to(ROOT)) for p in (ROOT/"tasks").glob("*/*.py")))     # each task's setup and verifier
 
 
 def core_hashes():

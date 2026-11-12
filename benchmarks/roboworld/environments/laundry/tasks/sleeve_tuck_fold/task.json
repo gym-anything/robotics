@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/tee/sleeve_tuck_fold/laundry-tasks-v2",
+  "name": "sleeve_tuck_fold",
+  "env_id": "laundry",
+  "split": "train",
+  "selection": {
+    "garment": "tee",
+    "task": "sleeve_tuck_fold",
+    "contract": "laundry-tasks-v2"
+  },
+  "description": "Fold both short sleeves in onto the T-shirt's body. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

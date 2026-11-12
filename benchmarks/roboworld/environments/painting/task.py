@@ -18,34 +18,15 @@ Criteria (thresholds: painting.params.EVAL):
               surfaces holding >= 1 um) <= 0.5 cm2
   untouched   wet target film touched by a robot link or a tool's non-applicator part <= 0.5 cm2
   tools       roll-strip: the roller rests in the tray, released
-behind-radiator judges the wall it leaves (BEHIND_RADIATOR below),
-all read from the settled film, never from the order, route or timing of the work:
-  hide        the band but the pocket the brush held by the robot's hand at its handle's end cannot reach (the bottom
-              of the middle, x 0.525-0.580 m below z 0.35 m) hidden on >= 98 %, with no connected unhidden patch
-              (8-connected cells) larger than 20 cm2: up to ~77 cm2 of the scored band may stay at the first coat, in
-              patches of up to 20 cm2
-  runs        a sag, curtain or drip left in the wall: band cells into which the film's flow carried more than 50 um of
-              dry paint (`flowed`, net of what an applicator took back up), on <= 1 cm2. Coats laid over set paint
-              stack without flowing and are not runs, however many. The band's bottom three 2 mm cell rows (centres
-              z 0.083-0.087 m, ~5 mm of wall above the baseboard top), where creeping film stops at the chart's
-              closed edge, are not read. progress() also fails a wet film over run_h
-  marks       a mark left in the coat by a link or a tool part: cells a skin touched while wet on which no applicator
-              has since laid paint (>= 5 um wet per cell) or picked up wet film (`no_marks`), <= 0.5 cm2 (one 4 mm
-              contact marks 0.52 cm2); a mark brushed out or re-coated, wet or after the coat has set, is not one;
-              an empty brush passing over it does not repair it
-  protected   also the trim faces without a chart (apron underside, stool nosing, baseboard ends): radiator and trim;
-              drops already falling when the episode ends are landed first (a brush's pendant volume is not)
-  laps        reported, not part of success (the instruction asks for full hide behind a radiator, not lap-free sheen)
-  score       1 on success, else 0.9 x progress: 1 - the area still to paint before hide passes (relative to the start),
-              less the cells marked or run and 10 x the paint on the radiator or trim (as wall area; see _reward)
+A benchmark task's own criteria, targets and progress terms are in its verifier.py (tasks/<task>/); behind-radiator
+judges the wall it leaves by its own contract (progress-v1, BEHIND_RADIATOR below) in tasks/behind-radiator/verifier.py.
 A non-finite state or a ledger fault is not a task result: the backend reports it as a fault.
 
 The explicit painting-tasks-v1 selection uses scoring.TaskProgress and the corrected
-checks marked in Evaluator.measure. Bare selections retain the legacy predicates
+checks marked in Evaluator.measure_criteria. Bare selections retain the legacy predicates
 above; behind-radiator always retains its own progress-v1 contract.
 """
 
-import math
 import numpy as np
 
 from . import params as P
@@ -114,21 +95,13 @@ def _gauge(dft, mask, dx):
     return np.where(den > 1e-9, num/np.maximum(den, 1e-9), 0.0)
 
 
-S_CURVE = lambda t: np.stack([-0.10 + 0.20*t, 0.035*np.sin(2*math.pi*t)], -1)        # paper frame, m
-
-
-def stroke_width(t):
-    """Template width along the S stroke: 2 -> 6 -> 2 mm (half-sine swell): a #8 round's thick-and-thin stroke, from a
-    hairline on the tip to the belly pressed to ~6 mm (its 6-8 mm spread)."""
-    return 2e-3 + 4e-3*np.sin(math.pi*t)
-
-
 class Evaluator:
     def __init__(self, env):
         self.env = env
         self.spec = env.spec
         self.task = env.spec["task"]
         self.paint = env.paint
+        self.folder = L.task_verifier(self.task)          # a benchmark task's verifier.py (tasks/<task>/), else None
         self.targets = self._targets()
         self._decl_h = {}
         self._drops0 = 0
@@ -138,36 +111,25 @@ class Evaluator:
         if self.contract == CONTRACT:
             from .scoring import TaskProgress
             self._task_progress = TaskProgress(self)
-        if self.task == "behind-radiator":
-            # the band the brush reaches (BEHIND_RADIATOR: the bottom of the middle is not scored), the band's bottom
-            # row on the baseboard (not read for runs), and the area still to paint at the start: the reward's unit
-            C, w = BEHIND_RADIATOR, self.paint.charts["wall"]
-            pk, sl = C["pocket"], self._bbox("wall", self.targets["wall"])
-            self._pocket = _rect_cells(w, pk["x0"], pk["x1"], L.BEHIND_RAD["z0"], pk["z1"]) & self.targets["wall"]
-            self._edge = _rect_cells(w, -1.0, 9.0, L.BEHIND_RAD["z0"], L.BEHIND_RAD["z0"] + C["run_edge"])[sl]
-            hid, m = self._hidden(False)
-            ms = m & ~self._pocket[sl]
-            self._remaining0 = max(self._remaining(hid, ms, w.area)[0], w.area)
+        prepare = getattr(self.folder, "prepare", None)
+        if prepare is not None:
+            prepare(self)                                 # what the task's verdict reads from the start
 
     # ------------------------------------------------------------------ geometry of the targets
     def _targets(self):
+        """Target cells by chart. A benchmark task's are targets(e) in its verifier.py; the spray targets follow the
+        crate (under the stencil's apertures) and the print."""
         t, ch = self.task, self.paint.charts
+        own = getattr(self.folder, "targets", None)
+        if own is not None:
+            return own(self)
         out = {}
         if "wall" in ch:
             w = ch["wall"]
-            if t == "roll-strip":
-                s = L.STRIP
-                out["wall"] = _rect_cells(w, s["x0"], s["x1"], s["z0"], s["z1"])
-            elif t == "cut-in-ceiling":
+            if t == "cut-in-ceiling":
                 b = L.CEILING_BAND
                 out["wall"] = _rect_cells(w, b["x0"], b["x1"], b["z0"], b["z1"])
                 out["corner"] = _rect_cells(w, b["x0"], b["x1"], L.Z - 2*w.dx, L.Z)
-            elif t == "cut-in-trim":
-                b, o = L.CASING_BAND, L.OUTLET_BAND
-                out["wall"] = _rect_cells(w, b["x0"], b["x1"], b["z0"], b["z1"]) | _rect_cells(w, o["x0"], o["x1"], o["z0"], o["z1"])
-            elif t == "behind-radiator":
-                b = L.BEHIND_RAD
-                out["wall"] = _rect_cells(w, b["x0"], b["x1"], b["z0"], b["z1"])
             elif t == "touch-up":
                 m = np.zeros_like(w.mask)
                 xs = w.origin[0] + (np.arange(w.nu) + 0.5)*w.dx; zs = (np.arange(w.nv) + 0.5)*w.dx
@@ -185,23 +147,6 @@ class Evaluator:
                 r = np.hypot(X, Y)
                 out["paper"] = r <= 0.030
                 out["outside"] = r > 0.030 + E["overrun"]
-            elif t == "swatch-card":
-                out["paper"] = (np.abs(X) <= 0.025) & (np.abs(Y) <= 0.025)
-                out["outside"] = (np.abs(X) > 0.025 + E["overrun"]) | (np.abs(Y) > 0.025 + E["overrun"])
-            elif t == "brush-stroke":
-                ts = np.linspace(0, 1, 400)
-                c = S_CURVE(ts)
-                d = np.full(X.shape, np.inf); half = np.zeros(X.shape)
-                for t_, (cx, cy) in zip(ts, c):
-                    dd = np.hypot(X - cx, Y - cy)
-                    closer = dd < d
-                    d = np.where(closer, dd, d)
-                    half = np.where(closer, stroke_width(t_)/2, half)
-                # "within 1 mm of the template width": the painted width may fall short by 1 mm (0.5 mm a side), so
-                # coverage is required on the template's core; paint beyond 1 mm outside its edge is overrun (the first
-                # build required its exact 1 mm-cell edge, which no stroke reproduces cell for cell)
-                out["paper"] = d <= np.maximum(half - 0.5e-3, 0.5e-3)
-                out["outside"] = d > half + E["overrun"]
         if "crate" in ch:
             out["crate"] = self._aperture_on_crate()
         if "print" in ch:
@@ -257,30 +202,6 @@ class Evaluator:
                 (slice(0, 1), slice(0, 1))
         return cache[key]
 
-    def _appearance(self, ch, mask):
-        """Dry-film appearance (linear RGB of the stack with wet solids counted as dry) of 50 mm patches in the target."""
-        from .paint import stack_reflectance
-        sl = self._bbox(f"app_{ch.name}", mask)
-        d = (ch.d + ch.s)[(slice(None),) + sl]
-        R = stack_reflectance(ch.paints, d, np.zeros_like(d), np.zeros_like(ch.w[sl]), ch.substrate_rgb[sl])
-        mask = mask[sl]
-        k = max(1, int(round(0.05/ch.dx)))
-        ii, jj = np.nonzero(mask)
-        if not len(ii):
-            return None
-        pi, pj = ii//k, jj//k
-        keys = pi*100000 + pj
-        uk, inv, cnt = np.unique(keys, return_inverse=True, return_counts=True)
-        col = np.zeros((len(uk), 3))
-        np.add.at(col, inv, R[ii, jj])
-        col /= cnt[:, None]
-        full = cnt >= 0.8*k*k
-        if not np.any(full):
-            return None
-        col = col[full]
-        med = np.median(col, axis=0)
-        return float(delta_e(col, med[None]).max())
-
     def _hidden(self, settled):
         """(hidden cells, target) over the wall target's bounding box. Hiding is a colour criterion (ASTM D2805's
         contrast ratio 0.98 is a just-noticeable difference): a cell hides when its dry stack (wet solids counted dry)
@@ -297,11 +218,22 @@ class Evaluator:
         return hc["hid"], self.targets["wall"][sl]
 
     def measure(self, settled):
+        """The verdict on the film as it is now (settled: read after the settle rule, evaluate()). A benchmark task's
+        verify(e, settled) in its verifier.py (tasks/<task>/) gives it; the other tasks' is measure_criteria()."""
+        if self.folder is not None:
+            return self.folder.verify(self, settled)
+        return self.measure_criteria(settled)
+
+    def measure_criteria(self, settled, *, wall=None, extra=None, tools=None):
+        """The criteria above on the task's targets, under its contract. A task's verifier.py passes in its own checks:
+        wall(e, checks, settled, w, m_full) on the wall target after the laps, extra(e, checks, settled) after the
+        target checks and tools(e, checks) after the film checks; and this reads its constants: NEED (the share of
+        the wall target that must hide), COVER_DFT and ACRYLIC (the paper coverage's dry film and named paint) and
+        FILM_CHECKS (False: no protected-surface or untouched-coat check)."""
         t, ch = self.task, self.paint.charts
+        own = self.folder
         out = dict(task=t, settled=settled, contract=self.contract)
         checks = {}
-        diag = {}
-        br = t == "behind-radiator"
         C = BEHIND_RADIATOR
         if "wall" in self.targets:
             w = ch["wall"]
@@ -309,9 +241,8 @@ class Evaluator:
             sl = self._bbox("wall", m_full)
             dft = (w.d[(slice(None),) + sl] + w.s[(slice(None),) + sl]).sum(axis=0)
             hid, m = self._hidden(settled)
-            ms = (m & ~self._pocket[sl]) if br else m             # the scored cells (behind-radiator: not the pocket)
-            frac = float(hid[ms].mean()) if ms.any() else 0.0
-            need = C["hide_frac"] if br else dict(**{"roll-strip": E["hide_frac"]}).get(t, 0.95)
+            frac = float(hid[m].mean()) if m.any() else 0.0
+            need = getattr(own, "NEED", 0.95)
             if t == "touch-up":
                 halo = self.targets["halo"][sl]
                 from .paint import stack_reflectance
@@ -326,33 +257,9 @@ class Evaluator:
                 checks["hide"] = dict(value=round(frac, 4), limit=need, dE_limit=E["hide_dE"],
                                       dft_um_p5_median=[round(float(np.percentile(dft[m], 5))*1e6, 1), round(float(np.median(dft[m]))*1e6, 1)] if m.any() else None,
                                       ok=frac >= need)
-            if br:
-                # a contiguous patch left at the old coat is a holiday whatever the overall share (8-connected cells)
-                remaining, big = self._remaining(hid, ms, w.area)
-                checks["hide"].update(largest_unhidden_cm2=round(big*1e4, 2), limit_holiday_cm2=C["holiday_cm2"],
-                                      whole_band_value=round(float(hid[m].mean()), 4),
-                                      unscored_pocket_cm2=round(float(self._pocket.sum())*w.area*1e4, 1),
-                                      still_to_paint_cm2=round(remaining*1e4, 2),
-                                      ok=frac >= need and big*1e4 <= C["holiday_cm2"])
-                # the paint this task added (the coats on the wall before the session are d_base)
-                new = dft - (w.d_base[sl] if w.d_base is not None else 0.0)
             hmax = float(w.h(sl)[m].max()) if m.any() else 0.0
             moved = float(w.moved[sl][m].max()) if m.any() else 0.0
-            if br:
-                # a run left in the wall: paint the film's flow piled up -- more than run_flow of dry paint carried into
-                # a cell by flow (net of what an applicator took back up), outside the bottom rows. Coats laid over set
-                # paint stack without flowing and are not runs
-                fl = w.flowed[sl]
-                run = (fl > C["run_flow"]) & m & ~self._edge
-                run_a = float(run.sum())*w.area
-                me = m & ~self._edge
-                checks["no_runs"] = dict(wet_max_um=round(hmax*1e6, 1), run_cm2=round(run_a*1e4, 3), limit_cm2=C["run_area"]*1e4,
-                                         new_paint_max_um=round(float(new[me].max())*1e6, 1) if me.any() else 0.0,
-                                         flowed_in_max_um=round(float(fl[me].max())*1e6, 1) if me.any() else 0.0,
-                                         flowed_limit_um=round(C["run_flow"]*1e6, 1),
-                                         settle_travel_mm=round(moved*1e3, 3),
-                                         ok=(hmax <= E["run_h"] or settled) and run_a <= C["run_area"])
-            elif self._task_progress is not None:
+            if self._task_progress is not None:
                 # behind-radiator's run definition: it judges the film left behind, not
                 # cumulative travel during a repair or another coat's settle.
                 run_a = float(((w.flowed[sl] > C["run_flow"]) & m).sum())*w.area
@@ -363,13 +270,10 @@ class Evaluator:
                 checks["no_runs"] = dict(wet_max_um=round(hmax*1e6, 1), travel_mm=round(moved*1e3, 3),
                                          ok=(hmax <= E["run_h"] or settled) and (moved <= E["sag_move"] if settled else True))
             lap = float((w.lap[sl][m] > 0).sum())*w.area
-            (diag if br else checks)["no_laps"] = dict(area_cm2=round(lap*1e4, 3), limit_cm2=E["lap_area"]*1e4,
-                                                        ok=lap <= E["lap_area"])
-            if t == "roll-strip":
-                de = self._appearance(w, m_full) if settled else None
-                checks["uniform"] = dict(dE=None if de is None else round(de, 3), limit=E["dE"],
-                                         ok=(de is not None and de <= E["dE"]) if settled else False,
-                                         note=None if settled else "measured by verify (settle rule)")
+            checks["no_laps"] = dict(area_cm2=round(lap*1e4, 3), limit_cm2=E["lap_area"]*1e4,
+                                     ok=lap <= E["lap_area"])
+            if wall is not None:
+                wall(self, checks, settled, w, m_full)            # the task's checks on the wall (roll-strip: uniform)
             if t == "cut-in-ceiling" and "corner" in self.targets:
                 c = self.targets["corner"][sl]
                 cf = float(hid[c].mean()) if c.any() else 0.0
@@ -378,9 +282,9 @@ class Evaluator:
             pch = ch["paper"]
             dft = pch.projected_dft()
             m, outside = self.targets["paper"], self.targets["outside"]
-            # filling (circle, swatch) asks for a filled, near-opaque coat (15 um dry); the S-stroke is judged on its
-            # shape, so a visibly painted cell counts (5 um dry, E['stroke_dft'])
-            thr = E["stroke_dft"] if t == "brush-stroke" else E["stencil_hide_dft"]
+            # filling (circle, swatch) asks for a filled, near-opaque coat (15 um dry); a task may count less
+            # (COVER_DFT: the S-stroke is judged on its shape, so a visibly painted cell counts, 5 um dry)
+            thr = getattr(own, "COVER_DFT", E["stencil_hide_dft"])
             if self._task_progress is not None:
                 from .scoring import paper_colour, PIGMENT_SHARE
                 wanted, share = paper_colour(pch, t)
@@ -390,7 +294,7 @@ class Evaluator:
             over = float(((dft > 3e-6) & outside).sum())*pch.area
             checks["coverage"] = dict(value=round(cov, 4), limit=0.95, ok=cov >= 0.95)
             if self._task_progress is not None:
-                checks["coverage"].update(paint="cadmium_red" if t == "brush-stroke" else "ultramarine",
+                checks["coverage"].update(paint=getattr(own, "ACRYLIC", "ultramarine"),
                                           min_pigment_share=PIGMENT_SHARE)
             checks["within_line"] = dict(area_cm2=round(over*1e4, 3), limit_cm2=0.5, ok=over <= 0.5e-4)
         if "crate" in self.targets:
@@ -431,21 +335,14 @@ class Evaluator:
             checks["no_runs"] = dict(wet_max_um=round(hmax*1e6, 1), travel_mm=round(moved*1e3, 3), limit_wet_um=E["run_h"]*1e6,
                                      ok=hmax <= E["run_h"])
             checks["overspray"] = self._overspray()
-        if t == "load-roller":
-            checks.update(self._roller_loaded())
-        if self.spec["preset"] == "wall" and t != "load-roller":
-            a, det = self._protected(trim_sinks=br or self._task_progress is not None)
+        if extra is not None:
+            extra(self, checks, settled)                          # the task's own checks (load-roller: the roller)
+        film = getattr(own, "FILM_CHECKS", True)
+        if self.spec["preset"] == "wall" and film:
+            a, det = self._protected(trim_sinks=self._task_progress is not None)
             checks["protected"] = dict(area_cm2=round(a*1e4, 3), limit_cm2=E["protected_area"]*1e4, detail_cm2={k: round(v*1e4, 3) for k, v in det.items()},
                                        ok=a <= E["protected_area"])
-        if br:
-            # a mark the robot leaves in the wet coat (a link or the ferrule/handle touched it): touched cells on
-            # which no applicator has laid real paint (or picked up wet film) since the contact, wet or set
-            marred = w.marred[sl].astype(bool) & m
-            mark_a = float(marred.sum())*w.area
-            checks["no_marks"] = dict(area_cm2=round(mark_a*1e4, 3), limit_cm2=E["protected_area"]*1e4,
-                                      touched_cm2=round(float((w.touched[sl].astype(bool) & m).sum())*w.area*1e4, 3),
-                                      ok=mark_a <= E["protected_area"])
-        elif t != "load-roller":
+        if film:
             # wet coat marred by a robot link or a tool's non-applicator part (frame, ferrule, handle, can): the film it
             # touched (legacy), or the unrepaired marks it leaves (eight-task contract)
             area = 0.0
@@ -457,60 +354,17 @@ class Evaluator:
                                        ok=area <= E["protected_area"])
             if self._task_progress is not None:
                 checks["untouched"]["basis"] = "unrepaired marks left in the film (marred), as in behind-radiator"
-        if t == "roll-strip":
-            checks["roller_in_tray"] = self._roller_in_tray()
+        if tools is not None:
+            tools(self, checks)                                   # the task's tool checks (roll-strip: the roller)
         out["checks"] = checks
         oks = [c["ok"] for c in checks.values()]
         out["succeeded"] = bool(oks) and all(oks)
         out["score"] = float(np.mean(oks)) if oks else 0.0
-        if br:
-            out["diagnostics"] = diag
-            out["reward"] = self._reward(hid, ms, w.area, need, marred, run, a)
-            out["reward"]["mean_of_checks"] = out["score"]
-            out["score"] = 1.0 if out["succeeded"] else C["fail_scale"]*out["reward"]["progress"]
-        elif self._task_progress is not None:
+        if self._task_progress is not None:
             from .scoring import FAILED
             out["reward"] = self._task_progress.reward(checks, settled)
             out["score"] = 1.0 if out["succeeded"] else FAILED*out["reward"]["progress"]
         return out
-
-    def _remaining(self, hid, ms, cell):
-        """(area still to paint before the hide check can pass, largest unhidden patch) in the scored cells ms (m2):
-        the larger of the unhidden area beyond the allowance and the unhidden 8-connected patches' excess over the cap.
-        It is 0 exactly when the hide check passes, and painting a cell never raises it."""
-        from scipy.ndimage import label
-        C = BEHIND_RADIATOR
-        un = ms & ~hid
-        lab, n_lab = label(un, structure=np.ones((3, 3), int))
-        sizes = np.bincount(lab.ravel())[1:]*cell if n_lab else np.zeros(1)
-        excess = float(np.maximum(sizes - C["holiday_cm2"]*1e-4, 0.0).sum())
-        beyond = float(un.sum())*cell - (1.0 - C["hide_frac"])*float(ms.sum())*cell
-        return max(beyond, excess, 0.0), float(sizes.max())
-
-    def _reward(self, hid, m, cell, need, marred, run, protected):
-        """behind-radiator's progress (BEHIND_RADIATOR): one quantity, wall area, from the final film only.
-        cover    = 1 - (area still to paint before hide passes) / (that area at the start), clipped to [0, 1]
-                   (_remaining: it is 0 exactly when the hide check passes);
-        defects  = hidden cells marked beyond the marks' 0.5 cm2 + hidden run cells beyond the runs' 1 cm2
-                   + damage_weight x paint on the radiator or trim beyond its 0.5 cm2 (m2);
-        progress = clip(cover - defects / (area to paint at the start), 0, 1).
-        Inside every tolerance the defects are 0, so progress is 1 when the verdict succeeds; progress 1 without
-        success (a wet film over 250 um before the settle) still scores 0.9, below every success. The band here is the
-        scored band (the pocket left out); marks, runs and damage count anywhere."""
-        C = BEHIND_RADIATOR
-        rem, _ = self._remaining(hid, m, cell)
-        r0 = self._remaining0
-        cov = min(max(1.0 - rem/r0, 0.0), 1.0)
-        marks = max(0.0, float((marred & hid).sum())*cell - E["protected_area"])
-        runs = max(0.0, float((run & hid & ~marred).sum())*cell - C["run_area"])
-        damage = C["damage_weight"]*max(0.0, protected - E["protected_area"])
-        prog = min(max(cov - (marks + runs + damage)/r0, 0.0), 1.0)
-        return dict(contract=C["contract"], score_rule=f"1 if success else {C['fail_scale']} x progress", progress=round(prog, 6),
-                    coverage=round(cov, 6), still_to_paint_cm2=round(rem*1e4, 1), start_to_paint_cm2=round(r0*1e4, 1),
-                    hidden_scored_cm2=round(float(hid[m].sum())*cell*1e4, 1),
-                    defects_cm2=dict(marks=round(marks*1e4, 3), runs=round(runs*1e4, 3), damage=round(damage*1e4, 3)),
-                    net_after_defects_cm2=round((r0 - rem - marks - runs - damage)*1e4, 1),
-                    damage_weight=C["damage_weight"])
 
     def _overspray(self):
         """Containment on conserved nonvolatile solids, never on residual solvent.
@@ -546,49 +400,6 @@ class Evaluator:
                     outside_solids_mL=outside*1e6, emitted_solids_mL=emitted*1e6,
                     detail_solids_mL={n: v*1e6 for n, v in parts.items() if v},
                     limit=0.05, ok=frac <= 0.05)
-
-    def _roller_loaded(self):
-        from .roller import SAT
-        r = self.paint.applicators.get("roller")
-        load = r.load_mass()
-        V = r.s.sum(axis=0) + r.v
-        spread = float((V > 0.2*SAT*r.C0).mean())
-        w = self.env.world
-        bq = w.state.body_q.numpy()
-        tray = w.scene.bodies.get("tray")
-        above = False
-        if tray is not None:
-            pc = bq[r.cover][:3]; pt = bq[tray][:3]
-            from .film import _quat_rot
-            loc = _quat_rot(bq[tray][3:7]).T @ (pc - pt)
-            g = P.TRAY["size"]
-            above = abs(loc[0]) < g[0]/2 and abs(loc[1]) < g[1]/2 and 0.10 < loc[2] < 0.6
-        quiet = (w.tick - getattr(self, "_last_drip_tick", -10**9))*P.DT >= 10.0
-        return dict(load=dict(grams=round(load*1e3, 2), limit_g=50.0, ok=load >= 0.050),
-                    spread=dict(fraction=round(spread, 3), limit=0.8, ok=spread >= 0.8),
-                    held_above_tray=dict(ok=bool(above)),
-                    no_drip_10s=dict(seconds_since_last_drop=round((w.tick - getattr(self, "_last_drip_tick", -10**9))*P.DT, 2)
-                                     if hasattr(self, "_last_drip_tick") else None, ok=bool(quiet)))
-
-    def _roller_in_tray(self):
-        w = self.env.world
-        bq = w.state.body_q.numpy()
-        r = self.paint.applicators.get("roller")
-        tray = w.scene.bodies.get("tray")
-        if r is None or tray is None:
-            return dict(ok=False)
-        from .film import _quat_rot
-        loc = _quat_rot(bq[tray][3:7]).T @ (bq[r.cover][:3] - bq[tray][:3])
-        g = P.TRAY["size"]
-        inside = abs(loc[0]) < g[0]/2 and abs(loc[1]) < g[1]/2 and loc[2] < 0.12
-        released = (self._task_progress is not None or all(w.grip_force[a] == 0 for a in w.arms)) and not self._held(r)
-        return dict(cover_in_tray=bool(inside), released=bool(released), ok=bool(inside and released))
-
-    def _held(self, app):
-        w = self.env.world
-        fingers = {i for i in w.scene.robot_bodies if "finger" in w.model.body_label[i]}
-        bodies = {app.frame, app.cover} if hasattr(app, "frame") else {app.body}
-        return any((a in fingers and b in bodies) or (b in fingers and a in bodies) for a, b, *_ in w.contact_table())
 
     # ------------------------------------------------------------------ API
     def checkpoint_state(self):
@@ -649,7 +460,8 @@ class Evaluator:
         snap = {n: c.snapshot() for n, c in paint.charts.items()}
         bq = self.env.world.state.body_q.numpy()
         psnap, t_drop = None, 0.0
-        if (self.task == "behind-radiator" or (self._task_progress is not None and "wall" in self.targets)) and len(paint.drips.pos):
+        land = getattr(self.folder, "LAND_DROPS", False)             # the task's verifier.py (behind-radiator)
+        if (land or (self._task_progress is not None and "wall" in self.targets)) and len(paint.drips.pos):
             # paint already falling when the episode ends lands where it falls before the radiator and trim are judged
             # the drops in flight fall with the rigid world frozen. A brush's pendant
             # volume below one drop, and drips a still-loaded brush would shed later, are not released.

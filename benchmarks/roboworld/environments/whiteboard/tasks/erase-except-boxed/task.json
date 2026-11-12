@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "whiteboard/whiteboard-tasks-v2/erase-except-boxed",
+  "name": "erase-except-boxed",
+  "env_id": "whiteboard",
+  "split": "train",
+  "selection": {
+    "task": "erase-except-boxed",
+    "contract": "whiteboard-tasks-v2"
+  },
+  "description": "Erase everything on the board except the homework inside the blue box. Keep the box and its contents as they are, and leave the wiper resting in the tray.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

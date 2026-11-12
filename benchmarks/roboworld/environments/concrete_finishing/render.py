@@ -255,7 +255,7 @@ def paste_meshes(world):
         out[f'falling_{i}'] = load_mesh(drop['p'], np.eye(3), drop['packet'].volume, drop['packet'].material.name, r, r)
     packet = world.coupler.rag_packet
     if packet is not None and packet.volume > 1e-9:
-        setup = L.TASK_SETUP[world.spec['task']]
+        setup = L.station(world.spec['task'])
         if 'rag' in setup:
             cx, cy, _ = setup['cart']; lx, ly = setup['rag']
             out['rag_deposit'] = load_mesh(np.array([cx+lx, cy+ly, P.CART[2]+P.RAG[2]]), np.eye(3),

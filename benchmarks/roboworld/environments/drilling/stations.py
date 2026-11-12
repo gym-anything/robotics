@@ -100,6 +100,7 @@ def build_wall(sc):
     """North-wall bay: a 2.4 x 1.6 m drillable region of the 200 mm C25/30 wall with its rebar and
     aggregate fields, the rest of the wall static; the cart docked 0.6 m from the face; the tool kit trolley."""
     from .concrete import ConcreteFields
+    from .layout import kit_anchors
     from . import parts as PT
     L = sc.layout
     R = P.ROOM
@@ -119,7 +120,7 @@ def build_wall(sc):
                      fields=fields, fields_map=fmap, render_material="concrete_wall")
     sc.wall_fields = fields
     _cart(sc, L)
-    if L["task"] in ("clean-and-set", "ledger-anchor"):
+    if kit_anchors(L["task"]) is not None:                # the anchor kit's trolley (layout.kit_anchors)
         x_c = L["x_c"]
         tx = x_c + 0.66
         sc.box("kit_trolley", (tx, 2.20, 0.39), (0.20, 0.24, 0.39), "cart_grey")

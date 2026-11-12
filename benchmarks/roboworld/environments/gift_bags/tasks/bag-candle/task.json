@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "gift-bags/v1/counter/bag-candle/gift-bags-tasks-v2/seed-0",
+  "name": "bag-candle",
+  "env_id": "gift-bags",
+  "split": "train",
+  "selection": {
+    "preset": "counter",
+    "task": "bag-candle",
+    "seed": 0,
+    "contract": "gift-bags-tasks-v2"
+  },
+  "description": "You are at the cash-wrap counter of a boutique. A gift bag stands open on the dark rubber counter mat with a bottom board in it. Put the customer's boxed candle in the bag, upright on the board, and leave the bag standing open on the mat. Release everything when you are done.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

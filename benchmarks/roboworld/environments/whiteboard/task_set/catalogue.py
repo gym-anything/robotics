@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 
 from whiteboard.config import COLORS, Config
 from whiteboard.stroke_font import GLYPHS
+from whiteboard.tasks import task_setup
 
 CONTRACT = "whiteboard-tasks-v1"
 NAMES = ("erase-board", "write-text", "write-in-colour", "erase-except-boxed",
@@ -27,19 +28,6 @@ INSTRUCTIONS = {
 }
 
 
-def table_strokes():
-    """Same tuple format as bridge_strokes; metres divided by a 0.60 m width."""
-    return tuple((name, "blue", weight, points) for name, weight, points in (
-        ("top", "thick", ((-.5, .3), (.5, .3))),
-        ("bottom", "thick", ((-.5, -.3), (.5, -.3))),
-        ("left", "thick", ((-.5, -.3), (-.5, .3))),
-        ("right", "thick", ((.5, -.3), (.5, .3))),
-        ("header", "normal", ((-.5, .2), (.5, .2))),
-        ("column one", "normal", ((-1/6, -.3), (-1/6, .3))),
-        ("column two", "normal", ((1/6, -.3), (1/6, .3))),
-    ))
-
-
 def text_strokes(text, center_x, center_z, width, color="black"):
     span = len(text) * 1.1 - .3
     # World +x is viewer LEFT. Mirror glyph geometry as well as letter order;
@@ -48,11 +36,6 @@ def text_strokes(text, center_x, center_z, width, color="black"):
         (center_x - ((i * 1.1 + x) / span - .5) * width,
          center_z + (y - .5) / span * width) for x, y in path))
         for i, char in enumerate(text) for path in GLYPHS[char])
-
-
-def world_table(task):
-    return tuple((n, c, w, tuple((task.center_x + x * task.width_m, task.center_z + z * task.width_m)
-                               for x, z in p)) for n, c, w, p in table_strokes())
 
 
 @dataclass(frozen=True)
@@ -83,24 +66,8 @@ class CatalogueTask:
         return f"whiteboard/{self.contract}/{self.name}"
 
     def strokes(self, start=False):
-        if self.name == "write-text":
-            return () if start else text_strokes("HELLO", self.center_x, self.center_z, .60)
-        if self.name == "write-in-colour":
-            return () if start else text_strokes("WELCOME", self.center_x, self.center_z, .70, "green")
-        if self.name == "draw-table":
-            return () if start else world_table(TablePlacement())
-        if self.name == "correct-misspelling":
-            return text_strokes("SCIENSE" if start else "SCIENCE", self.center_x, self.center_z, .70)
-        if self.name == "erase-board":
-            return (text_strokes("HELLO", -.05, 1.38, .60) +
-                    text_strokes("12345", -.05, 1.15, .60, "blue")) if start else ()
-        if self.name == "erase-except-boxed":
-            box = (("box", "blue", "normal", ((-.40, 1.12), (-.10, 1.12), (-.10, 1.40), (-.40, 1.40), (-.40, 1.12))),)
-            kept = box + tuple(s for word, z in (("HW", 1.34), ("A+B", 1.26), ("123", 1.18))
-                               for s in text_strokes(word, -.25, z, .20))
-            outside = text_strokes("WORK", .18, 1.34, .38) + text_strokes("1234", .18, 1.18, .38, "red")
-            return kept + outside if start else kept
-        return ()
+        """The board at the start (start) or the desired final board: the task's setup.py (tasks/<name>/)."""
+        return task_setup(self.name).setup(self, start)
 
     def validate_board(self, board):
         for start in (False, True):
@@ -125,13 +92,6 @@ class CatalogueTask:
         # Mechanical end states require the adapter's current body/contact state.
         # Fail explicitly rather than awarding an incomplete ink-only success.
         raise RuntimeError("Task-set evaluation requires its GAR task adapter")
-
-
-@dataclass(frozen=True)
-class TablePlacement:
-    center_x: float = -.05
-    center_z: float = 1.28
-    width_m: float = .60
 
 
 @lru_cache(maxsize=16)
@@ -185,7 +145,15 @@ def source_identity():
     from gym_anything_robotics.paths import package_dir
     board, core = package_dir("whiteboard"), package_dir("gym_anything_robotics")
     paths = {f"whiteboard/task_set/{p.name}": p for p in (board / "task_set").glob("*.py")}
+    paths.update(task_files())
     paths.update({"gym_anything_robotics/backends/newton_whiteboard_task_set.py": core / "backends/newton_whiteboard_task_set.py",
                   "gym_anything_robotics/launch.py": core / "launch.py", "whiteboard/benchmark.json": board / "benchmark.json"})
     files = {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in sorted(paths.items())}
     return {"files": files, "sha256": hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()}
+
+
+def task_files():
+    """The presets' own code (tasks/<name>/setup.py and verifier.py), which the task identity also covers."""
+    from gym_anything_robotics import task_folders
+    return {f"whiteboard/tasks/{name}/{part}.py": task_folders.folder("whiteboard", name) / f"{part}.py"
+            for name in NAMES[:-1] for part in task_folders.PARTS}

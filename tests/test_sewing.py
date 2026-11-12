@@ -30,7 +30,7 @@ class CatalogueTest(unittest.TestCase):
             self.assertEqual(tasks.catalog(alias)["environment_id"], "sewing")
 
     def test_tasks_resolve_and_round_trip(self):
-        from sewing.task import INSTRUCTIONS, TASKS, TIME_LIMIT_S, TASK_SETUP, Evaluator
+        from sewing.task import INSTRUCTIONS, TASKS, TIME_LIMIT_S, TASK_SETUP, Evaluator, task_verifier
         self.assertEqual(tasks.catalog("sewing")["count"], len(TASKS))
         self.assertEqual(set(INSTRUCTIONS), set(TASKS))
         self.assertEqual(set(TIME_LIMIT_S), set(TASKS))
@@ -38,7 +38,8 @@ class CatalogueTest(unittest.TestCase):
         ids = set()
         for task, code in TASKS.items():
             from sewing.task_set import NEW_TASKS
-            self.assertTrue(task in NEW_TASKS or hasattr(Evaluator, "_eval_" + task.replace("-", "_")), task)
+            self.assertTrue(task in NEW_TASKS or hasattr(Evaluator, "_eval_" + task.replace("-", "_"))
+                            or hasattr(task_verifier(task), "checks"), task)
             for sel in ({"task": task, "seed": 3}, {"task": code, "seed": 3}, {"preset": "sample-room", "task": task,
                                                                                "seed": 3}):
                 spec = tasks.resolve("sewing", sel)

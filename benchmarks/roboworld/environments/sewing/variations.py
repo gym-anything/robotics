@@ -109,7 +109,7 @@ def _plain(v):
 
 @lru_cache(maxsize=None)
 def _spec(index):
-    from .task import TASKS, TIME_LIMIT_S
+    from .task import TASKS, TIME_LIMIT_S, task_setup
     from .variants import resolve
     task, seed = task_seed(index)
     v = resolve(PRESET, task, seed)
@@ -121,10 +121,9 @@ def _spec(index):
     from .task_set import NEW_TASKS, BASE_TASK, default_contract
     if task in NEW_TASKS:
         data.update(task_contract=default_contract(task), physical_task=BASE_TASK[task])
-    if task == "square-plies":
-        data["task_start"] = dict(name="tray_slipped", top_ply_translation_m=[.040, .025], yaw_deg=6.,
-                                  revision="tray-slipped-40x25mm-yaw6-v1",
-                                  preparation="before existing relaxation; separate cache")
+    start = getattr(task_setup(task), "TASK_START", None)       # a start of the task's own (its setup.py)
+    if start is not None:
+        data["task_start"] = dict(start)
     data["sha256"] = hashlib.sha256(json.dumps(data, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return json.dumps(data, sort_keys=True)
 

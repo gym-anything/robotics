@@ -30,9 +30,10 @@ class CatalogueLaundryEnv(LaundryEnv):
     def _configure_task(self, config):
         if self.task_contract == CONTRACT:
             index = SemanticGarmentIndex(self.sim.construction, self.sim.pattern_mesh, self.sim.topology)
+            # A benchmark task's start comes from its setup.py (tasks/<task>/); only authored starts replace the lay.
+            x = start_positions(self.entry, index, self.sim.reset_positions, config.table_top)
             authored = self.entry.start in ("folded_towel", "bunched_ties")
             if authored:
-                x = start_positions(self.entry, index, self.sim.reset_positions, config.table_top)
                 self.start_report = {"authored_reach": reach_report(x, table_top=config.table_top,
                                                     robot_base_y=config.robot_base_y)}
                 # Uses the existing IPC/table guards; rejects crossings instead of hiding them.

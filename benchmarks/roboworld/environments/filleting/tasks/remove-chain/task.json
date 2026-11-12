@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "filleting/v1/pork-tenderloin/remove-chain/filleting-tasks-v2/seed-0",
+  "name": "remove-chain",
+  "env_id": "filleting",
+  "split": "train",
+  "selection": {
+    "preset": "pork-tenderloin",
+    "task": "remove-chain",
+    "seed": 0,
+    "contract": "filleting-tasks-v2"
+  },
+  "description": "Remove the chain (side muscle) along its seam.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

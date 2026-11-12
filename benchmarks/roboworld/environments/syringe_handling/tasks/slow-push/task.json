@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/iv-lock/slow-push/contract-syringe-tasks-v2/seed-0",
+  "name": "slow-push",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "iv-lock",
+    "task": "slow-push",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+  },
+  "description": "Give the 4 mL of blue medication in the labelled syringe through the saline lock over 120 seconds by the wall clock, then flush with 5 mL of saline, the first millilitre at the same rate. Leave the lock clamped with nothing attached.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

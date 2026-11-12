@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/pot-sink/rinse-sponge/surface-rinsing-tasks-v2/seed-0",
+  "name": "rinse-sponge",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "pot-sink",
+    "task": "rinse-sponge",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+  },
+  "description": "The scrub sponge on the back ledge is full of wash solution. Rinse it under the faucet until it releases no more suds, wring it out and set it back on the ledge. Leave the faucet closed and nothing in the hands.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

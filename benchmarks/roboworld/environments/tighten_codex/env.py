@@ -8,8 +8,8 @@ from ruckig import InputParameter, OutputParameter, Result, Ruckig, Synchronizat
 from scipy.spatial.transform import Rotation
 
 from .config import Config
-from .presets import build
-from .task import NEW_TASKS, contract_for, uses_eight
+from .presets import build, single_loose
+from .task import contract_for, hands_off_rules, task_verifier, uses_eight
 
 
 class TightenEnv:
@@ -23,10 +23,6 @@ class TightenEnv:
     # start position (the home stop holds it at -0.1 mm; free returns rest
     # at +0.004 and -0.022 mm).
     MIXED_FLAG_HOME_BAND_M = .0005
-    # mixed partial credit only: a flag short of home keeps a share of the
-    # detection grade that falls linearly from the band edge to 0 at 10 mm
-    # (the detected-cue LED is lit to ~7.2 mm). Success still needs home.
-    MIXED_FLAG_RETURN_GRADE_M = .010
     # mixed: a seated click is cancelled once the screw turns back more than
     # this past its angle at that click (loosening; a seated screw cannot back
     # off by itself). Recorded after-click back-rotation: <= 1.76 mrad.
@@ -129,7 +125,7 @@ class TightenEnv:
 
     def _settle_initial(self):
         """Run the configured settle, then make that state tick 0."""
-        if self.config.task in NEW_TASKS:
+        if single_loose(self.config.task):
             from .presets import settle_initial
             return settle_initial(self)
         ticks=int(round(self.config.initial_settle_s/self.config.dt))
@@ -543,7 +539,7 @@ class TightenEnv:
         ids0=c.rigid_contact_shape0.numpy()[:n]
         ids1=c.rigid_contact_shape1.numpy()[:n]
         forces=c.force.numpy()[:n]
-        if self.config.task=="mixed" or uses_eight(self.config):
+        if hands_off_rules(self.config):
             self._held=self._work_contact(ids0,ids1)
         loads={name:0. for name in self.screws}
         # Net external axial force on each screw chain (head, shank, bearing
@@ -756,7 +752,7 @@ class TightenEnv:
         the screw has turned back past its click angle (at any reading)."""
         q=self.state.joint_q.numpy()
         starts=self.model.joint_q_start.numpy()
-        mixed=self.config.task=="mixed" or uses_eight(self.config)
+        mixed=hands_off_rules(self.config)
         for name,item in self.screws.items():
             advance=float(q[int(starts[item["slide_joint"]])])
             angle=float(q[int(starts[item["turn_joint"]])])
@@ -857,7 +853,7 @@ class TightenEnv:
         # background-suppression sensor switches when the near-range return
         # outweighs the far one, so a spot 95-99.9 % on a white flag at 130 mm
         # is detected; no partial-coverage switching curve is sourced.
-        margin=0. if self.config.task=="mixed" or uses_eight(self.config) else .0021
+        margin=0. if hands_off_rules(self.config) else .0021
         if self.config.task_contract=="tighten-tasks-v2":    # task_set_v2.py: each task's own rule
             from .task_set_v2 import detection_margin
             margin=detection_margin(self.config)
@@ -869,11 +865,9 @@ class TightenEnv:
 
     def _evaluate(self):
         jq=self.state.joint_q.numpy()
-        body_q=self.state.body_q.numpy()
         starts=self.model.joint_q_start.numpy()
         metrics={}
-        eight=uses_eight(self.config)
-        mixed=self.config.task=="mixed" or eight
+        mixed=hands_off_rules(self.config)
         for name,item in self.screws.items():
             slide=float(jq[int(starts[item["slide_joint"]])])
             turn=float(jq[int(starts[item["turn_joint"]])])
@@ -899,18 +893,26 @@ class TightenEnv:
             if mixed:
                 metrics[name].update(preset_driver_clicks_since_seated=self._seated_clicks[name],
                                      hands_off_load_n=self._free_load[name])
-        if eight:
-            from .task_evaluation import evaluate
-            return evaluate(self,metrics)
-        need={"sensor":("sensor_left","sensor_right"),
-              "aim":("sensor_left","sensor_right"),
-              "frame":("frame_front","frame_top"),
-              "mixed":tuple(metrics),"support":("frame_front","frame_top"),
-              "access":("frame_top",)}[self.config.task]
+        # The task's verifier.py (tasks/<task>/) judges the state under the selected contract: the eight-task
+        # contracts in task_evaluation (task_set_v2), the released ones in _evaluate_released.
+        return task_verifier(self.config.task).verify(self,metrics)
+
+    def _evaluate_released(self,metrics):
+        """The released contracts' judgement of the per-screw metrics (tighten-legacy-v1; tighten-mixed-v1 for mixed,
+        with mixed's hands-off rules), with the task's criteria from its verifier.py: its required screws, DETECTION,
+        RAIL_SLOT_M (the rail's slot band) and, for mixed, its score."""
+        from .task_evaluation import required
+        jq=self.state.joint_q.numpy()
+        body_q=self.state.body_q.numpy()
+        starts=self.model.joint_q_start.numpy()
+        mixed=hands_off_rules(self.config)
+        criteria=task_verifier(self.config.task)
+        # mixed's job asks for every screw.
+        need=tuple(metrics) if mixed else required(self.config)
         secured=all(metrics[n]["retained_after_disengagement"] and
                     metrics[n]["driver_released_on_screw"] for n in need)
         optical=self._optical()
-        need_optical=self.config.task in ("sensor","aim","mixed")
+        need_optical=getattr(criteria,"DETECTION",False)
         rail_offset=float(body_q[self.items["rail"],0]-.14)
         # Rail attitude relative to the bracket's reference (level, square):
         # rotation about y (nose down +) and about z.
@@ -921,8 +923,8 @@ class TightenEnv:
         # within 6.15 mrad by the bracket key) are not part of that job. With
         # the flag required at its home, detection there covers their effect
         # on the inspection head (the flag cannot be moved to meet the beam).
-        rail_ok=((abs(rail_offset)<=.0005 and square) if self.config.task=="support" else
-                 (abs(rail_offset)<=.001 and square) if self.config.task=="frame" else
+        reference=getattr(criteria,"RAIL_SLOT_M",None)
+        rail_ok=((abs(rail_offset)<=reference[0] and square) if reference is not None else
                  level if mixed else True)
         # SICK W4F fixing-screw maximum, checked on the measured bit moment.
         torque_ok=all(metrics[n]["peak_bit_socket_moment_2ms_nm"]<=.4
@@ -936,7 +938,7 @@ class TightenEnv:
                      and rail_ok and torque_ok and hands_off and flag_home and self.fault is None)
         extra={}
         if mixed:
-            score,extra=self._mixed_score(metrics,optical,success,flag_offset)
+            score,extra=criteria.score(self,metrics,optical,success,flag_offset)
             extra.update(assembly_hands_off=hands_off,work_touched=dict(self._held),
                          flag_offset_m=flag_offset,flag_at_home=flag_home)
         else:
@@ -1003,50 +1005,6 @@ class TightenEnv:
         flag_x=(float(self.state.body_q.numpy()[self.items["flag"],0]) if target_x is None
                 else target_x)
         return inside(hit[0]-flag_x,.005)*inside(hit[2]-self.items["flag_center_z_m"],.022)
-
-    def _mixed_score(self, metrics, optical, success, flag_offset):
-        """Per-deliverable partial credit from hands-off readings (see
-        MIXED_SCOPE); never 1.0 without success. No term rewards motion,
-        contact, tool pickup, flag retraction, support or work order."""
-        tol=self.config.rail_level_tolerance_rad
-        level=float(np.clip((self.FREE_DROOP_RAD-abs(self._free_pitch))/(self.FREE_DROOP_RAD-tol),0.,1.))
-        coverage=self._spot_coverage(optical)
-        # Detection grade = aim x return. The aim is judged against a flag at
-        # its HOME x (1 when the spot centre would be on it, else twice the
-        # spot share there), so moving the flag can never raise it; the return
-        # share is 1 inside the home band and falls linearly to 0 at 10 mm.
-        hit=optical.get("intersection_m")
-        if hit is None:
-            aim=float(optical["detected"])
-        else:
-            home_x=float(self.state.body_q.numpy()[self.items["flag"],0])-flag_offset
-            on_face=(.04<=optical["range_m"]<=.14 and abs(hit[0]-home_x)<=.005 and
-                     abs(hit[2]-self.items["flag_center_z_m"])<=.022)
-            aim=1. if on_face else min(1.,2*self._spot_coverage(optical,home_x))
-        band,reach=self.MIXED_FLAG_HOME_BAND_M,self.MIXED_FLAG_RETURN_GRADE_M
-        returned=1. if abs(flag_offset)<=band else max(0.,(reach-abs(flag_offset))/(reach-band))
-        seen=aim*returned
-        credit={}
-        for name,m in metrics.items():
-            m3=name.startswith("sensor_")
-            floor=m["minimum_retained_load_n"]
-            if m3 and m["peak_bit_socket_moment_2ms_nm"]>.4:
-                seat=0.
-            elif (m["driver_released_on_screw"] and m["hands_off_load_n"]>=floor and
-                  m["advance_m"]>=(.0004 if m3 else .00045)):
-                seat=1.
-            else:
-                seat=.9*min(1.,m["hands_off_load_n"]*.8/floor)
-            # Only the upward M4 sets the rail's attitude; the forward M4
-            # clamps the (non-rotating) bracket to the post.
-            credit[name]=seat*((.75+.25*seen) if m3 else level if name=="frame_top" else 1.)
-        partial=sum(credit.values())/len(credit)
-        return (1. if success else .95*partial),{
-            "score_terms":{"screw_credit":credit,"rail_level_grade":level,
-                           "hands_off_rail_pitch_rad":self._free_pitch,
-                           "spot_on_flag_fraction":coverage,"aim_at_home_grade":aim,
-                           "flag_return_grade":returned,"detection_grade":seen,
-                           "partial_mean":partial}}
 
     _TRACKED=("_preload","_peak_preload","_peak_torque","_thread_load","_interface",
               "_bit_moment","_peak_bit_moment","_bit_window","_peak_bit_moment_filtered",

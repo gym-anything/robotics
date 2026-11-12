@@ -6,6 +6,7 @@ from importlib import import_module
 import json
 from pathlib import Path
 
+from . import task_folders
 from .launch import LaunchSpec, describe
 from .paths import project_file
 
@@ -50,6 +51,17 @@ def catalog(environment_id):
 
 def catalogs():
     return [catalog(name) for name in CATALOGS]
+
+
+def package(environment_id):
+    """The environment's package (the first folder of its catalogue path)."""
+    return CATALOGS[catalog(environment_id)["environment_id"]].split("/")[0]
+
+
+def folders(environment_id):
+    """The environment's benchmark task folders (task_folders.py), as {task name: task.json}."""
+    name = package(environment_id)
+    return {task: task_folders.load(name, task) for task in task_folders.names(name)}
 
 
 def merge_exact(first, second, path="backend_options"):

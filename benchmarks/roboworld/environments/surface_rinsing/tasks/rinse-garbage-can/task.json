@@ -1,0 +1,23 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "surface-rinsing/v1/can-wash/rinse-garbage-can/surface-rinsing-tasks-v2/seed-0",
+  "name": "rinse-garbage-can",
+  "env_id": "surface-rinsing",
+  "split": "train",
+  "selection": {
+    "preset": "can-wash",
+    "task": "rinse-garbage-can",
+    "seed": 0,
+    "contract": "surface-rinsing-tasks-v2"
+  },
+  "description": "The 32 gal garbage can in the can-wash bay has been scrubbed with detergent. Rinse its inside and outside free of soap and loosened debris with the hose, empty the rinse water into the floor drain, and leave the can upright with no water in it. Dock the hose valve back in its wall holster and do not spray the dunnage shelf.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

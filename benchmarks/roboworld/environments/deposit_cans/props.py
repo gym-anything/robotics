@@ -58,10 +58,9 @@ def mesh_body(a,name,position,v,f,material,mass,resolution=256):
 def build(a):
     v,f=rounded_shell((.40,.18,.020),wall=.002,inset=.004,radius=.015)
     tray=mesh_body(a,'reusable_return_tray',(-.43,.375,.903),v,f,'gray_plastic',.23)
-    from .variants import preset,SORT_CUPS_ON_COUNTER,TUB_CUPS,PAPER_CUPS
-    # The cups start on the tray, except sort_cups (on the counter's right-hand row, between counter cans) and
-    # tub_cups (standing in the tub); the tray then stays empty in its usual place.
-    task=preset(a.config);starts={'sort_cups':SORT_CUPS_ON_COUNTER,'tub_cups':TUB_CUPS}.get(task)
+    # The cups start on the tray, unless the task's setup.py sets their bases (a.start.cup_starts, assembly.Start);
+    # the tray then stays empty in its usual place.
+    starts=a.start.cup_starts
     for i,x in enumerate((-.56,-.43,-.30)):
         v,f=cup_geometry()
         mesh_body(a,f'reusable_cup_{i}',starts[i] if starts else (x,.375,.909),v,f,'polycarbonate',.077)
@@ -74,8 +73,8 @@ def build(a):
     a.objects['landfill_container'].update(envelope_m=[.5588,.2794,.762],
         body_envelope_m=[.508,.2794,.762],manufacturer='Rubbermaid FG354060BLA')
     a.objects['preservation']=dict(tray=tray,cups=[a.objects[f'reusable_cup_{i}']['body'] for i in range(3)])
-    if task=='sort_waste':
+    if a.start.paper_cups:
         # Two used paper cups on the counter, for the landfill bin. Shared prop contact configuration.
         v,f=cup_geometry(rings_rz=PAPER_CUP_RINGS)
         a.objects['paper_cups']=[mesh_body(a,f'paper_cup_{k}',position,v,f,'paper_cup',PAPER_CUP_MASS)
-            for k,position in enumerate(PAPER_CUPS)]
+            for k,position in enumerate(a.start.paper_cups)]

@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/shirt/sleeve_fold",
+  "name": "sleeve_fold",
+  "env_id": "laundry",
+  "split": "test",
+  "selection": {
+    "garment": "shirt"
+  },
+  "description": "Fold both long sleeves and cuffs onto the shirt body. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

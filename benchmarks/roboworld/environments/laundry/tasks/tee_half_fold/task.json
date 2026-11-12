@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "laundry/tee/half_fold/laundry-tasks-v2",
+  "name": "tee_half_fold",
+  "env_id": "laundry",
+  "split": "train",
+  "selection": {
+    "garment": "tee",
+    "task": "half_fold",
+    "contract": "laundry-tasks-v2"
+  },
+  "description": "Fold the T-shirt in half lengthwise, one sleeve onto the other, side seams together. Use the robot arms; leave the garment released and resting on the table.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

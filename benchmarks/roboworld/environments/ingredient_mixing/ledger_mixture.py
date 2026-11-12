@@ -1,6 +1,7 @@
-"""The mixture's part of the parameter ledger: every constant that governs the food (materials.py, task.py, heat.py,
-continuum.py), read from the modules themselves so that the table cannot drift from the code, each with a label and
-its basis. `python -m ingredient_mixing.params` prints it after the ledger of geometry, robot and appliances.
+"""The mixture's part of the parameter ledger: every constant that governs the food (materials.py, task.py and the
+tasks' setup.py, heat.py, continuum.py), read from the modules themselves so that the table cannot drift from the code,
+each with a label and its basis. `python -m ingredient_mixing.params` prints it after the ledger of geometry, robot
+and appliances.
 
 Labels are those of params.py: read (a source opened and the number seen), search (a search summary only), derived,
 estimate, open (no basis found; chosen), authored (a design choice), literature (a classical value, from memory unless
@@ -60,8 +61,12 @@ def entries():
             continue
         unit, label, basis = solid[f.name]
         add(f"FLOUR.{f.name}", getattr(S, f.name), unit, label, basis)
-    for name, obj, what in (("PUDDING", T.PUDDING, "instant pudding mix"), ("CAKE", T.CAKE, "cake mix"), ("STARCH", T.STARCH, "corn starch"),
-                            ("SPELT", T.SPELT, "whole spelt flour (the cited table: K 6.9 Pa s^n, n 0.33)")):
+    own = {name: T.task_setup(name) for name in T.TEXT}          # each task's setup.py holds its own materials
+    for name, obj, what in (("PUDDING", own["pudding-whisk"].PUDDING, "instant pudding mix"),
+                            ("CAKE", own["cake-mixer"].CAKE, "cake mix"),
+                            ("STARCH", own["stir-sauce"].STARCH, "corn starch"),
+                            ("SPELT", own["pancake-whisk"].SPELT,
+                             "whole spelt flour (the cited table: K 6.9 Pa s^n, n 0.33)")):
         diff = {f.name: getattr(obj, f.name) for f in fields(obj) if f.name != "name" and getattr(obj, f.name) != getattr(S, f.name)}
         label = "read" if name == "SPELT" else "estimate"
         basis = (f"{what}: differs from the flour in these constants. " + (
@@ -101,7 +106,9 @@ def entries():
             continue
         unit, label, basis = recipe[f.name]
         add(f"RECIPE.{f.name}", getattr(R, f.name), unit, label, basis)
-    for p in (T.MAYO, T.KETCHUP, T.RELISH, T.HONEY, T.MUSTARD, T.PORRIDGE, T.PETFOOD):
+    sauce = own["sauce-blend"]
+    for p in (sauce.MAYO, sauce.KETCHUP, sauce.RELISH, sauce.HONEY, sauce.MUSTARD, own["reheat-porridge"].PORRIDGE,
+              sauce.PETFOOD):
         add(f"PASTE {p.name}", dict(rho=p.rho, yield_pa=p.yield_pa, k=p.k, n=p.n, cp=p.cp), "kg/m3, Pa, Pa s^n, -, J/kg/K",
             "search" if p.name in ("mayonnaise", "ketchup", "honey") else "estimate",
             "Herschel-Bulkley constants: published ranges for mayonnaise, ketchup and honey (search "

@@ -972,13 +972,13 @@ class Dresser:
 def layout_conflicts(task=None):
     """Axis-aligned overlaps between layout objects that share the bench top (physically impossible). The
     render never edits layout.py; it reports these and states what it draws instead. `task`: include its task-only
-    props and arrangement (layout.FRAME_PAN, task_spec)."""
+    props and arrangement (layout.task_props, task_spec)."""
     boxes = {}
     tx, ty = L.TABLE["center"]
     items = [("BOARD", L.BOARD), ("ICE_PAN", dict(L.ICE_PAN, center=L.ice_pan_center(task))),
              ("FILLET_TRAY", L.fillet_tray(task)), ("KNIFE_BLOCK", L.KNIFE_BLOCK),
              ("TWEEZER_TRAY", L.TWEEZER_TRAY), ("SCALE", L.SCALE)]
-    if task in L.FRAME_PAN["tasks"]:
+    if "FRAME_PAN" in L.task_props(task):
         items.append(("FRAME_PAN", L.FRAME_PAN))
     for name, d in items:
         (cx, cy), (sx, sy) = d["center"], d["size"][:2]
@@ -1669,7 +1669,7 @@ def build_bench(d, skip=()):
 
 def build_bench_items(d, preset, skip=(), trout_positions=None, task=None):
     """Board, cloth, preset vessels and tools on the bench top at their layout positions (with `task`'s task-only
-    props and arrangement: layout.FRAME_PAN, task_spec)."""
+    props and arrangement: layout.task_props, task_spec)."""
     tz = L.TABLE["top_z"]
     st = d.steel()
     out = {}
@@ -1725,7 +1725,7 @@ def build_bench_items(d, preset, skip=(), trout_positions=None, task=None):
         d.rest("bowl", tz, "bench top", tz)
     prov("bowl", "240 mm rim, 80 mm deep stainless bowl", "layout", "BOWL")
     # fillet-whole-fish only: the empty solid GN 1/2 pan for the frame and head (its colliders: scene.tapered_pan)
-    if task in L.FRAME_PAN["tasks"] and "frame_pan" not in skip:
+    if "FRAME_PAN" in L.task_props(task) and "frame_pan" not in skip:
         G = L.FRAME_PAN
         (gx, gy), (gsx, gsy, gsz) = G["center"], G["size"]
         V, F, _ = gn_pan_geometry((gsx, gsy), gsz, rim=G["rim"], taper=G["taper"], t=G["wall"])
@@ -2218,7 +2218,7 @@ def build_camera_mounts(d):
 def dress(stage, folder, preset="A", skip=(), task=None):
     """Author the dressed room into `stage` (visual only). `skip`: layout items the physics frame draws itself
     (e.g. {"board", "bowl", "knife_fillet"}); `task`: the task code whose task-only bench props and arrangement are
-    drawn (layout.FRAME_PAN, task_spec; None: the preset's common bench). Returns a dict with credits,
+    drawn (layout.task_props, task_spec; None: the preset's common bench). Returns a dict with credits,
     provenance, supports, adjustments and the layout conflicts found."""
     if preset not in ("A", "B", "C"):
         raise ValueError("preset must be A, B or C")

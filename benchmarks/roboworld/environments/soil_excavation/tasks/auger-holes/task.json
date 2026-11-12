@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "soil-excavation/v1/bulbs/auger-holes/soil-tasks-v2/seed-0",
+  "name": "auger-holes",
+  "env_id": "soil-excavation",
+  "split": "train",
+  "selection": {
+    "task": "auger-holes",
+    "seed": 0,
+    "contract": "soil-tasks-v2"
+  },
+  "description": "Drill a bulb hole at each of the five white marks with the drill-mounted planting auger, each at least 18 cm deep and left open. The drill's trigger is squeezed by the gripper.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

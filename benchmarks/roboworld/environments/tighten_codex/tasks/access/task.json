@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/access/tighten-tasks-v2/seed-0",
+  "name": "access",
+  "env_id": "tighten-codex",
+  "split": "train",
+  "selection": {
+    "task": "access",
+    "seed": 0,
+    "contract": "tighten-tasks-v2"
+  },
+  "description": "Secure the underside M4 screw through the restricted service opening with the yellow 3 mm/0.60 N m driver until it clicks. Leave the rail level and holding on its own after removing the tool and releasing the stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

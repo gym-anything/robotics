@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "pencap/pen-on-notebook",
+  "name": "pen-on-notebook",
+  "env_id": "pencap",
+  "split": "train",
+  "selection": {
+    "task": "pen-on-notebook"
+  },
+  "description": "Lay the yellow pen on the notebook.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

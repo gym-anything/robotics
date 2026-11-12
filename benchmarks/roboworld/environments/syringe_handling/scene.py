@@ -15,36 +15,22 @@ from . import params as P
 from . import parts as T
 from . import devices as D
 from . import hydraulics as H
+from .config import task_setup
 
 CZ = P.COUNTER_Z
 RZ180 = Rotation.from_euler("z", math.pi)
 
-# task -> what lies on the tray and stands at the working position
+# What lies on the tray and stands at the working position is the task's SETUP (tasks/<task>/setup.py):
 #   syringes: (name, kind, liquid, liquid mL, air mL, fitting, slot)   fitting: needle kind, 'cap' or None
-TASK_SETUP = {
-    "sharps-away": dict(trainer="pad", syringes=(("syringe_a", "s3", "medication", 0.05, 0.0, "g25", -4),
-                                                  ("syringe_b", "s10", "saline", 0.07, 0.0, "g21", 0),
-                                                  ("syringe_c", "s1", "medication", 0.04, 0.0, "g27", 4)),
-                        bare=True, loose_sheaths=("syringe_a", "syringe_b")),
-    "set-dose": dict(trainer="pad", syringes=(("syringe", "s3", "medication", 2.8, 0.3, "g25", 0),), dose_ml=2.5),
-    "draw-dose": dict(trainer="pad", syringes=(("syringe", "s3", None, 0.0, 0.0, "g18b", 0),), vial_ml=10.0, dose_ml=2.5),
-    "inject": dict(trainer="pad", syringes=(("syringe", "s3", "medication", 0.5, 0.0, "g23", 0),), dose_ml=0.5),
-    "vial-to-pad": dict(trainer="pad", syringes=(("syringe", "s3", None, 0.0, 0.0, "g18b", -2),), vial_ml=10.0, dose_ml=1.0,
-                        spare_needles=(("needle_im", "g25", 3),)),
-    "flush-lock": dict(trainer="lock", syringes=(("flush", "flush", "saline", 10.0, 0.3, "cap", 0),), flush_ml=5.0),
-    "slow-push": dict(trainer="lock", syringes=(("dose", "s10", "medication", 4.0, 0.0, "cap", -3),
-                                                ("flush", "flush", "saline", 10.0, 0.3, "cap", 3)),
-                      dose_ml=4.0, dose_s=120.0, flush_ml=5.0),
-    "fast-bolus": dict(trainer="lock", syringes=(("dose", "s10", "contrast", 10.0, 0.0, "cap", -3),
-                                                 ("flush", "flush", "saline", 10.0, 0.3, "cap", 3)),
-                       dose_ml=10.0, bolus_s=8.0, flush_ml=5.0),
-}
 
 
 def task_layout(config):
     """Seeded placement and contents: loose objects move by up to 15 mm and 10 degrees with the seed,
-    volumes by a few per cent; seed 0 is the nominal bay."""
-    L = dict(TASK_SETUP[config.task])
+    volumes by a few per cent; seed 0 is the nominal bay. The task's own part is in its setup.py (tasks/<task>/): SETUP
+    (what lies on the tray and stands at the working position) and setup(L, config, jit) (its own variants and seeded
+    contents)."""
+    folder = task_setup(config.task)
+    L = dict(folder.SETUP)
     L["task"], L["variant"], L["seed"] = config.task, config.variant, config.seed
     rng = np.random.default_rng([config.seed, sum(map(ord, config.task))])
     jit = (lambda s: float(rng.uniform(-s, s))) if config.seed else (lambda s: 0.0)
@@ -59,33 +45,15 @@ def task_layout(config):
     v = config.variant
     if v == "upright":
         L["upright"] = True
-    elif v == "adapter":
-        L["adapter"] = True
-        L["syringes"] = (("syringe", "s3", None, 0.0, 0.0, None, 0),)
     elif v == "half-vial":
         L["vial_ml"] = 5.0
-    elif v == "vacuum-vial":
-        L["vial_ml"], L["vial_gauge_kpa"] = 7.0, -25.0
-    elif v == "subcut":
-        L["syringes"] = (("syringe", "s1", "medication", 0.3, 0.0, "g27", 0),)
-        L["dose_ml"], L["layer"] = 0.3, "fat"
-    elif v == "blocked":
-        L["blocked"] = True
     elif v == "clamp-open":
         L["clamp_closed"] = False
     elif v in ("g22", "g18"):
         L["cannula"] = v
-    elif v == "short":
-        L["syringes"] = (("dose", "s3", "medication", 1.0, 0.0, "cap", -3), L["syringes"][1])
-        L["dose_ml"], L["dose_s"] = 1.0, 60.0
+    folder.setup(L, config, jit)              # the variants of this task alone, and its own seeded contents
     if config.seed:
-        # contents vary a little: what a previous user left, how much air came with the draw
-        out = []
-        for (name, kind, liq, ml, air, fit, slot) in L["syringes"]:
-            if liq and ml > 0.2 and config.task == "set-dose":
-                ml, air = round(ml + jit(0.1), 3), round(max(air + jit(0.1), 0.1), 3)       # at most 3.3 mL in all: the barrel holds 3.36
-            out.append((name, kind, liq, ml, air, fit, slot))
-        L["syringes"] = tuple(out)
+        # contents vary a little: what a previous user left in a used vial
         if "vial_ml" in L and not v:
             L["vial_ml"] = round(L["vial_ml"] - float(rng.uniform(0.0, 3.0)), 2)
     # A filled syringe's volume is what its scale reads: the liquid above the dead space of the nozzle, which the
@@ -265,7 +233,7 @@ class Scene:
         self.sharps()
         if L["trainer"] == "pad":
             self.pad()
-            if "vial_ml" in L or L["task"] in ("inject", "set-dose", "sharps-away"):
+            if "vial_ml" in L or getattr(task_setup(L["task"]), "PROP_VIAL", False):     # (the task's setup.py)
                 self.vial(L.get("vial_ml", 10.0))
         else:
             self.lock()

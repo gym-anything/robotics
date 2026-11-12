@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "welding/v1/steel-cell/fit-up-bracket/seed-0",
+  "name": "fit-up-bracket",
+  "env_id": "welding",
+  "split": "train",
+  "selection": {
+    "preset": "steel-cell",
+    "task": "fit-up-bracket"
+  },
+  "description": "The bracket has been set down on the base plate off its layout. Fit it up for tacking: stand it upright and square to the plate, centred on the plate along and across it with its faces parallel to the plate's long edges, to within 1 mm, then let go of it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

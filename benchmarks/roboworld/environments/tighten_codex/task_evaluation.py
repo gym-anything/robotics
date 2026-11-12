@@ -6,8 +6,8 @@ predicates or score. Here continuous progress is load/geometry, not a count of c
 
 import math
 
-from .presets import NEW_TASKS, SCREWS, flag_home, loose_screw, pretightened_screws
-from .task import EIGHT_CONTRACT
+from .presets import SCREWS, flag_home, pretightened_screws
+from .task import EIGHT_CONTRACT, task_verifier
 
 FAIL_FACTOR = .95
 
@@ -40,11 +40,11 @@ def track_free_rail(env):
 
 
 def required(config):
-    if config.task in NEW_TASKS:
-        return (loose_screw(config.task, config.seed),)
-    return {"sensor": SCREWS[:2], "aim": SCREWS[:2],
-            "frame": ("frame_front", "frame_top"), "support": ("frame_front", "frame_top"),
-            "access": ("frame_top",)}[config.task]
+    """The screws the task asks for: required(config) in its verifier.py (tasks/<task>/)."""
+    criteria = task_verifier(config.task)
+    if not hasattr(criteria, "required"):
+        raise KeyError(config.task)
+    return criteria.required(config)
 
 
 def score_state(task, need, metrics, start_loads, *, level, square, slot, detection, keep):
@@ -54,6 +54,8 @@ def score_state(task, need, metrics, start_loads, *, level, square, slot, detect
     thresholds does not jump partial credit. A bit/hand cannot raise free_load.
     """
     seats, credits = {}, {}
+    # A task's verifier.py may grade every screw by the whole job (WHOLE_JOB_GRADE: front-m4, find-loose).
+    whole_job = getattr(task_verifier(task), "WHOLE_JOB_GRADE", False)
     for name in need:
         m = metrics[name]
         floor = m["minimum_retained_load_n"]
@@ -66,7 +68,7 @@ def score_state(task, need, metrics, start_loads, *, level, square, slot, detect
         if name.startswith("sensor_") and m["peak_bit_socket_moment_2ms_nm"] > .4:
             seat = 0.
         seats[name] = seat
-        if task in NEW_TASKS:
+        if whole_job:
             grade = level * (.75 + .25 * detection) * keep
         elif name.startswith("sensor_"):
             grade = .75 + .25 * detection
@@ -83,8 +85,10 @@ def evaluate(env, metrics):
         from .task_set_v2 import evaluate as evaluate_v2
         return evaluate_v2(env, metrics)
     config = env.config
+    # The task's criteria: its verifier.py (tasks/<task>/).
+    criteria = task_verifier(config.task)
     need = required(config)
-    keep_names = pretightened_screws(config) if config.task in NEW_TASKS else ()
+    keep_names = pretightened_screws(config) if getattr(criteria, "PRESERVE_OTHERS", False) else ()
     optical = env._optical()
     q = env.state.joint_q.numpy()
     starts = env.model.joint_q_start.numpy()
@@ -103,18 +107,20 @@ def evaluate(env, metrics):
     tol = config.rail_level_tolerance_rad
     level = decreasing(rail["pitch"], tol, env.FREE_DROOP_RAD)
     square = decreasing(rail["yaw"], tol, config.rail_yaw_clearance_rad)
-    slot_band = .0005 if config.task == "support" else .001
-    slot = decreasing(rail["offset"], slot_band, .0015 if config.task == "support" else .003)
-    if config.task not in ("frame", "support"):
+    reference = getattr(criteria, "RAIL_SLOT_M", None)     # (band, zero) of the rail's slot offset
+    if reference is not None:
+        slot_band = reference[0]
+        slot = decreasing(rail["offset"], slot_band, reference[1])
+    else:
         square = slot = 1.
     rail_ok = (abs(pitch) <= tol and abs(rail["pitch"]) <= tol)
-    if config.task in ("frame", "support"):
+    if reference is not None:
         rail_ok = rail_ok and abs(yaw) <= tol and abs(rail["yaw"]) <= tol and abs(offset) <= slot_band and abs(rail["offset"]) <= slot_band
-    if config.task in ("sensor", "aim"):
+    if not getattr(criteria, "RAIL_LEVEL", True):
         rail_ok = True
-    need_optical = config.task in ("sensor", "aim", *NEW_TASKS)
+    need_optical = getattr(criteria, "DETECTION", False)
     torque_ok = all(metrics[n]["peak_bit_socket_moment_2ms_nm"] <= .4 for n in SCREWS[:2])
-    group = "sensor" if config.task in ("sensor", "aim") else "frame"
+    group = getattr(criteria, "HANDS_OFF_GROUP", "frame")
     hands_off = not env._held[group]
 
     def retained(name):

@@ -1,0 +1,24 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "syringe-handling/v1/injection/inject/contract-syringe-tasks-v2/seed-0",
+  "name": "inject",
+  "env_id": "syringe-handling",
+  "split": "train",
+  "selection": {
+    "preset": "injection",
+    "task": "inject",
+    "seed": 0,
+    "variant": "plain",
+    "contract": "syringe-tasks-v2"
+  },
+  "description": "The 3 mL Luer-lock syringe on the tray holds 0.5 mL of medication. Give all of it into the muscle of the injection pad at the printed ring, square to the skin, no faster than 10 seconds per millilitre, then put the syringe into the sharps container. Do not put the sheath back on.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

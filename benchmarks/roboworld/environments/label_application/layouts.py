@@ -4,19 +4,17 @@ Pure functions of (task, seed), shared by the scene, the label artwork and the e
 printed label, the item it belongs to and the verifier always agree. Each draw uses its own
 generator (numpy SeedSequence of (seed, tag)), so adding one never shifts another, and the carton
 pose drawn by Scene.rng is unchanged. Seed 0 keeps fixed reference layouts (payloads, tube roll,
-canister position).
+canister position). A benchmark task's own draws are in its setup.py (tasks/<task>/: payload, and press-down's
+laid label, the repair rungs' lifted areas, part-id-hdpe's canister offset, part-id-match's plates).
 """
 import math
 import numpy as np
 
 IN = .0254
 
-# seed-0 payloads (the reference layouts); other seeds derive payloads of the same length and format.
-# gs1-case-side: the SSCC's GS1 mod-10 check digit is 4.
-PAYLOADS = {"carrier-top": "961201950123456789", "cover-old-label": "961201950198765432",
-            "press-down": "961201950155501234", "gs1-case-side": "00106141410000004154",
-            "tube-wrap": "S2609230742", "part-id-hdpe": "NG-3310-0007-000912",
-            "part-id-match": "NG-7715-0042-000318"}
+# seed-0 payloads (the reference layouts) of the tasks outside the benchmark (a benchmark task's: its setup.py
+# PAYLOAD); other seeds derive payloads of the same length and format.
+PAYLOADS = {"cover-old-label": "961201950198765432", "tube-wrap": "S2609230742"}
 OLD_LABEL_PAYLOAD = "961201950987654321"
 
 
@@ -31,27 +29,19 @@ def gs1_check_digit(digits):
 
 
 def payload(task, seed):
-    """The barcode payload of the label printed for (task, seed). The ladder tasks print the same
-    format as the task they share a bench with: a carrier tracking number, an accession number."""
-    if task in ("smooth-corner", "finish-securing"):
-        return "9612019" + "".join(str(d) for d in _rng(seed, 11 if task == "smooth-corner" else 12).integers(0, 10, 11))
-    if task == "tube-label":
-        return "S260923" + "".join(str(d) for d in _rng(seed, 13).integers(0, 10, 4))
-    if task == "part-id-match":
-        p = plates(seed)
-        return f"NG-{p['part_numbers'][p['target']]}-{_serial(seed, 7):06d}"
+    """The barcode payload of the label printed for (task, seed): a benchmark task's setup.py payload(seed), else
+    the draws below."""
+    from .config import task_setup
+    folder = task_setup(task)
+    if folder is not None:
+        return folder.payload(seed)
     if seed == 0:
         return PAYLOADS[task]
     r = _rng(seed, 1)
-    if task in ("carrier-top", "cover-old-label", "press-down"):
+    if task == "cover-old-label":
         return "9612019" + "".join(str(d) for d in r.integers(0, 10, 11))           # 18-digit tracking number
-    if task == "gs1-case-side":
-        data = "1" + "0614141" + "".join(str(d) for d in r.integers(0, 10, 9))      # extension + GS1 prefix + serial
-        return "00" + data + gs1_check_digit(data)                                    # AI (00) + SSCC-18
     if task == "tube-wrap":
         return "S260923" + "".join(str(d) for d in r.integers(0, 10, 4))           # accession number
-    if task == "part-id-hdpe":
-        return f"NG-3310-0007-{_serial(seed, 7):06d}"
     raise ValueError(task)
 
 
@@ -85,17 +75,6 @@ def old_label(seed, carton_W=12*IN, tape_half=.024, margin=5e-3):
     uc = (1 if r.random() < .5 else -1)*r.uniform(.035, .10)
     v0, v1 = side*vc - lv/2, side*vc + lv/2
     return dict(u=(uc - lu/2, uc + lu/2), v=(min(v0, v1), max(v0, v1)), side=side, format="4x3 in", centre=(uc, side*vc))
-
-
-# ------------------------------------------------------------------ press-down
-def laid_label(seed, carton_W=12*IN, tape_half=.024, margin=5e-3, label_w=4*IN):
-    """Where the co-worker laid the 4 x 6 in label on the carton top for press-down (carton coordinates): on the
-    flap half toward the robots, inside the carrier zone, centre within +-30 mm along the carton and +-5 mm across
-    the zone's middle, turned up to 2 deg."""
-    r = _rng(seed, 4)
-    zone = (tape_half + carton_W/2 - margin)/2
-    return dict(centre=(float(r.uniform(-.03, .03)), float(zone + r.uniform(-.005, .005))),
-                yaw=float(math.radians(r.uniform(-2., 2.))))
 
 
 # ------------------------------------------------------------------ task ladder: partly applied labels
@@ -198,51 +177,25 @@ def edge_regions():
 
 def partly_applied(task, seed, carton_W=12*IN, tape_half=.024, margin=5e-3):
     """Where a co-worker stuck the 4 x 6 in label on the carton top and which parts of it are still lifted, for the
-    two repair rungs of the task ladder (carton coordinates; regions in label material coordinates).
-    smooth-corner: on the flap half toward the robots, like press-down's laid label (centre +-30 mm along, +-5 mm
-    across the zone's middle, turned up to 2 deg), either way round; one lifted corner (any of the four), legs 28-38
-    mm along the label and 22-32 mm across, its tip curled 65-90 deg off the carton.
-    finish-securing: on either flap half (centre +-30 mm along, +-5 mm across, turned up to 3 deg), either way round;
-    two to four lifted areas among the four corners (legs 28-45 / 24-40 mm), the two ends (14-40 mm deep, the front
-    up to 12 mm out of square) and the two long sides (12-17 mm deep), curled 60-90 deg (at most 100/m), apart from
-    each other and clear of the barcode, together 12-35 % of the label."""
+    two repair rungs of the task ladder (carton coordinates; regions in label material coordinates): centre +-30 mm
+    along the carton and +-5 mm across the middle of the carrier zone of a flap half, turned, either way round. The
+    rung's setup.py holds its own draws (tasks/smooth-corner/, tasks/finish-securing/): the generator's tag
+    (LAYOUT_TAG), the flap half (label_side), the turn (YAW_DEG) and the lifted areas (lifted_areas)."""
+    from .config import task_setup
+    rung = task_setup(task)
+    if not hasattr(rung, "lifted_areas"):
+        raise ValueError(task)
     L, W = LABEL_UV
-    r = _rng(seed, 9 if task == "smooth-corner" else 10)
-    side = 1 if task == "smooth-corner" or r.random() < .5 else -1
+    r = _rng(seed, rung.LAYOUT_TAG)
+    side = rung.label_side(r)
     zone = (tape_half + carton_W/2 - margin)/2
     across = .005
-    yaw_deg = 2. if task == "smooth-corner" else 3.
+    yaw_deg = rung.YAW_DEG
     centre = (float(r.uniform(-.03, .03)), float(side*(zone + r.uniform(-across, across))))
     yaw = float(math.radians(r.uniform(-yaw_deg, yaw_deg)))
     flip = bool(r.random() < .5)
     corners = [(0., 0.), (0., W), (L, 0.), (L, W)]
-    if task == "smooth-corner":
-        c = corners[int(r.integers(0, 4))]
-        flaps = [_flap("corner", r.uniform(.028, .038), r.uniform(.022, .032), c, r.uniform(65., 90.))]
-    elif task == "finish-securing":
-        for _ in range(1000):
-            k = int(r.choice([2, 2, 3, 3, 4]))
-            pool = [("corner", c) for c in corners] + [("end", 0.), ("end", L), ("side", 0.), ("side", W)]
-            pick = [pool[i] for i in r.permutation(len(pool))[:k]]
-            flaps = []
-            for kind, c in pick:
-                tip = r.uniform(60., 90.)
-                if kind == "corner":
-                    flaps.append(_flap(kind, r.uniform(.028, .045), r.uniform(.024, .040), c, tip))
-                elif kind == "end":
-                    w, skew = r.uniform(.014, .040), r.uniform(-.006, .006)
-                    flaps.append(_flap(kind, w + skew, w - skew, c, tip))
-                else:
-                    w, skew = r.uniform(.012, .017), r.uniform(-.002, .002)
-                    flaps.append(_flap(kind, w + skew, w - skew, c, tip))
-            if _flaps_ok(flaps, (.12, .35)):
-                break
-        else:                                   # pragma: no cover - the draw always succeeds within a few tries
-            raise RuntimeError(f"no lifted-area layout for seed {seed}")
-    else:
-        raise ValueError(task)
-    if task == "smooth-corner" and not _flaps_ok(flaps):
-        raise RuntimeError(f"smooth-corner seed {seed}: corner layout invalid")
+    flaps = rung.lifted_areas(r, corners, L, W, seed)
     return dict(centre=centre, yaw=yaw, flip=flip, side=side, regions=flaps)
 
 
@@ -251,47 +204,3 @@ def tube_roll(seed):
     """Roll of the tube about its own axis in the cradle (rad). Seed 0: manufacturer label facing up; other
     seeds: any roll, as a tube is laid in a cradle by hand."""
     return 0. if seed == 0 else float(_rng(seed, 5).uniform(-math.pi, math.pi))
-
-
-# ------------------------------------------------------------------ part-id-hdpe
-def canister_offset(seed):
-    """Canister position offset on the bench (m). Seed 0: none."""
-    return (0., 0.) if seed == 0 else tuple(float(v) for v in _rng(seed, 6).uniform(-.02, .02, 2))
-
-
-# ------------------------------------------------------------------ part-id-match
-PLATE_SIZE = (.16, .12, .006)          # the stainless plate of the retired part-id-steel task, unchanged
-PLATE_SLOTS = (-.03, .17, .37)         # x of the three plates on the receiving bench (left of the tool tray)
-PLATE_Y = -.03
-MARKING_SIZE = (.064, .014)            # laser-marked "P/N ...." block on the plate face (u, v extents)
-
-
-def plates(seed):
-    """Three stainless mounting plates from one delivery, each laser-marked with its part number; the printed ID
-    label belongs to one of them. Part numbers are confusable (same family, one digit or one place apart), as
-    left/right-hand and revision variants are. Returns slot poses (x, y, yaw), part numbers per slot, marking
-    rectangles in plate coordinates and the target slot."""
-    r = _rng(seed, 8)
-    if seed == 0:
-        a, b = 7715, 42
-    else:
-        a, b = int(r.integers(1100, 9800)), int(r.integers(10, 980))
-    family = [f"{a:04d}-{b:04d}", f"{a:04d}-{b + 1:04d}", f"{a + 10:04d}-{b:04d}"]
-    order = [0, 1, 2] if seed == 0 else [int(k) for k in r.permutation(3)]
-    numbers = [family[k] for k in order]
-    target = order.index(0)                       # the label is printed for family[0]
-    poses, markings = [], []
-    for k, x in enumerate(PLATE_SLOTS):
-        if seed == 0:
-            dx, dy, yaw = 0., 0., 0.
-        else:
-            dx, dy = (float(v) for v in r.uniform(-.008, .008, 2))
-            yaw = float(math.radians(r.uniform(-4., 4.)))
-        poses.append((x + dx, PLATE_Y + dy, yaw))
-        su = 1 if (seed == 0 and k != 1) or (seed and r.random() < .5) else -1
-        sv = 1 if (seed == 0) or r.random() < .5 else -1
-        mu = su*.040
-        mv = sv*(PLATE_SIZE[1]/2 - .009 - MARKING_SIZE[1]/2)
-        markings.append(dict(u=(mu - MARKING_SIZE[0]/2, mu + MARKING_SIZE[0]/2),
-                             v=(mv - MARKING_SIZE[1]/2, mv + MARKING_SIZE[1]/2)))
-    return dict(poses=poses, part_numbers=numbers, markings=markings, target=target)

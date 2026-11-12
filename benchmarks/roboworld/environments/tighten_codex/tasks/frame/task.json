@@ -1,0 +1,22 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "tighten-codex/v1/frame/tighten-tasks-v2/seed-0",
+  "name": "frame",
+  "env_id": "tighten-codex",
+  "split": "train",
+  "selection": {
+    "task": "frame",
+    "seed": 0,
+    "contract": "tighten-tasks-v2"
+  },
+  "description": "Secure the loose extrusion corner with the yellow 3 mm/0.60 N m driver until it clicks on both prestarted M4 screws: one forward into the post T-slot and one upward into the rail slot. Leave the drooped rail level, square and seated at its reference position, holding on its own after release.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

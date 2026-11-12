@@ -1,0 +1,20 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "lockkey/swing-open",
+  "name": "swing-open",
+  "env_id": "lockkey",
+  "split": "train",
+  "selection": {
+    "task": "swing-open"
+  },
+  "description": "The padlock on the chest has just been unlocked and its key is still in it. Swing the shackle open. Leave the other key on its stand.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "gar.task-folder.v1",
+  "id": "titration/start-stirring/titration-n15-0000",
+  "name": "start-stirring",
+  "env_id": "titration",
+  "split": "train",
+  "selection": {
+    "task": "start-stirring",
+    "variation_id": 0
+  },
+  "description": "Start the magnetic stirrer under the flask and set it to a steady stir that mixes the solution without splashing it.",
+  "hooks": {
+    "setup": "setup.py::setup"
+  },
+  "success": {
+    "mode": "program",
+    "spec": {
+      "program": "verifier.py::verify"
+    }
+  }
+}

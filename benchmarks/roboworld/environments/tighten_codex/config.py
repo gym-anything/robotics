@@ -5,7 +5,6 @@ import math
 
 
 TASKS = ("sensor", "aim", "frame", "mixed", "support", "access", "front-m4", "find-loose")
-PRETIGHTENED_TASKS = ("sensor", "aim")
 
 
 @dataclass(frozen=True)
@@ -199,7 +198,7 @@ class Config:
     m3_tool_limit_nm: float = 0.35
     m4_tool_limit_nm: float = 0.60
     # Sensor replacement and aiming are done on a secured frame: both M4s
-    # start tightened (None = by task: sensor and aim).
+    # start tightened (None = by task: FRAME_PRETIGHTENED in its setup.py).
     frame_pretightened: bool | None = None
     # Every scene starts from rest: the loose rail on its washer, the loose
     # sensor at its slot end, a pre-tightened frame in equilibrium. This much
@@ -222,7 +221,8 @@ class Config:
 
     @property
     def frame_is_pretightened(self):
-        return (self.task in PRETIGHTENED_TASKS if self.frame_pretightened is None
+        from .task import task_setup
+        return (task_setup(self.task).FRAME_PRETIGHTENED if self.frame_pretightened is None
                 else self.frame_pretightened)
 
     def __post_init__(self):

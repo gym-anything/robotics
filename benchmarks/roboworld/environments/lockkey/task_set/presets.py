@@ -3,21 +3,17 @@
 The mid-cycle coordinates are derived from the existing assisted swivel record,
 not from running the simulator. They are not yet checked by a hands-off settle,
 contact or render run. Initial velocities are zero; the task starts at tick zero.
+
+A task's own part of its start is in its setup.py (tasks/<task>/): MID_CYCLE for a start recorded mid-cycle
+(start_states.json), placements(table_height) for the other moved free keys and stands(moved) where the keys' stands
+move with them (which-key).
 """
 
 import json
 from pathlib import Path
 import numpy as np
-from scipy.spatial.transform import Rotation
 
-from .catalogue import validate
-
-MID_CYCLE = ("turn-to-open", "swing-open", "remove-key")
-# Entire flat key, including its 11 mm-radius bow, stays inside the work mat.
-# At x=.24 the bow would extend beyond x=.27.
-MAT_KEY_XY = (.21, -.20)
-MAT_TOP = .0016
-FLAT_BOW_HALF_THICKNESS = .0025
+from .catalogue import task_setup, validate
 
 
 def snapshot(task):
@@ -25,20 +21,20 @@ def snapshot(task):
     return data["snapshots"][task]
 
 
+def mid_cycle(task):
+    """Whether the task starts mid-cycle from its recorded snapshot (its setup.py's MID_CYCLE)."""
+    return getattr(task_setup(task), "MID_CYCLE", False)
+
+
 def placements(task, table_height=.75):
     """Pure data for the moved free keys; unchanged supports and robot HOME."""
     validate(task)
-    if task in MID_CYCLE:
+    if mid_cycle(task):
         pose = np.array(snapshot(task)["body_poses"]["key"], dtype=float)
         pose[2] += table_height-.75
         return {"key": pose}
-    if task == "return-key":
-        position = [*MAT_KEY_XY, table_height+MAT_TOP+FLAT_BOW_HALF_THICKNESS]
-        return {"key": np.r_[position, Rotation.from_euler("x", 90., degrees=True).as_quat()]}
-    if task == "which-key":
-        return {name: np.array([.16, y, table_height+.055, 0., 0., 0., 1.])
-                for name, y in (("key", .16), ("wrong_key", -.16))}
-    return {}
+    own = getattr(task_setup(task), "placements", None)
+    return own(table_height) if own is not None else {}
 
 
 def _free_coordinates(env, name, pose, q, qd):
@@ -68,8 +64,9 @@ def apply_start(env, task):
     poses = env.state.body_q.numpy()
     stands = {n: poses[env.bodies[n]].copy() for n in ("key", "wrong_key")}
     moved = placements(task, env.config.table_height)
-    if task == "which-key":
-        stands = {name: pose.copy() for name, pose in moved.items()}
+    own = getattr(task_setup(task), "stands", None)
+    if own is not None:
+        stands = own(moved)
     record = {"task": task, "kind": "catalogue" if not moved else "constructed_initial_condition",
               "settle_checked": False, "render_checked": False}
     if not moved:
@@ -77,7 +74,7 @@ def apply_start(env, task):
     q, qd = env.state.joint_q.numpy(), env.state.joint_qd.numpy()
     for name, pose in moved.items():
         _free_coordinates(env, name, pose, q, qd)
-    if task in MID_CYCLE:
+    if mid_cycle(task):
         # Recorded coordinates only make sense for the recorded mechanism. Keep
         # all old config handling available on the default task; never coerce or
         # silently replace an incompatible configuration here.
@@ -108,7 +105,7 @@ def apply_start(env, task):
         got = actual[env.bodies[name]]
         if not np.allclose(got[:3], pose[:3], atol=1e-6) or abs(abs(np.dot(got[3:], pose[3:]))-1.) > 1e-6:
             raise RuntimeError(f"{name}: placed pose does not match FK")
-    if task in MID_CYCLE:
+    if mid_cycle(task):
         for name, raw in snapshot(task)["body_poses"].items():
             expected = np.array(raw, dtype=float)
             expected[2] += env.config.table_height-.75

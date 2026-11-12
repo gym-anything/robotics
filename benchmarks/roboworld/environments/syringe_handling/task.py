@@ -3,14 +3,16 @@
 Every criterion is a physical state or a physical history read from the world: liquid volumes by place and by time of
 arrival, pressures, what a bare needle or nozzle has touched, where a needle went in and how it came out, where things
 lie. Nothing is read from the robot's commands. The evaluator is read-only and does not advance time.
+
+A task's own criteria and score are in its verifier.py (tasks/<task>/); the criteria every task has and the checks
+several tasks share are here (evaluate_criteria).
 """
 
-import math
 import numpy as np
 
 from . import params as P
 from . import hydraulics as H
-from .config import LEGACY_CONTRACT, EIGHT_TASK_CONTRACT, VIAL_TO_PAD_CONTRACT
+from .config import LEGACY_CONTRACT, EIGHT_TASK_CONTRACT, task_verifier
 from . import task_set_v2                     # syringe-tasks-v2: instructed and judged as syringe-tasks-v1
 
 ML = H.ML
@@ -207,22 +209,14 @@ def _in_sharps(env, names):
 
 
 SUSTAINED_S, SUSTAINED_ML = 4.0, 0.5
-W_DOSE_GIVEN, W_DOSE_DRAWN, W_NEEDLE_CHANGED, W_CLEARED_AWAY = 0.55, 0.15, 0.10, 0.10
 HOUSEKEEPING_STEP, HOUSEKEEPING_FLOOR = 0.05, 0.5
-RATE_ZERO_ML, SUSTAINED_ZERO_ML = 1.0, 2.0
-SHARPS_PLACES = ("sharps_flap", "sharps_outside", "sharps_inside")
-RESTICK_TRACE = 0.05
+RATE_ZERO_ML = 1.0
 
 
 def _good_puncture(n, r, needle_name=None, lo_ang=0.0, hi_ang=NEEDLE_ANGLE_DEG):
     return (r["offset_mm"] <= RING_MM and lo_ang <= r["angle_deg"] <= hi_ang and r["t_out"] is not None
             and (r["exit_angle_deg"] or 0.0) <= NEEDLE_ANGLE_DEG and r["lever_deg"] <= NEEDLE_ANGLE_DEG
             and (needle_name is None or n == needle_name))
-
-
-def _site_quality(r):
-    """1 inside the ring and within 15 degrees of square, falling linearly to 0 at twice either."""
-    return max(0.0, min(1.0, 2.0 - r["offset_mm"]/RING_MM, 2.0 - r["angle_deg"]/NEEDLE_ANGLE_DEG))
 
 
 def _tissue_window(led, window_s):
@@ -237,165 +231,40 @@ def _tissue_window(led, window_s):
     return float((c[1:] - c[j]).max())/ML
 
 
-def _vial_to_pad_sticks(env):
-    """The 25 G's pad punctures: when it first entered; when the punctures that carried the dose (at least RESTICK_TRACE
-    of it into the tissue) last came out (None if none did); and the punctures that started after that and carried less
-    (re-sticks after the dose)."""
-    fl, d = env.world.fluid, env.spec["dose_ml"]
-    recs = [r for r in fl.needles["needle_im"].records if r["target"] == "pad"]
-    arr = [(t, float(m[:H.AIR].sum())/ML) for k, rs in fl.ledger.arrivals.items() if k.startswith("pad:") and not k.endswith(":surface")
-           for t, m, _ in rs]
-    deliv = {id(r): sum(v for t, v in arr if r["t"] - 1e-6 <= t <= (math.inf if r["t_out"] is None else r["t_out"] + 1e-6)) for r in recs}
-    dosing = [r for r in recs if deliv[id(r)] >= RESTICK_TRACE*d]
-    t_end = max((math.inf if r["t_out"] is None else r["t_out"]) for r in dosing) if dosing else None
-    resticks = [r for r in recs if t_end is not None and r["t"] > t_end and deliv[id(r)] < RESTICK_TRACE*d]
-    return min((r["t"] for r in recs), default=math.inf), t_end, resticks
-
-
-def _vial_to_pad_hygiene(env):
-    """_hygiene for vial-to-pad: the fill needle may also touch the vial's inside glass, and the 25 G's point the prepared
-    skin round the ring (`pad:prepared`) except after its dose was given. The sharps container is allowed only once a
-    needle or the nozzle is done with: not for the fill needle until its draw has ended, nor for the 25 G or the nozzle
-    before the 25 G first enters the pad."""
-    fl = env.world.fluid
-    fill_name = f"{env.spec['dose_syringe']}_needle"
-    bad = _hygiene(env, {fill_name: ("vial:inside",), "needle_im": ("pad:prepared",)})
-    im, fill, syr = fl.needles["needle_im"], fl.needles[fill_name], fl.syringes[env.spec["dose_syringe"]]
-    recs = [r for r in im.records if r["target"] == "pad"]
-    t_first, t_end, _ = _vial_to_pad_sticks(env)
-    anchor = t_end if t_end is not None else (max(r["t_out"] for r in recs) if recs and all(r["t_out"] is not None for r in recs) else None)
-    t_draw = max((r["t_out"] for r in fill.records if r["target"] == "vial_stopper" and r["t_out"] is not None), default=None)
-
-    def add(key, place):
-        if place not in bad.get(key, []):
-            bad[key] = sorted(bad.get(key, []) + [place])
-    if "pad:prepared" in im.touch and anchor is not None and im.touch["pad:prepared"] > anchor:
-        add("needle_im", "pad:prepared")
-    for p in SHARPS_PLACES:
-        if p in fill.touch and t_draw is not None and fill.touch[p] <= t_draw:
-            add(fill_name, p)
-        if p in im.touch and math.isfinite(t_first) and im.touch[p] < t_first:
-            add("needle_im", p)
-        if p in syr.touch and math.isfinite(t_first) and syr.touch[p] < t_first:
-            add(f"{env.spec['dose_syringe']} nozzle", p)
-    return bad
-
-
-def _used_needle_breaches(env):
-    """Needles resheathed after they first entered the pad, and needles let go of by the syringe (`luer_released`) after
-    that and before they first touched the sharps container: {needle: [times]} each."""
-    w, fl = env.world, env.world.fluid
-    recapped, taken_off = {}, {}
-    for n, d in fl.needles.items():
-        t0 = min((r["t"] for r in d.records if r["target"] == "pad"), default=None)
-        if t0 is None:
-            continue
-        caps = [round(r["t"], 3) for r in d.resheathed if r["t"] > t0]
-        t_box = min((d.touch[p] for p in SHARPS_PLACES if p in d.touch), default=math.inf)
-        off = [round(e["t"], 3) for e in w.events if e.get("event") == "luer_released" and e.get("fitting") == n and t0 < e["t"] < t_box]
-        if caps:
-            recapped[n] = caps
-        if off:
-            taken_off[n] = off
-    return recapped, taken_off
-
-
-def vial_to_pad_partial(env, C):
-    """The score of a vial-to-pad run that is not a success: how much of the job is done in the
-    world, read from the ledger, the puncture records, the Luer events and the first times of touches; at most 0.9."""
-    w, fl, spec = env.world, env.world.fluid, env.spec
-    led, d = fl.ledger, spec["dose_ml"]
-    syr_name = spec["dose_syringe"]
-    fill_name = f"{syr_name}_needle"
-    syr, fill, im = fl.syringes[syr_name], fl.needles[fill_name], fl.needles["needle_im"]
-    pad = {k: led.volume(k)/ML for k in led.places if k.startswith("pad:")}
-    given = sum(pad.values())
-    recs = [(n, r) for n, dv in fl.needles.items() for r in dv.records if r["target"] == "pad"]
-    im_recs = [r for n, r in recs if n == "needle_im"]
-    t_first, _, resticks = _vial_to_pad_sticks(env)
-    restick_ids = {id(r) for r in resticks}
-    dosing = [r for r in im_recs if id(r) not in restick_ids]
-    vial_touch = [(p, t) for p, t in im.touch.items() if p == "vial" or p.startswith(("vial:", "vial_stopper"))]
-    vial_punct = [r for r in im.records if r["target"] == "vial_stopper"]
-    fresh = all(r["t"] >= t_first for r in vial_punct)
-    reentered = any(p == "vial_stopper" and t >= t_first for p, t in vial_touch) or any(r["t"] >= t_first for r in vial_punct)
-    fill_drew = any(r["target"] == "vial_stopper" for r in fill.records)
-    t_draw = max((r["t_out"] for r in fill.records if r["target"] == "vial_stopper" and r["t_out"] is not None), default=None)
-    dirty_draw = after_use = False
-    hits = [t for p, t in vial_touch if p == "vial_stopper" and t < t_first]
-    for key, places in _vial_to_pad_hygiene(env).items():
-        nozzle = key.endswith(" nozzle")
-        dev = fl.syringes[key[:-len(" nozzle")]] if nozzle else fl.needles[key]
-        for p in places:
-            t = dev.touch[p]
-            if key == fill_name:
-                dirty_draw |= t_draw is None or t <= t_draw
-                after_use |= t_draw is not None and t > t_draw
-            elif nozzle and t_draw is not None and t <= t_draw:
-                dirty_draw = True
-            else:
-                hits.append(t)
-    dirty = {id(r) for r in dosing if any(h < r["t"] for h in hits)}
-    after_use |= any(all(r["t"] <= h for r in dosing) for h in hits)
-
-    def open_at(t):
-        return [(n, r) for n, r in recs if r["t"] - 1e-6 <= t <= (math.inf if r["t_out"] is None else r["t_out"] + 1e-6)]
-
-    def quality(t):
-        on = open_at(t)
-        if not on or any(n != "needle_im" or id(r) in dirty for n, r in on):
-            return None
-        return min(_site_quality(r) for _, r in on)
-    rows = [(float(m[:H.AIR].sum()), quality(t)) for t, m, _ in led.arrivals.get("pad:muscle", [])]
-    came = sum(v for v, _ in rows)
-    good = sum(v for v, q in rows if q is not None)
-    muscle = pad.get("pad:muscle", 0.0)*good/came if came > 0 else 0.0
-    site = sum(v*q for v, q in rows if q is not None)/good if good > 0 else 1.0
-    over = max(given - 1.1*d, 0.0)/d
-    back = max(pad.get("pad:surface", 0.0) - 0.05*d, 0.0)/d
-    volume = float(np.clip(min(1.0, muscle/(0.9*d)) - max(over, back), 0.0, 1.0))
-    w2, w4 = C["injection_speed"]["value"], C["injection_sustained_rate"]["value"]
-    r2 = 1.0 if w2 <= 0.3 else float(np.clip((RATE_ZERO_ML - w2)/(RATE_ZERO_ML - 0.3), 0.0, 1.0))
-    r4 = 1.0 if w4 <= SUSTAINED_ML else float(np.clip((SUSTAINED_ZERO_ML - w4)/(SUSTAINED_ZERO_ML - SUSTAINED_ML), 0.0, 1.0))
-    rate = min(r2, r4)
-    given_part = volume*site*rate*float(fresh and not dirty_draw)
-    sh = C["in_the_sharps_container"]["value"]
-    lost = syr_name in sh["inside"] or w.bq[env.world.scene.bodies[syr_name], 2] < P.COUNTER_Z - 0.05
-    in_syr = 0.0 if lost else max(syr.chamber.liquid - syr.chamber.dead, 0.0)/ML
-    air = syr.chamber.gas0/ML if in_syr > 0.05*d else 0.0
-    drawn_part = float(np.clip(min(1.0, (in_syr + given)/(0.9*d)) - max(air - AIR_LIMIT_ML, 0.0), 0.0, 1.0)) \
-        if fill_drew and fresh and not dirty_draw else 0.0
-    luer = sorted((e["t"], e["event"] == "luer_captured") for e in w.events if e.get("syringe") == syr_name
-                  and e.get("fitting") == "needle_im" and e.get("event") in ("luer_captured", "luer_released"))
-    on_at_first = math.isfinite(t_first) and next((c for t, c in reversed(luer) if t <= t_first), False)
-    on = (syr.mate is not None and syr.mate.name == "needle_im") or on_at_first
-    changed_part = float(on and drawn_part > 0.0 and (syr.mate is None or syr.mate.name != fill_name))
-    used = {syr_name: given >= 0.1*d, fill_name: bool(fill.records), "needle_im": bool(im_recs or vial_touch or vial_punct)}
-    cleared_part = sum(1 for n, u in used.items() if u and n in sh["inside"])/3.0
-    tissue = [t for k, rs in led.arrivals.items() if k.startswith("pad:") and not k.endswith(":surface") for t, _, _ in rs]
-    stray = [r for n, r in recs if not any(any(x is r for _, x in open_at(t)) for t in tissue)
-             and not (n == "needle_im" and _site_quality(r) >= 1.0) and id(r) not in restick_ids]
-    kept = {k: (C[k]["ok"], 1) for k in ("at_rest", "on_the_counter", "no_protective_stop", "spills", "no_resheathing_by_hand",
-                                         "needles_not_bent", "syringes_whole", "vial_upright", "vial_pressure", "air_to_patient",
-                                         "used_needle_not_recapped", "used_needle_kept_on")}
-    kept.update(withdrawn_cleanly=(all(r["lever_deg"] <= NEEDLE_ANGLE_DEG and (r["exit_angle_deg"] or 0.0) <= NEEDLE_ANGLE_DEG
-                                       for _, r in recs), 1),
-                needles_out_of_the_pad=(all(r["t_out"] is not None for _, r in recs), 1), no_stray_puncture=(not stray, 1),
-                no_touch_after_use=(not after_use, 1), only_sharps_in_the_container=(not sh["others"], 1),
-                flap_closed=(sh["flap_deg"] < 5.0, 1), vial_not_reentered_after_use=(not reentered, 2), no_contaminated_stick=(not dirty, 2),
-                no_restick_after_dose=(C["no_restick_after_dose"]["ok"], 2))
-    failed = [k for k, (ok, _) in kept.items() if not ok]
-    house = max(HOUSEKEEPING_FLOOR, 1.0 - HOUSEKEEPING_STEP*sum(n for ok, n in kept.values() if not ok))
-    partial = (W_DOSE_GIVEN*given_part + W_DOSE_DRAWN*drawn_part + W_NEEDLE_CHANGED*changed_part + W_CLEARED_AWAY*cleared_part)*house
-    return dict(partial=round(partial, 4), dose_given=round(given_part, 4), dose_volume=round(volume, 4), dose_site=round(site, 4),
-                dose_rate=round(rate, 4), dose_drawn=round(drawn_part, 4), needle_changed=changed_part, cleared_away=round(cleared_part, 4),
-                housekeeping=round(house, 4), housekeeping_failed=failed,
-                contaminated=dict(before_the_draw_ended=dirty_draw, sticks=sorted(round(r["t"], 3) for r in im_recs if id(r) in dirty)),
-                resticks_after_dose=sorted(round(r["t"], 3) for r in resticks),
-                muscle_credited_ml=round(muscle, 4))
-
-
 def evaluate(env):
+    """The episode's outcome: the task's verifier.py (tasks/<task>/) decides, with evaluate_criteria below."""
+    return task_verifier(env.spec["task"]).verify(env)
+
+
+class Checks:
+    """What a task's verifier.py adds its own criteria with: evaluate_criteria passes one to the verifier's criteria(c).
+
+    env, spec, world, fluid, ledger   the episode: env, env.spec, env.world, its fluidics and their liquid ledger
+    C                                 the criteria so far (name -> criterion); the task adds its own
+    syringe_dose(name, target)                     dose_in_syringe, air_in_syringe
+    vial_after(dose_drawn_ml=None, home=True)      vial_upright, vial_pressure, and vial_contents for a drawn dose
+    lock_after()                                   lock_clamped, lock_detached, connector_not_pulled, line_pressure,
+                                                   air_to_patient
+    push(sp)                                       lock_after(), then dose_delivered (sp into the vein) and
+                                                   flush_delivered
+    sharps(names, nothing_else=True, seated=False)              in_the_sharps_container
+    injection(dose_ml, layer, needle_name=None, whole=False)    dose_in_tissue, injection_speed (whole: into the
+                                                   tissue, all layers together, and injection_sustained_rate),
+                                                   air_to_patient, needle_path"""
+
+    def __init__(self, env, C, syringe_dose, vial_after, lock_after, push, sharps, injection):
+        self.env, self.spec, self.world, self.fluid = env, env.spec, env.world, env.world.fluid
+        self.ledger, self.C = env.world.fluid.ledger, C
+        self.syringe_dose, self.vial_after, self.lock_after, self.push = syringe_dose, vial_after, lock_after, push
+        self.sharps, self.injection = sharps, injection
+
+
+def evaluate_criteria(env, criteria, *, hygiene=None, hygiene_note="", own_score=None):
+    """The criteria every task has, then criteria(c), the task's own (its verifier.py), added through a Checks c; and
+    the score. A task whose needles follow their own hygiene rule passes hygiene(env) (what each touched that it may
+    not) and the note its limit adds; a task with its own score passes own_score(env, C, out), which sets it in out.
+    Otherwise the score is the share of the task's results reached times the share of the rules of conduct kept, or
+    under syringe-tasks-v1 and -v2 the contract's reward (scoring.reward, with the progress of the task's verifier)."""
     w, fl, sc, spec = env.world, env.world.fluid, env.world.scene, env.spec
     task = spec["task"]
     led = fl.ledger
@@ -408,12 +277,9 @@ def evaluate(env):
     C["no_protective_stop"] = _c(not w.reflexes, len(w.reflexes), "0 reflex stops of an arm")
     spills = _spills(fl)
     C["spills"] = _c(sum(spills.values()) <= SPILL_LIMIT_ML, spills or 0.0, f"<= {SPILL_LIMIT_ML} mL outside the basin, the vein and the tissue")
-    bad = _vial_to_pad_hygiene(env) if task == "vial-to-pad" else _hygiene(env)
+    bad = hygiene(env) if hygiene is not None else _hygiene(env)
     C["needle_hygiene"] = _c(not bad, bad or "nothing it may not", "a bare needle or nozzle touches only its sheath or cap, a "
-                             "stopper's target, the pad, a fitting, the sharps container"
-                             + ("; the fill needle also the inside of the vial; the 25 G's point also the prepared skin within "
-                                "25 mm of the ring's centre, except after its dose was given; the sharps container only once the "
-                                "needle or nozzle is done with" if task == "vial-to-pad" else ""))
+                             "stopper's target, the pad, a fitting, the sharps container" + hygiene_note)
     by_hand = [n for n, d in fl.needles.items() if any(r["sheath_in_gripper"] for r in d.resheathed)]
     C["no_resheathing_by_hand"] = _c(not by_hand, by_hand, "no sheath pushed onto a needle while a gripper holds the sheath")
     bent = [n for n, d in fl.needles.items() if d.flags["bent"]]
@@ -499,48 +365,8 @@ def evaluate(env):
                               f"into the {2*RING_MM:g} mm ring, within {hi_ang:g} deg of square, not levered or withdrawn more than "
                               f"{NEEDLE_ANGLE_DEG:g} deg off the way in" + ("" if needle_name is None else f", with {needle_name}"))
 
-    if task == "sharps-away":
-        names = list(spec["syringes"]) + [f"{n}_needle" for n in spec["syringes"]]
-        sharps(names)
-    elif task == "set-dose":
-        syringe_dose(spec["dose_syringe"], spec["dose_ml"])
-    elif task == "draw-dose":
-        syringe_dose(spec["dose_syringe"], spec["dose_ml"])
-        vial_after(fl.syringes[spec["dose_syringe"]].chamber.liquid/ML)
-    elif task == "inject":
-        injection(spec["dose_ml"], spec["layer"])
-        sharps([spec["dose_syringe"], f"{spec['dose_syringe']}_needle"])
-    elif task == "vial-to-pad":
-        injection(spec["dose_ml"], "muscle", needle_name="needle_im", whole=True)
-        im = fl.needles["needle_im"]
-        met = sorted({p for p in im.touch if p == "vial" or p.startswith(("vial:", "vial_stopper"))}
-                     | {r["target"] for r in im.records if r["target"] == "vial_stopper"})
-        C["injection_needle_fresh"] = _c(not met, met or "never in or on the vial",
-                                         "the 25 G needle never entered or touched the vial (the dose is drawn with the fill needle)")
-        resticks = _vial_to_pad_sticks(env)[2]
-        C["no_restick_after_dose"] = _c(not resticks, [round(r["t"], 3) for r in resticks] or "none",
-                                        f"no puncture of the pad by the 25 G after its dose was given (one that starts after the punctures "
-                                        f"that carried the dose came out and carries less than {100*RESTICK_TRACE:g} % of the dose)")
-        recapped, taken_off = _used_needle_breaches(env)
-        C["used_needle_not_recapped"] = _c(not recapped, recapped or "none", "no needle has a sheath put back on after it has been in the pad")
-        C["used_needle_kept_on"] = _c(not taken_off, taken_off or "none", "a needle that has been in the pad stays on the syringe until "
-                                      "it reaches the sharps container")
-        vial_after(home=False)
-        sharps([spec["dose_syringe"], f"{spec['dose_syringe']}_needle", "needle_im"], seated=True)
-    elif task == "flush-lock":
-        lk = fl.locks["lock"]
-        lock_after()
-        if lk.blocked:
-            # the line takes nothing: the result is that it was tried (pressure raised at the connector) and not forced
-            C["line_not_forced"] = _c(1e3 < lk.peak_gauge <= BLOCKED_LIMIT_PA, round(lk.peak_gauge/1e3, 1),
-                                      f"the flush was tried and the pressure kept under {BLOCKED_LIMIT_PA/1e3:g} kPa")
-        else:
-            C["flush_delivered"] = _c(sum(float(r[1][P.SPECIES.index("saline")]) for r in led.arrivals.get("lock:in", []))/ML >= 0.95*spec["flush_ml"],
-                                      dict(from_syringe_ml=round(sum(float(r[1][P.SPECIES.index("saline")]) for r in led.arrivals.get("lock:in", []))/ML, 3),
-                                           total_saline_at_vein_ml=round(led.volume("vein", "saline")/ML, 3)),
-                                      f">= 95 % of {spec['flush_ml']:g} mL of saline from the syringe into the line (initial priming saline excluded)")
-    elif task in ("slow-push", "fast-bolus"):
-        sp = "medication" if task == "slow-push" else "contrast"
+    def push(sp):
+        """A dose pushed through the lock, then the flush (slow-push, fast-bolus): sp is what the dose syringe gives."""
         lock_after()
         C["dose_delivered"] = _c(led.volume("vein", sp)/ML >= 0.95*spec["dose_ml"], round(led.volume("vein", sp)/ML, 3),
                                  f">= 95 % of {spec['dose_ml']:g} mL of {sp} into the vein")
@@ -548,19 +374,8 @@ def evaluate(env):
                                       dict(from_syringe_ml=round(sum(float(r[1][P.SPECIES.index("saline")]) for r in led.arrivals.get("lock:in", []))/ML, 3),
                                            total_saline_at_vein_ml=round(led.volume("vein", "saline")/ML, 3)),
                                   f">= 95 % of {spec['flush_ml']:g} mL of saline from the syringe into the line (initial priming saline excluded)")
-        if task == "slow-push":
-            mean15 = 15.0*spec["dose_ml"]/spec["dose_s"]
-            worst = led.rate_window("vein", sp, 15.0)/ML
-            C["delivery_rate"] = _c(worst <= 1.5*mean15, round(worst, 4), f"<= {1.5*mean15:.3f} mL of {sp} into the vein in any 15 s")
-            span = led.span("vein", sp, 0.05, 0.95)
-            took = (span[1] - span[0]) if span else 0.0
-            need = 0.8*0.9*spec["dose_s"]
-            C["delivery_time"] = _c(took >= need, round(took, 2), f"5 % to 95 % of the dose in not less than {need:.0f} s")
-        else:
-            span = led.span("lock:in", sp, 0.05, 0.95)
-            took = (span[1] - span[0]) if span else float("inf")
-            C["bolus_time"] = _c(took <= 0.9*spec["bolus_s"], None if not span else round(took, 2),
-                                 f"5 % to 95 % of the dose out of the syringe into the line within {0.9*spec['bolus_s']:.1f} s")
+
+    criteria(Checks(env, C, syringe_dose, vial_after, lock_after, push, sharps, injection))
     # the score: the share of the task's own results reached, times the share of the rules of conduct kept; doing
     # nothing scores 0 whatever rules it keeps
     for k, c in C.items():
@@ -570,10 +385,8 @@ def evaluate(env):
     score = (sum(res)/len(res))*(sum(con)/len(con))
     out = dict(success=bool(all(res) and all(con)), score=round(score, 4), criteria=C, task=task,
                conservation_error_ml=round(fl.conservation_error_ml(), 6))
-    if task == "vial-to-pad":
-        out["score_parts"] = vial_to_pad_partial(env, C)
-        out["score"] = 1.0 if out["success"] else out["score_parts"]["partial"]
-        out["contract"] = VIAL_TO_PAD_CONTRACT
+    if own_score is not None:                     # the task's own score (its verifier.py)
+        own_score(env, C, out)
     elif spec.get("contract", LEGACY_CONTRACT) == EIGHT_TASK_CONTRACT:
         from .scoring import reward
         out.update(reward(env, C, out["success"]))

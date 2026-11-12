@@ -90,8 +90,10 @@ def revise_spec(config, spec):
                                "porridge is hot all the way through (74 C, 165 F, everywhere), without letting it "
                                "catch on the bottom. Then turn the hob off. Keep the porridge in the pan and the pan "
                                "on the hob. A probe thermometer stands in the crock.")
-        spec["criteria"] = dict(spec["criteria"], vessel_in_place=dict(on_hob=True),
-                                contained=dict(limit=0.01, below_rim=True))
+    from .task import task_verifier
+    criteria = getattr(task_verifier(config.task), "contract_criteria", None)
+    if criteria is not None:
+        spec["criteria"] = criteria(spec["criteria"])
     return spec
 
 
@@ -143,20 +145,6 @@ def best_hot(previous, current, start_c):
     return dict(max(candidates, key=lambda r: (hot_ok(r), hot_quality(r, start_c), r["coldest_c"])))
 
 
-def record_hot_sample(hob, local, temp, mass):
-    """Called by the external post-heat measurement wrapper, with no physical writes."""
-    baseline = getattr(hob, "task_baseline", None)
-    if baseline is None or not enabled(hob.w.config) or hob.w.config.task != "reheat-porridge":
-        return
-    if hob.knob.s_level <= 0 or len(temp) == 0:
-        return
-    from .task import portion_temperatures
-    cold, hot, cells = portion_temperatures(local, temp, mass, 60e-6, baseline["spacing"]**3)
-    current = dict(coldest_c=round(cold, 2), hottest_c=round(hot, 2), cells=cells,
-                   batch_share=round(float(mass.sum())/baseline["batch_mass"], 5))
-    hob.hot_record = best_hot(getattr(hob, "hot_record", None), current, baseline["coldest_c"])
-
-
 def capture_start(env):
     """Read once after settling; TaskEnv adds the result to the physical start checkpoint without moving anything."""
     if _v2(env.config):
@@ -171,9 +159,10 @@ def capture_start(env):
                     coldest_c=C.get("hot_through", {}).get("coldest_c", 5.),
                     batch_mass=float(sum(env.info["batch"])), spacing=env.info["spacing"])
     env.info["task_baseline"] = baseline
-    if env.config.task == "reheat-porridge":
-        env.world.heat.task_baseline = dict(baseline)
-        env.world.heat.hot_record = None       # settling is not part of the episode
+    from .task import task_verifier
+    hand_over = getattr(task_verifier(env.config.task), "hand_over", None)
+    if hand_over is not None:
+        hand_over(env, baseline)
 
 
 def progress(task, C, baseline, bottom_cm2):
@@ -181,13 +170,11 @@ def progress(task, C, baseline, bottom_cm2):
     keep = clip(1. - C["contained"]["value"])
     in_place = C["vessel_in_place"]["ok"]
     close = "tool_out" if "tool_out" in C else "appliance_off" if "appliance_off" in C else None
-    if task == "reheat-porridge":
-        core = hot_quality(C["hot_through"], baseline["coldest_c"])
-        if C["hot_through"].get("batch_share", 0.) < 0.99:
-            core = 0.
-        damage = clip(1. - C["not_scorched"]["value"]/bottom_cm2)
-        done = C["hot_through"]["ok"]
-        terms = dict(hot=core, unburnt=damage)
+    from . import scoring
+    from .task import task_verifier
+    own = getattr(task_verifier(task), "progress_v1", None)
+    if own is not None:
+        core, damage, done, terms = own(scoring, C, baseline, bottom_cm2)
     else:
         U = uniform_progress(C["uniform"], baseline)
         terms = dict(uniform=U)
@@ -234,17 +221,29 @@ def record_hot_state(hob):
     q = hob.w.bq[hob.pan.body]
     local = (x - q[:3].astype(np.float32)) @ Rotation.from_quat(q[3:]).as_matrix().astype(np.float32)
     inside = (flags == 0) & hob.pan.inside(local, margin=0.002)
-    record_hot_sample(hob, local[inside], temp[inside], mass[inside])
+    from . import scoring
+    from .task import task_verifier
+    sample = getattr(task_verifier(hob.w.config.task), "record_hot_sample", None)
+    if sample is not None:
+        sample(scoring, hob, local[inside], temp[inside], mass[inside])
 
 
 def evaluate(world, info, *, _progress=True):
+    """The task's verifier.py verify (tasks/<task>/), which judges with evaluate_criteria below."""
+    from .task import task_verifier
+    return task_verifier(world.config.task).verify(world, info, _progress=_progress)
+
+
+def evaluate_criteria(world, info, *, _progress=True):
     """Separate opt-in judging from the frozen legacy evaluator; never patch its module globals."""
     if _v2(world.config):
         from . import scoring_v2
         return scoring_v2.evaluate(world, info, _progress=_progress)
     from . import task
-    if enabled(world.config) and world.config.task == "reheat-porridge":
-        out = _porridge_evaluation(world, info)
+    from . import scoring
+    folder = task.task_verifier(world.config.task)
+    if enabled(world.config) and hasattr(folder, "contract_evaluation"):
+        out = folder.contract_evaluation(scoring, world, info)
     else:
         # Bake predicates and stir-sauce's own evaluator are reused without modification.
         out = task.evaluate(world, info)
@@ -257,125 +256,4 @@ def evaluate(world, info, *, _progress=True):
         out["progress"] = r["progress"]
         out["reward"] = dict(r, contract=CONTRACT, score_rule=f"1 if success else {task.FAIL_SCORE_SCALE} x progress")
         out["score"] = 1.0 if out["success"] else task.FAIL_SCORE_SCALE*r["progress"]
-    return out
-
-
-def _porridge_evaluation(world, info):
-    """Porridge's revised measurement path (a copy of the legacy evaluator's measurement, with the changes below).
-
-    Reuse the frozen portion thermometer. Keep mass accounting and report fields identical, including the empty
-    vessel failure; the legacy evaluator's current-temperature reduction cannot handle an empty porridge vessel.
-    """
-    import numpy as np
-    from scipy.spatial.transform import Rotation
-    from . import materials as M
-    from .materials import SOLID_D, SOLID_L, SOLID_S, SOLID_C
-    from .task import portion_temperatures
-    c, sc = world.config, world.scene
-    spec_t = task_spec(c)
-    crit = spec_t["criteria"]
-    cont, v = world.cont, sc.vessel
-    out = dict(task=c.task, contract=contract_for(c), criteria={}, measures={})
-    q = world.bq[v.body]
-    Rv = Rotation.from_quat(q[3:])
-    x, spec, flags, state, temp, mass = cont.read("x", "spec", "flags", "state", "temp", "mass")
-    spec = spec.astype(np.float64)
-    local = Rv.inv().apply(x.astype(np.float64) - q[:3])
-    active = flags == 0
-    inside = active & v.inside(local, margin=0.002)
-    total = float(spec.sum())
-    batch = float(np.sum(info["batch"]))
-    m_in = float(spec[inside].sum())
-    where = dict(in_vessel=m_in, counter=float(spec[flags == 2].sum()), floor=float(spec[flags == 3].sum()),
-                 airborne=float(spec[flags == 1].sum()), elsewhere=float(spec[active & ~inside].sum()),
-                 on_wires=float(spec[flags == 5].sum()))
-    out["measures"]["mass_kg"] = dict(batch=batch, total=total, **{k: round(val, 6) for k, val in where.items()})
-    # how what is outside the vessel got there (continuum.k_exit keeps where each point left the vessel's envelope):
-    # above the rim plane, or below it. Nothing may leave below it: that would be through the wall or the base
-    xout, tout = cont.read("xout", "tout")
-    left = ~inside & (tout >= 0.)
-    over = left & (xout[:, 2] >= v.depth - 2.0*cont.dx)
-    out["measures"]["left_vessel"] = dict(over_rim_kg=round(float(spec[over].sum()), 6),
-                                          through_wall_kg=round(float(spec[left & ~over].sum()), 6),
-                                          no_record_kg=round(float(spec[~inside & (tout < 0.)].sum()), 6))
-    out["measures"]["mass_balance_error"] = abs(total - batch)/batch
-    spilled = (where["counter"] + where["floor"] + where["airborne"])/batch
-    # material on a tool or the rim is not spilt; material neither in the vessel nor on the counter is reported
-    out["measures"]["outside_fraction"] = round((total - m_in)/batch, 5)
-    vp = info["spacing"]**3
-    portion = (info["volume_m3"]/spec_t["portions"]) if "portions" in spec_t else spec_t["portion_ml"]*1e-6
-    C = out["criteria"]
-    if "hot" in crit:
-        k = crit["hot"]
-        # Read current portions together, before selecting a coherent current or historical pair below.
-        # coldest_portion_mean_of_point_peaks_c is reported and decides nothing.
-        if enabled(c) and not inside.any():
-            tmin, tmax, cells, pmin = 0., 0., 0, 0.
-        else:
-            tmin, tmax, cells = portion_temperatures(local[inside], temp[inside], mass[inside], portion, vp)
-            tpeak = np.maximum(state[:, M.ST_PEAK], temp)
-            pmin, _, _ = portion_temperatures(local[inside], tpeak[inside], mass[inside], portion, vp)
-        tmin, tmax = round(tmin, 2), round(tmax, 2)              # judged as reported
-        C["hot_through"] = dict(coldest_c=tmin, hottest_c=tmax, cells=cells, limit_c=k["min_c"],
-                                spread_limit_k=k["spread_k"], coldest_portion_mean_of_point_peaks_c=round(pmin, 2),
-                                ok=bool(tmin >= k["min_c"] and tmax - tmin <= k["spread_k"]))
-    if "hot" in crit and enabled(c):
-        # Retain simultaneous portions, not particle peaks. The current reading is considered as well, so an
-        # owner-constructed valid state is judged by the same predicates without requiring any action sequence.
-        current = dict(coldest_c=tmin, hottest_c=tmax, cells=cells, batch_share=round(m_in/batch, 5))
-        baseline = info.get("task_baseline", {})
-        reached = best_hot(getattr(world.heat, "hot_record", None), current, baseline.get("coldest_c", tmin))
-        judged = current if reached is None else reached
-        C["hot_through"].update(judged, current_coldest_c=tmin, current_hottest_c=tmax,
-                               ok=hot_ok(judged, k["min_c"], k["spread_k"]))
-    if "scorch_cm2" in crit:
-        area = world.heat.burnt_area()*1e4 if world.heat is not None else 0.
-        C["not_scorched"] = dict(value=round(area, 3), limit=crit["scorch_cm2"], unit="cm2", ok=bool(area <= crit["scorch_cm2"]))
-    kc = crit["contained"]
-    lim = kc["limit"] if isinstance(kc, dict) else kc
-    beside = None
-    if isinstance(kc, dict) and kc.get("below_rim"):
-        # stir-sauce: sauce outside the pan below its rim (on the hob's glass beside it, down its outside, on the
-        # counter near it) is out of the pan as well. It stays active mixture there (flag 0): the counter's flag is
-        # given only to what leaves the grid region, 108 mm from the pan's axis, and 3 % of the batch lying on the hob
-        # by the pan would read as nothing spilt. On the rim's top, on a
-        # tool held over the pan, or in the air above the rim, it is not counted
-        low = active & ~inside & (local[:, 2] < v.depth - 2.0*cont.dx)
-        beside = float(spec[low].sum())/batch
-        spilled += beside
-        spilled = round(spilled, 5)                 # judged as it is reported
-    C["contained"] = dict(value=round(spilled, 5), limit=lim, ok=bool(spilled <= lim))
-    if beside is not None:
-        C["contained"]["of_it_outside_the_pan_below_its_rim"] = round(beside, 5)
-    p_now = q[:3]
-    up = Rv.apply([0., 0., 1.])[2]
-    moved = float(np.linalg.norm(p_now[:2] - sc.vessel_start[:2]))
-    standing = bool(up > 0.985 and abs(p_now[2] - sc.vessel_start[2]) < 0.01)
-    kv = crit["vessel_in_place"]
-    tilt, height = round(math.degrees(math.acos(min(1., abs(up)))), 2), round(float(p_now[2] - sc.vessel_start[2]), 4)
-    if isinstance(kv, dict) and kv.get("on_hob"):
-        # stir-sauce: "the pan on the hob" is the pan standing upright, at the hob's height, with its whole base on
-        # the hob's glass (Scene's static box "hob_glass"). The base is the pan's rigid base disc (tools.Vessel: a
-        # dodecagon whose flats lie on the profile's flat floor, 64 mm; its corners at 66.3 mm), not its outer wall,
-        # and not the bowls' "within 50 mm of where it started"
-        _, (gx, gy, _), (hx, hy, _), _, _ = next(b for b in sc.static_boxes if b[0] == "hob_glass")
-        base_r = float(v.profile[1, 0])/math.cos(math.pi/12)
-        off = (abs(float(p_now[0]) - gx), abs(float(p_now[1]) - gy))
-        on = bool(off[0] <= hx - base_r and off[1] <= hy - base_r)
-        C["vessel_in_place"] = dict(tilt_deg=tilt, tilt_limit_deg=round(math.degrees(math.acos(0.985)), 2), height_m=height,
-                                    height_limit_m=0.01, base_on_the_hob_glass=on,
-                                    from_the_glass_centre_m=[round(off[0], 4), round(off[1], 4)],
-                                    allowed_m=[round(hx - base_r, 4), round(hy - base_r, 4)], ok=bool(on and standing))
-    else:
-        C["vessel_in_place"] = dict(moved_m=round(moved, 4), tilt_deg=tilt, height_m=height, limit_m=kv,
-                                    ok=bool(moved <= kv and standing))
-    if crit.get("appliance_off") == "knob":
-        st = sc.tools["knob"].state()
-        C["appliance_off"] = dict(level=st["level"], ok=bool(st["level"] == 0))
-    out["success"] = bool(all(k["ok"] for k in C.values()))
-    out["measures"]["points"] = int(len(x))
-    out["measures"]["solid_states"] = {n: round(float(spec[:, k].sum()), 6) for n, k in
-                                       (("dry", SOLID_D), ("lumped", SOLID_L), ("suspended", SOLID_S), ("cooked", SOLID_C))}
-    if inside.any():
-        out["measures"]["mean_temp_c"] = round(float((temp[inside]*mass[inside]).sum()/mass[inside].sum()), 3)
     return out

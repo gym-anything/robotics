@@ -5,7 +5,8 @@ The robot stands on the floor behind the table, facing the seam (-y), on its pos
 no pelvis support, no balance controller (as in the sewing, barcode-scanning and whiteboard environments). The light
 torch (welding/torch.py RM2 on G1_TORCH_MOUNT) is clamped to the back of the right Dex3 palm; the left Dex3 hand
 handles the part. Nothing here is task logic: the standing place, the ready posture over the controller profile's
-standing pose, the arm kinematics (IK computes joint targets only; the servos move the arm).
+standing pose, the head camera (head_rgb, when the session selects it), the arm kinematics (IK computes joint targets
+only; the servos move the arm).
 
 Robot model: robots/models/g1/robot.json (pinned URDF g1_29dof_with_hand_rev_1_0, the Unitree URDF limits: shoulders
 and elbow 25 N m, wrist roll 25 N m, wrist pitch and yaw 5 N m) with the repository's standing G1 controller profile
@@ -45,6 +46,10 @@ TORCH_SIDE, HAND_SIDE = "right", "left"
 # the handling hand's tool point: 80 mm along the wrist-yaw link's +x (the palm), as the whiteboard, sewing and barcode
 # scanning G1 IK (whiteboard/ik.py HandIK)
 HAND_TCP_LOCAL_M = (0.08, 0.0, 0.0)
+# Head camera (policy camera head_rgb): the D435 of the G1 head (URDF d435_joint on torso_link, 47.6 deg down), zero
+# lens offset, 69 deg HFOV, looking along the joint frame's +x (the percussion, barcode scanning and sewing G1 mount;
+# D435 RGB field of view from Intel's datasheet)
+HEAD_CAMERA = dict(link="torso_link", xyz=(0.0576235, 0.01753, 0.42987), pitch=0.8307767239493009, hfov_deg=69.)
 
 # ready posture over the profile's standing pose:
 # the waist leaning 0.2 rad toward the table; the torch arm holding the torch at the procedure's angles 120 mm back
@@ -92,6 +97,16 @@ def body_index(labels, suffix):
     if len(hits) != 1:
         raise RuntimeError(f"G1 body {suffix}: {len(hits)} matches")
     return hits[0]
+
+
+def head_camera(scene):
+    """The head RGB (policy camera head_rgb) on the torso link, at the D435 frame of the URDF; it adds no body or
+    shape (the D435 is part of the G1 model)."""
+    body = body_index(scene.b.body_label, HEAD_CAMERA["link"])
+    R = Rotation.from_euler("xyz", (0., HEAD_CAMERA["pitch"], 0.))
+    eye = np.asarray(HEAD_CAMERA["xyz"], float)
+    scene.cameras["head_rgb"] = dict(body=body, eye=eye.tolist(), target=(eye + .3*R.apply((1., 0., 0.))).tolist(),
+                                     up=R.apply((0., 0., 1.)).tolist(), fov=HEAD_CAMERA["hfov_deg"], role="policy")
 
 
 def mount_pose():

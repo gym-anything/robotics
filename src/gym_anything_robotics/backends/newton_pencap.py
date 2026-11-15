@@ -13,6 +13,8 @@ from ..errors import UnsupportedActionError, UnsupportedConfigurationError, Back
 from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
+POLICY_CAMERAS = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
+
 
 class NewtonPenCapBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=("bench_rgb",),
@@ -21,6 +23,7 @@ class NewtonPenCapBackend(RoboticsBackend):
         from pencap.newton15.env import PenCapEnv
         from pencap.newton15.catalog import Catalog
         from pencap.newton15.kinematics import Kinematics
+        from pencap.newton15 import wrist_camera
         if robot != "dual-panda":
             raise UnsupportedConfigurationError("Pen-cap uses two manufacturer-description Panda arms")
         if isinstance(config, dict):
@@ -31,14 +34,19 @@ class NewtonPenCapBackend(RoboticsBackend):
         if config.dt > 1/960:
             raise UnsupportedConfigurationError("Pen-cap contacts require dt <= 1/960 s; the 1/240 s migration penetrated the shoulder")
         self.cameras = tuple(cameras)
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-{"bench_rgb"}:
-            raise ValueError("Policy camera is bench_rgb; other views are diagnostic render labels")
+        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
+            raise ValueError(f"Policy cameras are {', '.join(POLICY_CAMERAS)}; other views are diagnostic render "
+                             "labels")
         if self.cameras and config.scene != "studio":
             raise ValueError("Mounted policy camera requires the studio scene")
+        # The D405 of a wrist camera is built on its arm only when the session selects that camera.
+        self.wrist_cameras = {arm: f"{arm}_wrist_rgb" for arm in ("left", "right")
+                              if f"{arm}_wrist_rgb" in self.cameras}
         self.options = dict(renderer_options or {})
         self.output = Path(output_dir or Path.home()/".cache/gar/pencap"/uuid.uuid4().hex)
         self.output.mkdir(parents=True, exist_ok=False)
-        self.env = PenCapEnv(config)
+        with wrist_camera.selected(self.wrist_cameras):
+            self.env = PenCapEnv(config)
         self.catalog, self.ik = Catalog(self.env), Kinematics()
         self.images = deque()
         self.trace = None
@@ -47,12 +55,13 @@ class NewtonPenCapBackend(RoboticsBackend):
             self.trace = Trace(self.env, self.output/"physics.sqlite3")
         width, height = self.options.get("width", 1280), self.options.get("height", 720)
         focal = .018/math.tan(math.radians(69/2))
-        self.camera = CameraSpec("bench_rgb", "floor_stand_D435_enclosure", width, height, 1920, 1080,
-            (.036, .036*height/width), (focal, focal))
+        self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "floor_stand_D435_enclosure", width, height,
+            1920, 1080, (.036, .036*height/width), (focal, focal))}
+        self.camera_specs.update((n, wrist_camera.spec(n, width, height)) for n in self.wrist_cameras.values())
         self.kinds = frozenset({"named_joint_target", "gripper", "cartesian_pose", "cartesian_delta"})
         self.capabilities = Capabilities("pencap", "newton", robot, self.kinds,
             frozenset({"proprioception", *(["rgb"] if self.cameras else [])}), True, False, True,
-            self.cameras, (self.camera,) if self.cameras else (), notes={
+            self.cameras, tuple(self.camera_specs[c] for c in self.cameras), notes={
                 "clock": "Exact requested ticks; duration must be a whole number of physics ticks. Simulated time "
                          "advances only while a command runs: between commands and after your last command the scene "
                          "is frozen, and the task is judged on the scene as your last command leaves it",
@@ -60,7 +69,8 @@ class NewtonPenCapBackend(RoboticsBackend):
                 "objects": "Actions control the robot only; pen, cap and notebook move through contact",
                 "camera": "Ideal pinhole, D435-like RGB FOV; filmback is virtual, not a measured sensor size",
                 "gripper": "0..40 mm per finger; fixed baseline 8 N effort limit; no effort action",
-                "joint_units": "panda_joint1..7 radians; panda_finger_joint1/2 metres"})
+                "joint_units": "panda_joint1..7 radians; panda_finger_joint1/2 metres",
+                **({"wrist_cameras": wrist_camera.note(self.wrist_cameras.values())} if self.wrist_cameras else {})})
 
     def reset(self, *, seed=None, options=None):
         if options or (seed is not None and seed != self.env.config.seed):
@@ -97,7 +107,7 @@ class NewtonPenCapBackend(RoboticsBackend):
                 raise RuntimeError("Cannot combine stale state and new camera frames")
             frames = self._render(self.cameras) if self.cameras else {}
             return Observation(sequence, state["time_s"], "dual-panda", {"joints": state["joints"]},
-                {n: ImageFrame(n, p, True, camera=self.camera) for n, p in frames.items()})
+                {n: ImageFrame(n, p, True, camera=self.camera_specs[n]) for n, p in frames.items()})
 
     def _ticks(self, seconds):
         ticks = seconds/self.env.config.dt
@@ -167,7 +177,7 @@ class NewtonPenCapBackend(RoboticsBackend):
 
     def policy_access(self):
         from pencap.newton15.task import DESCRIPTION
-        return PolicyAccess("dual-panda", (self.camera,) if self.cameras else (),
+        return PolicyAccess("dual-panda", tuple(self.camera_specs[c] for c in self.cameras),
             {("joints", n, f): None for n in self.env.joints for f in ("position", "velocity")},
             self.kinds, lambda: DESCRIPTION, {"dt_s": self.env.config.dt,
                 "clock": self.capabilities.notes["clock"], "objects": self.capabilities.notes["objects"],
@@ -180,8 +190,9 @@ class NewtonPenCapBackend(RoboticsBackend):
 
     def render(self, *, label="interactive"):
         name = "room" if label in ("interactive", "http") else label
-        if name not in ("room", "bench", "closeup", "bench_rgb"):
-            raise ValueError("Render label must be room, bench, closeup, or bench_rgb")
+        labels = ("room", "bench", "closeup", "bench_rgb", *self.wrist_cameras.values())
+        if name not in labels:
+            raise ValueError(f"Render label must be {', '.join(labels[:-1])}, or {labels[-1]}")
         return self._render((name,))[name]
 
     def get_geometry_index(self):

@@ -19,6 +19,9 @@ from ..errors import (UnsupportedActionError,UnsupportedConfigurationError,
 from ..types import BackendStep,CameraSpec,Capabilities,ImageFrame,Observation
 from ..policy_access import PolicyAccess
 
+# Fixed bench_rgb and overview_rgb (the default), and the D405 on the wrist of each mounted arm: <arm>_wrist_rgb.
+POLICY_CAMERAS = ("bench_rgb", "overview_rgb", "left_wrist_rgb", "right_wrist_rgb")
+
 
 class NewtonTightenCodexBackend(RoboticsBackend):
     def __init__(self,*,robot="dual-fr3",config=None,device=None,
@@ -57,8 +60,16 @@ class NewtonTightenCodexBackend(RoboticsBackend):
         if c.fixture_mode:
             raise UnsupportedConfigurationError("Assisted fixture mode is evidence-only; GAR serves the ordinary scene")
         self.cameras=tuple(cameras)
-        if len(set(self.cameras))!=len(self.cameras) or set(self.cameras)-{"bench_rgb","overview_rgb"}:
-            raise ValueError("Physical cameras are bench_rgb and overview_rgb")
+        if len(set(self.cameras))!=len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
+            raise ValueError(f"Policy cameras are {', '.join(POLICY_CAMERAS)}; a one-arm setup offers only its "
+                             "own arm's wrist camera")
+        from robots import resolve
+        offered=("bench_rgb","overview_rgb",*(f"{arm}_wrist_rgb" for arm in resolve(setup).to_dict()["instances"]))
+        if set(self.cameras)-set(offered):
+            missing=sorted(set(self.cameras)-set(offered))[0].removesuffix("_wrist_rgb")
+            raise UnsupportedConfigurationError(f"{robot_id} has no {missing} arm: its policy cameras are "
+                                                f"{', '.join(offered)}")
+        wrist=tuple(name for name in offered if name in self.cameras and name.endswith("_wrist_rgb"))
         requested_options=dict(renderer_options or {})
         if set(requested_options)-{"width","height","samples"}:
             raise ValueError("Unknown renderer option")
@@ -72,7 +83,7 @@ class NewtonTightenCodexBackend(RoboticsBackend):
         self.options={"width":width,"height":height,"samples":samples}
         self.output=Path(output_dir or Path.home()/".cache/gar/tighten-codex"/uuid.uuid4().hex)
         self.output.mkdir(parents=True,exist_ok=False)
-        self.env=TightenEnv(c,setup)
+        self.env=TightenEnv(c,setup,wrist_cameras=wrist)
         self.robot=robot_id
         self.catalog=Catalog(self.env)
         self.arms=frozenset(self.env.rig.instances)
@@ -90,20 +101,31 @@ class NewtonTightenCodexBackend(RoboticsBackend):
                 1280,720,(.036,.036*height/width),(.038,.038)),
             "overview_rgb":CameraSpec("overview_rgb","overview_camera_lens",width,height,
                 1280,720,(.036,.036*height/width),(.020,.020))}
+        for name,cam in self.env.wrist_cameras.items():
+            focal=.018/math.tan(math.radians(cam["fov_deg"]/2))
+            self.specs[name]=CameraSpec(name,"link7_d405_envelope",width,height,*cam["native_px"],
+                                        (.036,.036*height/width),(focal,focal))
         self.kinds=frozenset({"named_joint_target","gripper","cartesian_pose",
                               "cartesian_delta"} |
                              ({"bimanual_cartesian"} if len(self.arms)==2 else set()))
+        notes={
+            "clock":"Exact 1/4800 s physics ticks; observation/render do not advance time",
+            "control":"Physical bounded catalog-arm position servos (tighten controller profile); Cartesian IK has no hidden collision planner",
+            "gripper":"Franka Hand half gap 0..0.04 m; catalog controller effort fixed",
+            "camera":"Fixed inspection-camera housing with ideal RGB pinhole; no depth/noise or distortion model",
+            "fasteners":"Prestarted M3/M4; native bit/socket collision, helical guidance and solved bearing force",
+            "fixture":"Phantom assistance is separate and unavailable in GAR robot actions",
+            "history":"Bounded privileged every-step state/contact records when recording enabled"}
+        if wrist:
+            notes["wrist_camera"]=("Intel RealSense D405 on link 7 of each arm whose <arm>_wrist_rgb is selected "
+                "(link7_d405_envelope): ideal RGB pinhole, 87 deg HFOV, native 1280 x 720, no depth/noise or "
+                "distortion model. Selecting it adds the D405's 60 g case and its 10 g aluminium bracket to that arm "
+                "as mass and collision geometry (contact with them is robot contact); an arm without a selected wrist "
+                "camera carries neither")
         self.capabilities=Capabilities("tighten-codex","newton",robot_id,self.kinds,
             frozenset({"proprioception",*(["rgb"] if self.cameras else [])}),
             True,False,True,self.cameras,
-            tuple(self.specs[name] for name in self.cameras),notes={
-                "clock":"Exact 1/4800 s physics ticks; observation/render do not advance time",
-                "control":"Physical bounded catalog-arm position servos (tighten controller profile); Cartesian IK has no hidden collision planner",
-                "gripper":"Franka Hand half gap 0..0.04 m; catalog controller effort fixed",
-                "camera":"Fixed inspection-camera housing with ideal RGB pinhole; no depth/noise or distortion model",
-                "fasteners":"Prestarted M3/M4; native bit/socket collision, helical guidance and solved bearing force",
-                "fixture":"Phantom assistance is separate and unavailable in GAR robot actions",
-                "history":"Bounded privileged every-step state/contact records when recording enabled"})
+            tuple(self.specs[name] for name in self.cameras),notes=notes)
 
     def robot_configuration(self):
         result=super().robot_configuration()
@@ -358,7 +380,7 @@ class NewtonTightenCodexBackend(RoboticsBackend):
         if name not in ("room","bench","hardware","head","drivers","bench_rgb","overview_rgb",
                         "sensor_tool","frame_detail","frame_under","frame_back_under",
                         "frame_front_detail","hand_detail","hand_side","access_under",
-                        "cradles_close","hand_sensor"):
+                        "cradles_close","hand_sensor",*self.env.wrist_cameras):
             raise ValueError("Unknown render camera")
         return self._render((name,))[name]
 

@@ -121,6 +121,8 @@ def export(env, folder, *, shading="smooth", pile=None):
     camera(stage, "handling_detail", (.95, .72, 1.50), (.08, .22, 1.12), 35.)
     camera(stage, "fabric", (.25, -.22, 1.13), (0., 0., .80), 70.)
     camera(stage, "bench_rgb", CAMERA_EYE, CAMERA_TARGET, 18./np.tan(np.radians(69/2)), role="policy")
+    from pencap.newton15.wrist_camera import export as wrist_cameras
+    wrist_cameras(stage, b)
     from .details import Details
     details = Details(env, stage)
     from .pile import TerryPile

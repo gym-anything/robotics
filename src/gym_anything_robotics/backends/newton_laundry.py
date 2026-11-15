@@ -14,6 +14,8 @@ from ..errors import ActionRejectedError, UnsupportedActionError, UnsupportedCon
 from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
+POLICY_CAMERAS = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
+
 
 class NewtonLaundryBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=("bench_rgb",),
@@ -28,6 +30,7 @@ class NewtonLaundryBackend(RoboticsBackend):
             from laundry.task_set import select
         from laundry.newton15.catalog import Catalog
         from laundry.newton15.kinematics import Kinematics
+        from pencap.newton15 import wrist_camera
         if robot != "dual-panda":
             raise UnsupportedConfigurationError("Laundry uses two manufacturer-description Panda arms")
         config = Config(**config) if isinstance(config, dict) else (config or Config())
@@ -35,12 +38,17 @@ class NewtonLaundryBackend(RoboticsBackend):
             config = replace(config, device=device)
         select(config.garment, task, contract)
         self.cameras = tuple(cameras)
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-{"bench_rgb"}:
-            raise ValueError("Policy camera is bench_rgb; other cameras are privileged diagnostics")
+        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
+            raise ValueError(f"Policy cameras are {', '.join(POLICY_CAMERAS)}; other cameras are privileged "
+                             "diagnostics")
+        # The D405 of a wrist camera is built on its arm only when the session selects that camera.
+        self.wrist_cameras = {arm: f"{arm}_wrist_rgb" for arm in ("left", "right")
+                              if f"{arm}_wrist_rgb" in self.cameras}
         self.options = dict(renderer_options or {})
         self.output = Path(output_dir or Path.home()/".cache/gar/laundry"/uuid.uuid4().hex)
         self.output.mkdir(parents=True, exist_ok=False)
-        self.env = CatalogueLaundryEnv(config, task=task, contract=contract)
+        with wrist_camera.selected(self.wrist_cameras):
+            self.env = CatalogueLaundryEnv(config, task=task, contract=contract)
         self.catalog, self.ik = Catalog(self.env), Kinematics(config.robot_base_y)
         self.images, self.trace = deque(), None
         self.render_recoveries = []
@@ -49,17 +57,19 @@ class NewtonLaundryBackend(RoboticsBackend):
             self.trace = Trace(self.env, self.output/"physics.sqlite3")
         w, h = self.options.get("width", 1280), self.options.get("height", 720)
         f = .018/math.tan(math.radians(69/2))
-        self.camera = CameraSpec("bench_rgb", "external_floor_stand", w, h, 1920, 1080,
-            (.036, .036*h/w), (f, f))
+        self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "external_floor_stand", w, h, 1920, 1080,
+            (.036, .036*h/w), (f, f))}
+        self.camera_specs.update((n, wrist_camera.spec(n, w, h)) for n in self.wrist_cameras.values())
         self.kinds = frozenset({"named_joint_target", "gripper", "cartesian_pose", "cartesian_delta"})
         self.capabilities = Capabilities("laundry", "newton", robot, self.kinds,
             frozenset({"proprioception", *(["rgb"] if self.cameras else [])}), True, False, True,
-            self.cameras, (self.camera,) if self.cameras else (), notes={
+            self.cameras, tuple(self.camera_specs[c] for c in self.cameras), notes={
                 "clock": "Exact physics ticks; time advances only through actions. Empty named_joint_target holds all targets.",
                 "control": "Physical servo targets. IK is not collision-free path planning.",
                 "camera": "Mounted external ideal pinhole RGB, 69 degree horizontal FOV; no depth channel claimed.",
                 "cloth": "Sewn Style3D cloth; partitioned contact reaction to finite-mass robot, one-tick delay.",
-                "qualification": "Not an autonomous folding solver."})
+                "qualification": "Not an autonomous folding solver.",
+                **({"wrist_cameras": wrist_camera.note(self.wrist_cameras.values())} if self.wrist_cameras else {})})
 
     def reset(self, *, seed=None, options=None):
         if seed is not None or options:
@@ -126,7 +136,7 @@ class NewtonLaundryBackend(RoboticsBackend):
                 raise RuntimeError("Cannot combine stale state and a new image")
             frames = self._render(self.cameras) if self.cameras else {}
             return Observation(sequence, state["time_s"], "dual-panda", {"joints": state["joints"]},
-                {n:ImageFrame(n, p, True, camera=self.camera) for n, p in frames.items()})
+                {n:ImageFrame(n, p, True, camera=self.camera_specs[n]) for n, p in frames.items()})
 
     def _ticks(self, seconds):
         value = seconds/self.env.config.dt
@@ -205,7 +215,7 @@ class NewtonLaundryBackend(RoboticsBackend):
                 stopped_on_contact=self.env.tick-before < ticks), state["evaluation"]["score"], state["evaluation"]["success"])
 
     def policy_access(self):
-        return PolicyAccess("dual-panda", (self.camera,) if self.cameras else (),
+        return PolicyAccess("dual-panda", tuple(self.camera_specs[c] for c in self.cameras),
             {("joints", n, f):None for n in self.env.joints for f in ("position", "velocity")}, self.kinds,
             lambda: self.env.task.spec.label + ". Use the robot arms; leave the garment released and resting on the table.",
             {"dt_s": self.env.config.dt,
@@ -222,7 +232,7 @@ class NewtonLaundryBackend(RoboticsBackend):
     def render(self, *, label="interactive"):
         name = "room" if label in ("interactive", "http") else label
         if name not in ("room", "bench", "cloth", "overhead", "bench_rgb", "bimanual",
-                        "handling_detail", "fabric", "edge_wide"):
+                        "handling_detail", "fabric", "edge_wide", *self.wrist_cameras.values()):
             raise ValueError("Unknown camera")
         return self._render((name,))[name]
 

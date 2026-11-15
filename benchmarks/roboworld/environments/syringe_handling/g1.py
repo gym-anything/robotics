@@ -3,6 +3,7 @@
 A visible rigid rehabilitation stand holds the pelvis; this is explicitly assisted
 upper-body manipulation, not free balancing or walking. All 43 URDF joints remain
 physical PD actuators. No Franka arms or parallel-finger emulation are substituted.
+The policy camera head_rgb is the G1's head D435 (head_camera); it is part of the G1 model and adds no body.
 """
 import math
 import numpy as np
@@ -11,6 +12,17 @@ from scipy.spatial.transform import Rotation
 PELVIS=(0.,-.28,.79)
 ARMS_DOWN={f'g1/{side}_{joint}_joint':v for side in ('left','right') for joint,v in
            [('shoulder_pitch',-.1),('shoulder_roll',.3 if side=='left' else -.3),('elbow',1.3)]}
+# D435 on the torso (URDF d435_joint), 69 deg HFOV: the whiteboard / barcode mount (percussion g1.HEAD_CAMERA)
+HEAD_CAMERA=dict(link='torso_link',xyz=(0.0576235,0.01753,0.42987),pitch=0.8307767239493009,hfov_deg=69.)
+
+def head_camera(sc):
+    """The head RGB (policy camera head_rgb) on the torso link at the URDF d435_joint, native 1280 x 720 (percussion
+    g1.head_camera). A camera of the G1 model: no body, shape or mass is added."""
+    body=next(i for i in sc.robot_bodies if sc.b.body_label[i].endswith('/'+HEAD_CAMERA['link']))
+    R=Rotation.from_euler('xyz',(0.,HEAD_CAMERA['pitch'],0.));eye=np.asarray(HEAD_CAMERA['xyz'],float)
+    sc.cameras['head_rgb']=dict(body=body,eye=eye.tolist(),target=(eye+.3*R.apply((1.,0.,0.))).tolist(),
+                                up=R.apply((0.,0.,1.)).tolist(),fov=HEAD_CAMERA['hfov_deg'],role='policy',
+                                width=1280,height=720)
 
 def setup_scene(sc,setup):
     import robots
@@ -30,6 +42,7 @@ def setup_scene(sc,setup):
     sc.box('g1_support_base',(0,-.57,.035),(.25,.23,.035),'cart_frame',place='robot_support')
     sc.box('g1_support_post',(0,-.57,.44),(.035,.035,.40),'cart_frame',place='robot_support')
     sc.box('g1_support_yoke',(0,-.44,.79),(.08,.13,.025),'cart_frame',collide=False)
+    head_camera(sc)
 
 def setup_world(w,m):
     w._arm={};w._finger_speed={};w._arm_hand={};w._arm_fingers={};w._tcp_off={}

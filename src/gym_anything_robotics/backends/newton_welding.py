@@ -9,6 +9,12 @@ bounded idle retention).
 Owner-side extras: a per-physics-tick trace of every action (welding/trace.py; GAR's /v1/history/{id}/trace) and the
 frozen variation catalogue (welding/variations.py; /v1/variations, variation_id at launch or reset).
 
+Policy cameras (backend option cameras, default ['bench']): the cell's 'bench', 'side' and 'weld_camera' on every
+deployment, and the robot cameras the deployment's robots carry (ROBOT_CAMERAS): each FR3 or Panda arm's wrist D405,
+'<arm>_wrist_rgb' with the arm named as its rig names it (ur10e-fr3: left_wrist_rgb; dual-fr3 and dual-panda: both;
+single-fr3: right_wrist_rgb), and the G1's head D435, 'head_rgb' (g1); a UR10e carries no camera. A selected wrist
+camera adds the D405's case and bracket to its arm (welding/scene.py); a session without one builds the bare arms.
+
 State and evaluation: GAR reads the state before and after every command (its action history) and for the command's
 result and observation; the backend reads WeldingEnv's state once per tick and runs the task evaluator only on demand
 (GET /v1/evaluation), unless the option state_evaluation=true puts it in every state and the owner's reward.
@@ -206,9 +212,13 @@ def load_wall_time_note(path=None):
 
 
 WALL_TIME_NOTE = load_wall_time_note()
-POLICY_CAMERAS = ("bench", "side", "weld_camera")
+POLICY_CAMERAS = ("bench", "side", "weld_camera")      # the cell's cameras, on every deployment
+# the robots' own cameras, offered where the deployment has the robot that carries them (robot_cameras)
+ROBOT_CAMERAS = ("left_wrist_rgb", "right_wrist_rgb", "head_rgb")
 DIAGNOSTIC = ("hero", "seam")
-MOUNTS = {"bench": "external_boom_mount", "side": "external_stand_mount", "weld_camera": "torch_body_mount"}
+MOUNTS = {"bench": "external_boom_mount", "side": "external_stand_mount", "weld_camera": "torch_body_mount",
+          "left_wrist_rgb": "link7_d405_envelope", "right_wrist_rgb": "link7_d405_envelope",
+          "head_rgb": "g1_torso_d435"}
 RENDERER_OPTIONS = frozenset({"width", "height", "samples", "idle_release_s"})
 POLICY_SAMPLES = 8
 TOP_LEVEL = ("preset", "task", "seed", "robot")
@@ -244,6 +254,44 @@ def _session_folder():
     for p in old[:max(0, len(old) - (SESSION_RETENTION - 1))]:
         shutil.rmtree(p, ignore_errors=True)
     return base/uuid.uuid4().hex
+
+
+MODEL_NAMES = {"ur10e": "UR10e", "fr3": "FR3", "panda": "Panda", "g1": "G1"}
+
+
+def robot_cameras(robot):
+    """The robot cameras a deployment (catalog alias) offers, from its rig: an FR3 or Panda arm's wrist D405
+    ('<instance>_wrist_rgb'), the G1's head D435 ('head_rgb'); a UR10e carries none."""
+    from robots.catalog import for_environment
+    offered = set()
+    for name, inst in for_environment("welding", robot).to_dict()["instances"].items():
+        model = inst["model"].split("@")[0]
+        if model in ("fr3", "panda"):
+            offered.add(f"{name}_wrist_rgb")
+        elif model == "g1":
+            offered.add("head_rgb")
+    return tuple(c for c in ROBOT_CAMERAS if c in offered)
+
+
+def _robot_camera_refusal(robot, refused, offered):
+    """Why a deployment refuses robot cameras it does not carry (UnsupportedConfigurationError text)."""
+    from robots.catalog import for_environment
+    instances = for_environment("welding", robot).to_dict()["instances"]
+    why = []
+    for c in refused:
+        if c == "head_rgb":
+            why.append(f"head_rgb is the G1's head camera and robot {robot!r} has no G1")
+            continue
+        arm = c[:-len("_wrist_rgb")]
+        model = instances.get(arm, {}).get("model", "").split("@")[0]
+        if "g1" in instances:
+            why.append(f"{c}: robot {robot!r} is the G1 (no Franka arm); its robot camera is head_rgb")
+        elif not model:
+            why.append(f"{c}: robot {robot!r} has no {arm!r} arm (arms: {', '.join(instances)})")
+        else:
+            why.append(f"{c}: the {arm!r} arm of {robot!r} is a {MODEL_NAMES.get(model, model)}, which carries no "
+                       "camera")
+    return "; ".join(why) + f". Robot cameras of {robot!r}: {', '.join(offered) or 'none'}"
 
 
 def _check_robot(robot):
@@ -326,8 +374,14 @@ def check_options(robot="ur10e-fr3", **options):
     if isinstance(cams, str) or not isinstance(cams, (list, tuple)) or not all(isinstance(c, str) for c in cams):
         raise ValueError(f"cameras must be a list of policy camera names {POLICY_CAMERAS}")
     cameras = tuple(cams)
-    if len(set(cameras)) != len(cameras) or set(cameras) - set(POLICY_CAMERAS):
-        raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; {DIAGNOSTIC} are privileged diagnostics")
+    offered = robot_cameras(robot)
+    if len(set(cameras)) != len(cameras) or set(cameras) - set(POLICY_CAMERAS + ROBOT_CAMERAS):
+        raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; {DIAGNOSTIC} are privileged diagnostics" +
+                         (f"; robot cameras of {robot!r}: {', '.join(offered) or 'none'}"
+                          if set(cameras) & set(ROBOT_CAMERAS) else ""))
+    refused = [c for c in cameras if c in ROBOT_CAMERAS and c not in offered]
+    if refused:
+        raise UnsupportedConfigurationError(_robot_camera_refusal(robot, refused, offered))
     renderer = _check_renderer_options(o["renderer_options"])
     from welding.variants import resolve, check_robot
     from welding.world import Config
@@ -403,9 +457,12 @@ class NewtonWeldingBackend(RoboticsBackend):
         self._scene_path = None
         width, height = self.options.get("width", 1280), self.options.get("height", 720)
         from welding import layout as LY
+        from welding.humanoid import HEAD_CAMERA
+        from welding.scene import D405
         self.camera_specs = {}
-        for name in POLICY_CAMERAS:
-            fov = float(LY.WELD_CAMERA["hfov"] if name == "weld_camera" else LY.CAMERAS[name]["hfov"])
+        for name in POLICY_CAMERAS + robot_cameras(robot):
+            fov = float(LY.WELD_CAMERA["hfov"] if name == "weld_camera" else D405["hfov"] if name.endswith("_wrist_rgb")
+                        else HEAD_CAMERA["hfov_deg"] if name == "head_rgb" else LY.CAMERAS[name]["hfov"])
             focal = .018/math.tan(math.radians(fov/2))
             self.camera_specs[name] = CameraSpec(name, MOUNTS[name], width, height, 1280, 720,
                                                  (.036, .036*height/width), (focal, focal))
@@ -460,7 +517,8 @@ class NewtonWeldingBackend(RoboticsBackend):
                                                                     "; states and command results do not (backend "
                                                                     "option state_evaluation=true adds it)")),
                 "cameras": "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; the weld camera uses a "
-                           "process-camera exposure (welding filter) and sees the arc and pool; no depth or noise",
+                           "process-camera exposure (welding filter) and sees the arc and pool; no depth or noise" +
+                           "".join(f"; {self._robot_camera_note(n)}" for n in self.cameras if n in ROBOT_CAMERAS),
                 "render_worker": (f"The images come from an Isaac render worker started with the session's first "
                                   f"observation (10-13 s) and kept warm {self._idle_release_s():g} s after each "
                                   f"request (renderer_options idle_release_s, default {IDLE_RELEASE_S:g}; 0 releases it "
@@ -476,14 +534,28 @@ class NewtonWeldingBackend(RoboticsBackend):
                 "variations": "Owner: frozen catalogue welding-steel-cell-v1 (10,000 cell states with train/validation/"
                               "test splits); GET /v1/variations, POST /v1/variations/start"})
 
+    def _robot_camera_note(self, name):
+        """The capability text of a selected robot camera."""
+        if name == "head_rgb":
+            return ("head_rgb: the G1 head D435 mount (URDF d435_joint), 69 deg HFOV, ideal pinhole; part of the G1 "
+                    "model (adds no body)")
+        arm = name[:-len("_wrist_rgb")]
+        model = MODEL_NAMES.get(self.env.world.scene.arm_hw[arm]["model"], "Franka")
+        return (f"{name}: an Intel RealSense D405 on the {arm} {model}'s link7 (Franka wrist mount), 87 deg HFOV, "
+                f"ideal pinhole, looking along the {'torch' if arm == self.torch_arm else 'hand'}; selecting it adds "
+                f"the D405's 60 g case and its 10 g bracket to the arm as collision geometry")
+
     # ------------------------------------------------------------------ lifecycle
     def _make_env(self, config, variation):
         """The environment for a configuration, with the task's start preset (welding/presets.py) and then a catalogue
-        variation's initial conditions applied before tick 0."""
+        variation's initial conditions applied before tick 0. The selected robot cameras go to the world: a wrist camera
+        installs its D405 on the arm (welding/scene.py)."""
         from welding.env import WeldingEnv
         from welding import variations as VR
         from welding.presets import apply_start_preset
-        env = WeldingEnv(config, output_dir=self.output)
+        mounted = tuple(c for c in getattr(self, "cameras", ()) if c in ROBOT_CAMERAS)
+        extra = {"robot_cameras": mounted} if mounted else {}      # none selected: the environment's own default
+        env = WeldingEnv(config, output_dir=self.output, **extra)
         apply_start_preset(env)
         if variation is not None:
             VR.apply_initial(env, variation)
@@ -966,8 +1038,9 @@ class NewtonWeldingBackend(RoboticsBackend):
 
     def render(self, *, label="interactive"):
         name = "hero" if label in ("interactive", "http") else label
-        if name not in POLICY_CAMERAS + DIAGNOSTIC:
-            raise ValueError(f"Render label must be one of {POLICY_CAMERAS + DIAGNOSTIC}")
+        valid = POLICY_CAMERAS + DIAGNOSTIC + tuple(c for c in self.cameras if c in ROBOT_CAMERAS)
+        if name not in valid:
+            raise ValueError(f"Render label must be one of {valid}")
         return self._render((name,))[name]
 
     # ------------------------------------------------------------------ geometry and checkpoints

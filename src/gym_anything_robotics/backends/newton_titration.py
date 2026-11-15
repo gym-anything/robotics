@@ -7,6 +7,7 @@ configuration is silently chosen. HTTP authorization is shared with GAR.
 
 import base64
 from collections import deque
+import math
 from pathlib import Path
 import uuid
 from .base import RoboticsBackend, reject_unexecuted
@@ -14,6 +15,11 @@ from ..actions import NamedJointTarget
 from ..errors import ActionRejectedError, BackendProtocolError, UnsupportedActionError, UnsupportedConfigurationError
 from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
+
+# bench_rgb: the external stand camera (the default); panda_wrist_rgb: the D405 on the Panda's wrist, whose case and
+# bracket the arm carries only in a session that selects it (titrate/newton15/wrist_camera.py).
+POLICY_CAMERAS = ("bench_rgb", "panda_wrist_rgb")
+WRIST_CAMERAS = ("panda_wrist_rgb",)
 
 
 def _session_factory(contract):
@@ -64,14 +70,23 @@ class NewtonTitrationBackend(RoboticsBackend):
             raise ValueError("Positive integer liquid trace stride required")
         effective_dt = (liquid_numerics.dt_s if liquid_numerics else .001) if dt_s is None else dt_s
         self.cameras = tuple(cameras)
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-{"bench_rgb"}:
-            raise ValueError("Policy observations support bench_rgb; diagnostic views use render")
+        absent = [c for c in self.cameras if isinstance(c, str) and c.endswith("_wrist_rgb")
+                  and c not in WRIST_CAMERAS]
+        if absent:
+            raise UnsupportedConfigurationError(f"titration-panda has one arm, panda: no {', '.join(absent)}; its "
+                                                "wrist camera is panda_wrist_rgb")
+        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
+            raise ValueError(f"Policy observations support {', '.join(POLICY_CAMERAS)}; diagnostic views use render")
+        wrist = tuple(c for c in self.cameras if c in WRIST_CAMERAS)
+        # Only a session that selects the wrist camera builds the arm with its D405; the others pass no keyword.
+        self._session_options = {"wrist_cameras": wrist} if wrist else {}
         make_session = _session_factory(self.contract)
         from titrate.newton15.geometry_api import GeometryCatalog
         from titrate.newton15.session_trace import SessionTrace
         from whiteboard.storage import Store
         self.session = make_session(config, task=self.task, dt_s=effective_dt, output_dir=output_dir,
-            renderer_options=renderer_options, liquid_numerics=liquid_numerics, reagents=reagents)
+            renderer_options=renderer_options, liquid_numerics=liquid_numerics, reagents=reagents,
+            **self._session_options)
         self._liquid_numerics = liquid_numerics
         self._recording = recording
         self.session.trace_liquid_stride = liquid_trace_stride
@@ -85,17 +100,30 @@ class NewtonTitrationBackend(RoboticsBackend):
         self.images = deque()
         options = renderer_options or {}
         width, height = options.get("width", 1280), options.get("height", 720)
-        self.camera = CameraSpec("bench_rgb", "authored_external_stand", width, height, width, height,
-            (.036, .036*height/width), (.028, .028))
+        self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "authored_external_stand", width, height, width,
+            height, (.036, .036*height/width), (.028, .028))}
+        notes = {}
+        if wrist:
+            from titrate.newton15.wrist_camera import HORIZONTAL_FOV_DEG, MOUNT_FRAME, NATIVE_RESOLUTION_PX
+            focal = .018/math.tan(math.radians(HORIZONTAL_FOV_DEG/2))
+            for name in wrist:
+                self.camera_specs[name] = CameraSpec(name, MOUNT_FRAME, width, height, *NATIVE_RESOLUTION_PX,
+                    (.036, .036*height/width), (focal, focal))
+            notes["wrist_camera"] = (f"panda_wrist_rgb: Intel RealSense D405 on panda_link7 ({MOUNT_FRAME}), "
+                f"{HORIZONTAL_FOV_DEG:g} deg HFOV, native {NATIVE_RESOLUTION_PX[0]}x{NATIVE_RESOLUTION_PX[1]}, ideal "
+                "RGB pinhole rendered from the simulated state; no depth or noise model. Selecting it adds the D405's "
+                "60 g case and the 10 g aluminium bracket to the arm as mass and collision geometry; a session "
+                "without it builds the arm without them")
         environment_id = "titration-apparatus-fixture" if apparatus_fixture else "titration-coupled-development"
         self.capabilities = Capabilities(environment_id, "newton", "panda",
             frozenset({"named_joint_target"}), frozenset({"proprioception", *(["rgb"] if self.cameras else [])}),
-            True, False, True, self.cameras, (self.camera,) if self.cameras else (),
+            True, False, True, self.cameras, tuple(self.camera_specs[c] for c in self.cameras),
             notes={"qualification": "Development fixture; not release acceptance",
                 "liquid": "absent" if apparatus_fixture else "Newton-state repository SPH with local chemistry",
                 "clock": "Explicit exact physics ticks; no background advancement",
                 "joint_units": "panda_joint1..7: radians; panda_finger_joint1/2: metres",
-                "camera": "Ideal calibrated external RGB; 36 mm virtual filmback, not a claim about measured sensor dimensions"})
+                "camera": "Ideal calibrated external RGB; 36 mm virtual filmback, not a claim about measured sensor dimensions",
+                **notes})
 
     def get_state(self):
         try:
@@ -163,7 +191,7 @@ class NewtonTitrationBackend(RoboticsBackend):
             candidate = make_session(config, task=task, dt_s=self.session.dt_s,
                 output_dir=self.output/'episodes'/uuid.uuid4().hex,
                 renderer_options=self.session.renderer_options,
-                liquid_numerics=self._liquid_numerics, reagents=reagents)
+                liquid_numerics=self._liquid_numerics, reagents=reagents, **self._session_options)
             candidate.trace_liquid_stride = self.session.trace_liquid_stride
             geometry = GeometryCatalog(candidate.world)
             trace = SessionTrace(candidate, candidate.output/'physics_trace.sqlite3') if self._recording else None
@@ -189,7 +217,7 @@ class NewtonTitrationBackend(RoboticsBackend):
     def policy_access(self):
         from titrate.newton15.task_catalogue import description
         joints = self.session.world.lab.robot_joints
-        return PolicyAccess("panda", (self.camera,) if self.cameras else (),
+        return PolicyAccess("panda", tuple(self.camera_specs[c] for c in self.cameras),
             {("joints", name, field): None for name in joints for field in ("position", "velocity")},
             frozenset({"named_joint_target"}),
             lambda: ("Dry laboratory apparatus component fixture. No liquid or titration evaluation is present."
@@ -221,7 +249,7 @@ class NewtonTitrationBackend(RoboticsBackend):
                 raise RuntimeError("Cannot combine stale state with a current camera image")
             frames = self._render(self.cameras) if self.cameras else {}
             return Observation(sequence, state["time_s"], "panda", {"joints": state["joints"]},
-                {name: ImageFrame(name, path, True, camera=self.camera) for name, path in frames.items()})
+                {name: ImageFrame(name, path, True, camera=self.camera_specs[name]) for name, path in frames.items()})
 
     def act(self, action):
         if not isinstance(action, NamedJointTarget):

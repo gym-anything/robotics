@@ -1,5 +1,6 @@
-"""Syringe handling: discovery, robot setups, the task catalogue, the layouts of every seed, the evaluator's tolerance
-table, and (one built scene, about 20 s on the processor) the start state, the engine corrections and a checkpoint.
+"""Syringe handling: discovery, robot setups, the policy cameras each setup offers, the task catalogue, the layouts of
+every seed, the evaluator's tolerance table, and (one built scene, about 20 s on the processor) the start state, the
+engine corrections and a checkpoint; with the G1's assets installed, a second built scene checks the G1's head camera.
 
   PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_syringe_handling.py
 """
@@ -101,6 +102,41 @@ class OffersAndForceLaw(unittest.TestCase):
         px = [(0.5*W + fpx*np.dot(p - eye, r_)/np.dot(p - eye, f_), 0.5*H - fpx*np.dot(p - eye, u_)/np.dot(p - eye, f_)) for p in pts]
         self.assertTrue(all(5 < x < W - 5 and 5 < y < H - 5 for x, y in px), px)
         self.assertGreater(max(x for x, _ in px) - min(x for x, _ in px), 80.0)
+
+    def test_head_rgb_is_the_g1_head_d435(self):
+        # the G1's head D435 at the URDF d435_joint (torso_link, 47.6 deg down), 69 deg HFOV: the percussion /
+        # barcode_scanning mount; offered as a policy camera after the five the arm setups offer
+        from syringe_handling.g1 import HEAD_CAMERA
+        from gym_anything_robotics.backends.newton_syringe_handling import POLICY_CAMERAS
+        self.assertEqual(POLICY_CAMERAS, ("station_rgb", "overhead_rgb", "left_wrist_rgb", "right_wrist_rgb", "bay_rgb",
+                                          "head_rgb"))
+        self.assertEqual(HEAD_CAMERA["link"], "torso_link")
+        np.testing.assert_array_equal(HEAD_CAMERA["xyz"], (0.0576235, 0.01753, 0.42987))
+        self.assertEqual(HEAD_CAMERA["pitch"], 0.8307767239493009)
+        self.assertEqual(HEAD_CAMERA["hfov_deg"], 69.)
+
+    def test_cameras_a_setup_does_not_carry_are_refused_before_anything_is_built(self):
+        import tempfile
+        from gym_anything_robotics.backends.newton_syringe_handling import NewtonSyringeHandlingBackend
+        from gym_anything_robotics.errors import UnsupportedConfigurationError
+        refused = [(robot, cams) for robot in ("dual-fr3", "dual-panda", "single-fr3")
+                   for cams in (("head_rgb",), ("station_rgb", "head_rgb"))]
+        refused += [("single-fr3", ("left_wrist_rgb",)), ("g1", ("left_wrist_rgb",)), ("g1", ("right_wrist_rgb",))]
+        with tempfile.TemporaryDirectory() as tmp:
+            for robot, cams in refused:
+                out = Path(tmp)/f"{robot}-{'-'.join(cams)}"
+                with self.subTest(robot=robot, cameras=cams):
+                    with self.assertRaises(UnsupportedConfigurationError) as caught:
+                        NewtonSyringeHandlingBackend(robot=robot, task="sharps-away", cameras=cams, output_dir=out,
+                                                     recording=False)
+                    self.assertIn("head_rgb" if "head_rgb" in cams else cams[0], str(caught.exception))
+                    self.assertFalse(out.exists())
+            # an unknown name: an arm setup lists the five cameras it offers, without the G1's head camera
+            with self.assertRaises(ValueError) as caught:
+                NewtonSyringeHandlingBackend(robot="dual-fr3", task="sharps-away", cameras=("foo",),
+                                             output_dir=Path(tmp)/"foo", recording=False)
+            self.assertIn("'bay_rgb')", str(caught.exception))
+            self.assertNotIn("'head_rgb'", str(caught.exception))
 
     def test_poiseuille_is_hagen_poiseuille(self):
         from syringe_handling import hydraulics as H
@@ -223,6 +259,67 @@ class BuiltScene(unittest.TestCase):
         np.testing.assert_array_equal(a[0], d.qpos)
         np.testing.assert_array_equal(a[1], d.qvel)
         self.assertTrue(np.isfinite(d.qpos).all())
+
+
+def _g1_assets():
+    try:
+        from robots.assets import resolve
+        resolve("g1")
+    except (ValueError, FileNotFoundError):
+        return False
+    return True
+
+
+@unittest.skipUnless(_g1_assets(), "the G1's locked assets are not installed (python -m whiteboard.assets)")
+class G1HeadCamera(unittest.TestCase):
+    """The G1 setup with its head D435 selected (one built scene, about 20 s on the processor)."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        from gym_anything_robotics.backends.newton_syringe_handling import NewtonSyringeHandlingBackend
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.backend = NewtonSyringeHandlingBackend(robot="g1", task="sharps-away", cameras=("station_rgb", "head_rgb"),
+                                                   output_dir=Path(cls.tmp.name)/"session", recording=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.backend.close()
+        cls.tmp.cleanup()
+
+    def test_the_spec_and_the_capabilities(self):
+        b = self.backend
+        spec = b.camera_specs["head_rgb"]
+        self.assertEqual((spec.name, spec.mount_frame, spec.width_px, spec.height_px, spec.native_width_px,
+                          spec.native_height_px), ("head_rgb", "g1_torso_d435", 1280, 720, 1280, 720))
+        focal = .018/math.tan(math.radians(69./2))
+        np.testing.assert_allclose(spec.focal_length_m, (focal, focal))
+        caps = b.capabilities
+        self.assertEqual(caps.robot_cameras, ("station_rgb", "head_rgb"))
+        self.assertEqual([c.name for c in caps.camera_specs], ["station_rgb", "head_rgb"])
+        self.assertIn("head_rgb: the G1 head D435", caps.notes["cameras"])
+        self.assertEqual(b.policy_access().capabilities()["robot_cameras"], ["station_rgb", "head_rgb"])
+        with self.assertRaises(ValueError) as caught:                 # the owner's render labels name it too
+            b.render(label="no-such-camera")
+        self.assertIn("'head_rgb'", str(caught.exception))
+
+    def test_the_camera_rides_the_d435_joint_and_adds_no_body(self):
+        from scipy.spatial.transform import Rotation
+        from syringe_handling.g1 import HEAD_CAMERA, head_camera
+        sc = self.backend.env.world.scene
+        cam = sc.cameras["head_rgb"]
+        label = sc.b.body_label[cam["body"]]
+        self.assertTrue(label.startswith("g1/") and label.endswith("/torso_link"), label)
+        np.testing.assert_allclose(cam["eye"], HEAD_CAMERA["xyz"])
+        view = np.subtract(cam["target"], cam["eye"])
+        view /= np.linalg.norm(view)
+        np.testing.assert_allclose(view, Rotation.from_euler("y", HEAD_CAMERA["pitch"]).apply((1., 0., 0.)), atol=1e-12)
+        self.assertAlmostEqual(math.degrees(math.asin(-view[2])), 47.6, places=1)             # looks down at the bench
+        self.assertEqual((cam["fov"], cam["role"], cam["width"], cam["height"]), (69., "policy", 1280, 720))
+        before = (sc.b.body_count, sc.b.shape_count, list(sc.b.body_mass))
+        head_camera(sc)                                                                    # a camera, not a part
+        self.assertEqual((sc.b.body_count, sc.b.shape_count, list(sc.b.body_mass)), before)
+        self.assertEqual(self.backend.env.world.model.body_count, sc.b.body_count)
 
 
 if __name__ == "__main__":

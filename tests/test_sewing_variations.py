@@ -8,7 +8,8 @@
 - a cheap real build per deployment: the backend over the real world built rigid-only (Config(cloth=False): the
   robots, table and machine casting, no cloth, no machine model, no start state), for the FR3 pair, the single FR3,
   the Panda pair and the G1, checked for the contract facts test_sewing_robots.py checks over its stand-in world, and
-  the stand-in world's shape checked against the real one.
+  the stand-in world's shape checked against the real one; the wrist D405 a selected wrist camera builds on its arm,
+  and the G1's head camera.
 
 The real builds run on the CPU (the rigid model and MuJoCo are on the host; nothing touches the GPU without cloth) in
 seconds; a deployment whose locked robot assets are not installed is skipped (resolved as sewing/doctor.py does). The
@@ -619,7 +620,10 @@ class RigidBuildContractTest(unittest.TestCase):
             self.assertEqual(b.arms, arms)
             self.assertEqual("gripper" in b.kinds, gripper)
             self.assertTrue({"named_joint_target", "cartesian_pose", "cartesian_delta", "tool_io"} <= b.kinds)
-            self.assertEqual((b.policy_cameras, b.cameras), (cams, cams))
+            self.assertEqual((b.policy_cameras, b.cameras), (DeploymentContractTest.OFFERED[robot], cams))
+            # no wrist D405 without its camera: the robot-mounted cameras are the G1's head camera only
+            self.assertEqual(set(w.scene.cameras), {"head_rgb"} if robot == "g1" else set())
+            self.assertFalse([s for s in w.model.shape_label if "_camera_" in s])
             pa = b.policy_access()
             caps = pa.capabilities()
             self.assertEqual([c.name for c in pa.cameras], list(cams))
@@ -664,6 +668,92 @@ class RigidBuildContractTest(unittest.TestCase):
 
     def test_g1(self):
         self._check("g1")
+
+
+class WristCameraBuildTest(unittest.TestCase):
+    """The wrist D405 in the real rigid-only world: built on link7 of exactly the arms whose wrist camera the session
+    selects (sewing/scene.py WRIST_D405: the case and the bracket at the reference pose and size, 60 g and 10 g), the
+    camera mounted on that link, nothing else of the model different from the same session without it; the G1's head
+    camera on its torso link's D435 frame."""
+
+    def _pair(self, robot, cameras):
+        reason = _missing_assets(robot)
+        if reason:
+            self.skipTest(reason)
+        plain, wrist = _rigid_backend(robot=robot, cameras=None), _rigid_backend(robot=robot, cameras=cameras)
+        self.addCleanup(plain.close)
+        self.addCleanup(wrist.close)
+        return plain.env.world.model, wrist
+
+    def _check(self, robot, cameras):
+        from sewing.scene import WRIST_D405
+        m0, b = self._pair(robot, cameras)
+        w = b.env.world
+        m = w.model
+        arms = tuple(a for a in ("left", "right") if f"{a}_wrist_rgb" in cameras)      # in the rig's order
+        self.assertEqual(b.wrist_camera_arms, arms)
+        self.assertEqual(b.get_state()["config"]["wrist_camera_arms"], arms)
+        labels, shapes = list(m.body_label), list(m.shape_label)
+        n0 = m0.shape_count
+        self.assertEqual((m.body_count, m.shape_count), (m0.body_count, n0 + 2*len(arms)))
+        self.assertEqual(shapes[:n0], list(m0.shape_label))
+        for k in ("shape_transform", "shape_scale", "shape_body", "shape_collision_group", "shape_flags"):
+            np.testing.assert_array_equal(getattr(m, k).numpy()[:n0], getattr(m0, k).numpy(), err_msg=k)
+        mass, mass0 = m.body_mass.numpy(), m0.body_mass.numpy()
+        link7 = {a: labels.index(next(lab for lab in labels if lab.startswith(a + "/") and lab.endswith("link7")))
+                 for a in arms}
+        changed = [i for i in range(m.body_count) if mass[i] != mass0[i]]
+        self.assertEqual(changed, sorted(link7.values()))
+        for arm, body in link7.items():
+            self.assertAlmostEqual(float(mass[body] - mass0[body]), .070, places=6)      # float32 masses
+            for part in ("case", "bracket"):
+                i = shapes.index(f"{arm}_camera_{part}")
+                centre, half, _ = WRIST_D405[part]
+                self.assertEqual(int(m.shape_body.numpy()[i]), body)
+                np.testing.assert_allclose(m.shape_transform.numpy()[i], (*centre, 0., 0., 0., 1.), atol=1e-7)
+                np.testing.assert_allclose(m.shape_scale.numpy()[i], half, atol=1e-7)
+            cam = w.scene.cameras[f"{arm}_wrist_rgb"]
+            self.assertEqual((cam["body"], cam["eye"], cam["target"], cam["up"], cam["fov"]),
+                             (body, [.075, -.012, .083], [.075, -.012, .283], [0., 1., 0.], 87.))
+        self.assertEqual(set(w.scene.cameras), {f"{a}_wrist_rgb" for a in arms})
+        self.assertEqual(tuple(s.name for s in b.capabilities.camera_specs), tuple(cameras))
+
+    def test_dual_fr3_one_wrist(self):
+        self._check("dual-fr3", ("left_wrist_rgb",))
+
+    def test_dual_fr3_both_wrists_with_the_scene_cameras(self):
+        self._check("dual-fr3", ("operator", "overhead", "needle", "left_wrist_rgb", "right_wrist_rgb"))
+
+    def test_single_fr3(self):
+        self._check("single-fr3", ("right_wrist_rgb",))
+
+    def test_dual_panda(self):
+        self._check("dual-panda", ("right_wrist_rgb", "left_wrist_rgb"))
+
+    def test_a_variation_switch_keeps_the_wrist_cameras(self):
+        _, b = self._pair("single-fr3", ("right_wrist_rgb",))
+        b.reset(options={"variation_id": 63})                      # square-plies seed 3: its own Config class
+        self.assertEqual(type(b.env.world.config).__name__, "SquareWristCameraConfig")
+        self.assertEqual(b.env.world.config.wrist_camera_arms, ("right",))
+        self.assertEqual(set(b.env.world.scene.cameras), {"right_wrist_rgb"})
+
+    def test_g1_head_camera_on_its_d435_frame(self):
+        from scipy.spatial.transform import Rotation
+        from sewing.g1 import HEAD_CAMERA
+        reason = _missing_assets("g1")
+        if reason:
+            self.skipTest(reason)
+        b = _rigid_backend(robot="g1", cameras=("head_rgb",))
+        self.addCleanup(b.close)
+        w = b.env.world
+        cam = w.scene.cameras["head_rgb"]
+        eye = np.asarray(HEAD_CAMERA["xyz"])
+        self.assertTrue(w.model.body_label[cam["body"]].endswith("torso_link"))
+        np.testing.assert_allclose(cam["eye"], eye)
+        np.testing.assert_allclose(cam["target"], eye + .3*Rotation.from_euler("y", HEAD_CAMERA["pitch"]).apply(
+            (1., 0., 0.)))
+        self.assertEqual((cam["fov"], b.camera_specs["head_rgb"].mount_frame), (69., "g1_head_d435_mount"))
+        self.assertEqual(b.wrist_camera_arms, ())
 
 
 @unittest.skipUnless(os.environ.get("GAR_SEWING_PHYSICS_TESTS") == "1", "set GAR_SEWING_PHYSICS_TESTS=1 (GPU)")

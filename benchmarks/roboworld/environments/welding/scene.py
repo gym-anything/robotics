@@ -6,6 +6,10 @@ built disabled; welding/bonds.py switches it on only where the thermal solver ha
 All placements come from welding/layout.py and the gun from welding/torch.py. Heat, melting and the bead live in the
 thermal solver (welding/process.py); visual-only dressing (welding/shop.py) is outside every arm's reach and has no
 collision.
+
+Robot cameras (robot_cameras, the session's selection): an FR3 or Panda arm's wrist D405 (<arm>_wrist_rgb) is built
+with its case and bracket on the arm's link7 only when selected, so a session without a wrist camera builds the bare
+catalog arms; the G1's head D435 (head_rgb) is a frame of the G1 model and adds nothing to it.
 """
 
 import math
@@ -29,9 +33,16 @@ FRANKA_HAND_FINGER_BOXES = (((0., 18.5e-3, 11e-3), (0., 0., 0.), (22e-3, 15e-3, 
 
 WELD_SEG = 2e-3     # m: length of joint one weld-metal collider covers (4 cells along the weld)
 
+# Intel RealSense D405 on a Franka arm's wrist (robots/attachments/d405), in the link7 frame: the case (60 g, 42 x 42 x
+# 23 mm envelope) and its aluminium bracket (10 g), centres and half extents, and the camera's optical centre looking
+# along link7's +z; ideal pinhole, 87 deg HFOV, native 1280 x 720. The drilling, filleting and label_application wrist
+# mount (drilling/scene.py _wrist_camera)
+D405 = dict(case=((.075, 0., .07), (.021, .021, .0115), .060), bracket=((.05, 0., .046), (.025, .013, .003), .010),
+            eye=(.075, -.012, .083), target=(.075, -.012, .283), up=(0., 1., 0.), hfov=87.)
+
 
 class Scene:
-    def __init__(self, config, coupon, newton, wp):
+    def __init__(self, config, coupon, newton, wp, robot_cameras=()):
         self.c, self.coupon, self.newton, self.wp = config, coupon, newton, wp
         newton.use_coord_layout_targets = True
         self.b = newton.ModelBuilder(gravity=-9.81)
@@ -39,7 +50,9 @@ class Scene:
         from newton.solvers import SolverMuJoCo
         SolverMuJoCo.register_custom_attributes(self.b)
         self.materials, self.bodies, self.shapes = {}, {}, {}
-        self.cameras = {}
+        self.cameras = {}                # the selected robot cameras: name -> body, eye, target, up (body frame), fov
+        self.robot_cameras = tuple(robot_cameras)
+        self.wrist_d405 = ()             # the arms carrying a wrist D405 (selected wrist cameras)
         self.room()
         self.robots()
         self.gun()
@@ -93,9 +106,10 @@ class Scene:
         setup = for_environment("welding", self.c.robot)
         self.robot_setup = setup
         data = setup.to_dict()
-        self.arm_hw, mounts = {}, {}
+        self.arm_hw, mounts, wrist_links = {}, {}, {}
         for name, inst in data["instances"].items():
             spec = model(inst["model"]).to_dict()
+            wrist_links[name] = spec.get("frames", {}).get("wrist", {}).get("parent")
             if inst["model"].split("@")[0] == "g1":
                 # the humanoid stands on the floor behind the table (welding/humanoid.py); one instance, both arms
                 from . import humanoid as HU
@@ -124,6 +138,30 @@ class Scene:
                 self.materials[i] = "robot_" + self.arm_hw[name]["model"]
             if self.arm_hw[name].get("hand"):
                 self._finger_colliders(name, handle)
+            if f"{name}_wrist_rgb" in self.robot_cameras:
+                self._wrist_camera(name, handle, wrist_links[name])
+        if "head_rgb" in self.robot_cameras and any(hw["model"] == "g1" for hw in self.arm_hw.values()):
+            from . import humanoid as HU
+            HU.head_camera(self)
+        missing = sorted(set(self.robot_cameras) - set(self.cameras))
+        if missing:
+            raise ValueError(f"robot cameras {missing} are not on rig {data['id']}")
+
+    def _wrist_camera(self, arm, handle, wrist_link):
+        """The arm's wrist RGB (<arm>_wrist_rgb): the D405's case and bracket as collision boxes with their masses on
+        the arm's link7 (D405), and the camera on that link. Built only for a selected wrist camera."""
+        labels = self.b.body_label
+        link7 = [i for i in handle.body_ids if wrist_link and labels[i].endswith(wrist_link)]
+        if self.arm_hw[arm]["model"] not in ("fr3", "panda") or len(link7) != 1:
+            raise ValueError(f"{arm}_wrist_rgb: the {arm!r} arm ({self.arm_hw[arm]['model']}) has no Franka wrist link")
+        body = link7[0]
+        for part in ("case", "bracket"):
+            c, h, mass = D405[part]
+            self.box(f"{arm}_camera_{part}", c, h, "camera_dark" if part == "case" else "aluminum", body=body,
+                     density=mass/((2*h[0])*(2*h[1])*(2*h[2])))
+        self.cameras[f"{arm}_wrist_rgb"] = dict(body=body, eye=list(D405["eye"]), target=list(D405["target"]),
+                                                up=list(D405["up"]), fov=D405["hfov"], role="policy")
+        self.wrist_d405 += (arm,)
 
     def _finger_colliders(self, arm, handle):
         """The manufacturer URDF's finger collision boxes on each Franka Hand finger (as filleting/label_application)."""

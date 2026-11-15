@@ -1,5 +1,6 @@
 """RTX views of actual Newton body poses. Rendering never advances dynamics."""
 
+import math
 from pathlib import Path
 import numpy as np
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux, UsdShade
@@ -74,6 +75,8 @@ PALETTE={
     "status_green":((.04,.62,.27),.28,.0),
     "screen":((.025,.080,.105),.19,.05),
 }
+# The D405 case colour of the reference Franka scenes; exported only with a mounted wrist camera.
+D405_PALETTE={"camera_dark":((.03,.03,.035),.45,0.)}
 
 
 # Render-only indicator lamps: name -> (lit colour, emission). The renderer
@@ -150,7 +153,7 @@ def export(env, output):
     UsdGeom.SetStageMetersPerUnit(stage,1.)
     stage.SetDefaultPrim(UsdGeom.Xform.Define(stage,"/Lab").GetPrim())
     mats={}
-    for name,(rgb,rough,metal) in PALETTE.items():
+    for name,(rgb,rough,metal) in dict(PALETTE,**(D405_PALETTE if env.wrist_cameras else {})).items():
         m=UsdShade.Material.Define(stage,"/Materials/"+name)
         s=UsdShade.Shader.Define(stage,"/Materials/"+name+"/surface")
         s.CreateIdAttr("UsdPreviewSurface")
@@ -166,6 +169,8 @@ def export(env, output):
     sign_mat=_print_material(stage,"inspection_sign_print","inspection_sign.png")
     card_mat=_print_material(stage,"service_card_print","service_card.png")
     b=env.builder
+    # The D405 case and bracket of a mounted wrist camera keep their scene materials.
+    d405={i for cam in env.wrist_cameras.values() for i in cam["shapes"]}
     for i,q in enumerate(env.state.body_q.numpy()):
         pose(UsdGeom.Xform.Define(stage,f"/Lab/body_{i}"),q[:3],q[3:])
     for i in range(b.shape_count):
@@ -202,7 +207,7 @@ def export(env, output):
             local[:3]+=Rotation.from_quat(local[3:]).apply((0,0,-.05))
         pose(g,local[:3],local[3:])
         mat=env.materials.get(i,"steel")
-        if label.startswith(("left/","right/")):
+        if label.startswith(("left/","right/")) and i not in d405:
             # Pinned FR3 DAE shapes carry their original colours in Newton.
             rgb=np.asarray(b.shape_color[i])**2.2
             mat=f"fr3_{i}"
@@ -307,6 +312,18 @@ def export(env, output):
     # face (y = -0.246); a camera eye inside its own collidable glass is black.
     camera(stage,"bench_rgb",(.17,-.2469,1.16),(.2655,.03,1.085),38.,role="policy")
     camera(stage,"overview_rgb",(0,.330,2.196),(0,-.14,1.08),20.,role="policy")
+    # A mounted D405 wrist camera rides on its arm's link 7 body prim; /Cameras/<name> names it for the worker.
+    for name,cam in env.wrist_cameras.items():
+        c=UsdGeom.Camera.Define(stage,f"/Lab/body_{cam['body']}/{name}")
+        c.AddTransformOp().Set(Gf.Matrix4d().SetLookAt(Gf.Vec3d(*cam["eye"]),Gf.Vec3d(*cam["target"]),
+                                                        Gf.Vec3d(*cam["up"])).GetInverse())
+        c.CreateHorizontalApertureAttr(36.)
+        c.CreateVerticalApertureAttr(20.25)
+        c.CreateFocalLengthAttr(18/math.tan(math.radians(cam["fov_deg"]/2)))
+        c.CreateClippingRangeAttr(Gf.Vec2f(.005,30.))
+        c.GetPrim().SetCustomDataByKey("observation_role","policy")
+        alias=UsdGeom.Xform.Define(stage,"/Cameras/"+name)
+        alias.GetPrim().SetCustomDataByKey("mounted_camera_path",str(c.GetPath()))
     stage.GetRootLayer().Save()
     return output/"scene.usdc"
 

@@ -9,11 +9,17 @@ HOME = [0., -.4, 0., -2.2, 0., 1.9, .79, .04, .04]
 LOCK_OPERATION_SPEED = .2
 
 
-def add_robot(builder, c):
+def add_robot(builder, c, materials):
+    import newton
     from robots.backends.newton import add_robot as build, mount
+    from pencap.newton15.wrist_camera import install
     addresses = build(builder,'panda','lockkey',instance='panda',
         placement=mount((.54,0,c.table_height+.11),math.pi)).metadata['legacy_addresses']
     for name, spec in addresses.items():
         if "finger" not in name:
             spec["velocity_limit"] *= LOCK_OPERATION_SPEED
+    # The D405 wrist camera, only when the session selects it (pencap/newton15/wrist_camera.py); its case and
+    # bracket touch the scene like the workshop furniture (scene.py).
+    install(builder, "panda", newton.ModelBuilder.ShapeConfig(gap=c.contact_gap, mu=.4, ke=c.contact_ke,
+        kd=c.contact_kd, mu_torsional=0., mu_rolling=0.), materials)
     return addresses

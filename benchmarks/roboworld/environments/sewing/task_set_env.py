@@ -2,7 +2,9 @@
 
 A benchmark task's start is its folder's setup.py (tasks/<task>/): setup gives the Config the world is built from.
 Only square-plies adds an initial condition: its prepare applies it before the existing relaxation, and its start is
-cached under a separate task/setup key (SquareConfig). Other new tasks reuse existing starts/meshes.
+cached under a separate task/setup key (SquareConfig). Other new tasks reuse existing starts/meshes. A session that
+selects wrist cameras builds its world from WristCameraConfig (the arms that carry a D405), whose starts are cached
+under keys of their own.
 """
 
 from dataclasses import dataclass, replace
@@ -22,6 +24,19 @@ class SquareConfig(Config):
     """The Config of square-plies' slipped start (tasks/square-plies/setup.py builds it): task_setup_revision keys a
     cached start state of its own."""
     task_setup_revision: str = SQUARE_SETUP
+
+
+@dataclass
+class WristCameraConfig(Config):
+    """The Config of a session that selects wrist cameras (the GAR backend builds it): wrist_camera_arms names the arms
+    whose D405 and bracket the scene builds on link7 (scene.py WRIST_D405), and keys a cached start state of its own
+    (the 70 g on each such arm). A session without a wrist camera builds from Config."""
+    wrist_camera_arms: tuple = ()
+
+
+@dataclass
+class SquareWristCameraConfig(SquareConfig, WristCameraConfig):
+    """square-plies' slipped start (SquareConfig) in a session that selects wrist cameras (WristCameraConfig)."""
 
 
 class TaskEnvironment(SewingEnv):

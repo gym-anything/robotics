@@ -153,7 +153,7 @@ async function showObservation(obs) {
     cap.textContent = `${name}${name === "weld_camera" ? " (process camera: dark unless the arc burns)" : ""} · observation ${obs.observation_id} · sim ${fmt(obs.sim_time_s, 3)} s`;
     fig.append(img, cap); return fig;
   }));
-  if (!fresh.length) $("frames").innerHTML = '<div class="empty">This session has no robot cameras (launch it with --backend-options-json \'{"cameras":["bench","side","weld_camera"]}\').</div>';
+  if (!fresh.length) $("frames").innerHTML = '<div class="empty">This session has no robot cameras (launch it with --backend-options-json \'{"cameras":["bench","side","weld_camera"]}\'; an FR3 or Panda arm also offers its wrist D405, e.g. "left_wrist_rgb", and the G1 its head D435, "head_rgb").</div>';
   $("frames").classList.toggle("multi", fresh.length > 1);
   $("frames").dataset.observation = obs.observation_id;
   lastObs = obs;

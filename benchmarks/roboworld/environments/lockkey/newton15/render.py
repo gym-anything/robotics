@@ -107,6 +107,8 @@ def export(env, output, *, cutaway=False):
     camera(stage, "pin_stacks", (.125, -.070, z+.129), (.10, 0., z+.103), 60.)
     from .scene import CAMERA_EYE, CAMERA_TARGET
     camera(stage, "bench_rgb", CAMERA_EYE, CAMERA_TARGET, 18./np.tan(np.radians(69./2)), role="policy")
+    from pencap.newton15.wrist_camera import export as wrist_cameras
+    wrist_cameras(stage, b)
     stage.GetRootLayer().Save()
     return output/"scene.usdc"
 

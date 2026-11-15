@@ -158,7 +158,7 @@ def build(c, *, assisted_key=False, fixture_key=None):
     box("lock_mount_back", (.068, 0., origin[2]+.018), (.002, .026, .034))
     for y in (-.024, .024):
         box(f"lock_mount_jaw_{y}", (.081, y, origin[2]+.009), (.011, .004, .020))
-    addresses = add_robot(b, c)
+    addresses = add_robot(b, c, materials)
     from .scene import dress
     dress(b, c, materials)
     return b, bodies, addresses, mechanism_joints, materials

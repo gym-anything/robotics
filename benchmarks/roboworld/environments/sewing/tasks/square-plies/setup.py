@@ -6,9 +6,10 @@ BASE is the task whose plies and settings this one reuses (task.TASK_SETUP copie
 config) is called by the task adapter (task_set_env.TaskEnvironment, and its sewing-tasks-v2 subclass) with the
 episode's Config before the world is built; it returns the Config the world is built from: the episode's own as
 task_set_env.SquareConfig, whose task_setup_revision (REVISION) keys a cached start state of its own, never the
-aligned load start's. prepare(env, make) is the adapter's start preparation (TaskEnvironment._make_start): it slips the
-top ply (slip_top), prepares the start (make: the relaxation, or the cached state) and records the initial condition.
-START_STATE names the start; TASK_START describes it in the variation catalogue (variations.py)."""
+aligned load start's (task_set_env.SquareWristCameraConfig when the session selects wrist cameras). prepare(env,
+make) is the adapter's start preparation (TaskEnvironment._make_start): it slips the top ply (slip_top), prepares the
+start (make: the relaxation, or the cached state) and records the initial condition. START_STATE names the start;
+TASK_START describes it in the variation catalogue (variations.py)."""
 import numpy as np
 
 BASE = "load"
@@ -33,9 +34,9 @@ def slip_top(positions):
 
 
 def setup(env, config):
-    from sewing.task_set_env import SquareConfig
-    # Unique cache: never restore an aligned load state as the slipped one.
-    return SquareConfig(**vars(config))
+    from sewing.task_set_env import SquareConfig, SquareWristCameraConfig, WristCameraConfig
+    # Unique cache: never restore an aligned load state as the slipped one. A session's wrist cameras are kept.
+    return (SquareWristCameraConfig if isinstance(config, WristCameraConfig) else SquareConfig)(**vars(config))
 
 
 def prepare(env, make):

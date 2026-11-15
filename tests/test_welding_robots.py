@@ -211,14 +211,14 @@ class ProfileAndMountTest(unittest.TestCase):
             self.assertAlmostEqual(sum(HU.READY[HU.joint(side, j)] for j in ("hip_pitch", "knee", "ankle_pitch")), 0.)
 
 
-def _stub_backend(robot, task="fillet-2f"):
+def _stub_backend(robot, task="fillet-2f", cameras=(), **options):
     """The real backend constructor over a stub environment shaped like the deployment's world (welding/world.py):
     arms and hands as scene.py and world.py derive them (no GPU, no physics)."""
     from robots.catalog import for_environment
     from gym_anything_robotics.backends.newton_welding import NewtonWeldingBackend
     data = for_environment("welding", robot).to_dict()
     g1 = robot == "g1"
-    arm_hw = {name: {} for name in data["instances"]}
+    arm_hw = {name: {"model": inst["model"].split("@")[0]} for name, inst in data["instances"].items()}
     for att in data.get("attachments", {}).values():
         arm_hw[att["parent"].split("/")[0]]["hand"] = att["model"]
     hand_arms = ("left",) if g1 else tuple(a for a in arm_hw if arm_hw[a].get("hand"))
@@ -233,7 +233,8 @@ def _stub_backend(robot, task="fillet-2f"):
                           tool_io=Mock(), steps=0)
     out = Path(tempfile.mkdtemp())/"session"
     with patch.object(NewtonWeldingBackend, "_make_env", return_value=env):
-        return NewtonWeldingBackend(robot=robot, task=task, trace=False, cameras=(), output_dir=str(out))
+        return NewtonWeldingBackend(robot=robot, task=task, trace=False, cameras=cameras, output_dir=str(out),
+                                    **options)
 
 
 class CapabilityTest(unittest.TestCase):
@@ -278,6 +279,113 @@ class CapabilityTest(unittest.TestCase):
         panda = for_environment("welding", "dual-panda").to_dict()["instances"]
         self.assertEqual((panda["right"]["controller_profile"], panda["left"]["controller_profile"]),
                          ("welding_torch", "welding"))
+
+
+class RobotCameraTest(unittest.TestCase):
+    """The cameras the deployments' robots carry: each FR3 or Panda arm's wrist D405 (<arm>_wrist_rgb), the G1's head
+    D435 (head_rgb), none on a UR10e; offered beside the cell's cameras, refused where the robot is not, and absent
+    from every session that does not select them (no GPU, no physics)."""
+
+    OFFERED = {"ur10e-fr3": ("left_wrist_rgb",), "ur10e": (), "dual-fr3": ("left_wrist_rgb", "right_wrist_rgb"),
+               "single-fr3": ("right_wrist_rgb",), "dual-panda": ("left_wrist_rgb", "right_wrist_rgb"),
+               "g1": ("head_rgb",)}
+
+    def test_offered_per_deployment_and_defaults_unchanged(self):
+        from gym_anything_robotics.backends import newton_welding as NW
+        self.assertEqual(NW.POLICY_CAMERAS, ("bench", "side", "weld_camera"))
+        self.assertEqual(set(self.OFFERED), set(ALL))
+        for robot, offered in self.OFFERED.items():
+            with self.subTest(robot=robot):
+                self.assertEqual(NW.robot_cameras(robot), offered)
+                self.assertEqual(NW.check_options(robot)[4], ("bench",))
+                b = _stub_backend(robot, cameras=("bench",))
+                self.assertEqual(b.capabilities.robot_cameras, ("bench",))
+                self.assertNotIn("D405", b.capabilities.notes["cameras"])
+
+    def test_camera_specs_and_notes(self):
+        for robot, offered in self.OFFERED.items():
+            for name in offered:
+                with self.subTest(robot=robot, camera=name):
+                    b = _stub_backend(robot, cameras=("bench", name))
+                    self.assertEqual(b.capabilities.robot_cameras, ("bench", name))
+                    spec = b.capabilities.camera_specs[1]
+                    hfov = 69. if name == "head_rgb" else 87.
+                    self.assertEqual((spec.name, spec.mount_frame), (name, "g1_torso_d435" if name == "head_rgb"
+                                                                     else "link7_d405_envelope"))
+                    self.assertEqual((spec.width_px, spec.height_px, spec.native_width_px, spec.native_height_px),
+                                     (1280, 720, 1280, 720))
+                    self.assertAlmostEqual(math.degrees(2*math.atan(spec.sensor_size_m[0]/2/spec.focal_length_m[0])),
+                                           hfov, places=9)
+                    self.assertEqual([c["name"] for c in b.policy_access().capabilities()["camera_specs"]],
+                                     ["bench", name])
+                    note = b.capabilities.notes["cameras"]
+                    if name == "head_rgb":
+                        self.assertIn("head_rgb: the G1 head D435 mount (URDF d435_joint), 69 deg HFOV", note)
+                    else:
+                        self.assertIn(f"{name}: an Intel RealSense D405", note)
+                        self.assertIn("adds the D405's 60 g case and its 10 g bracket to the arm", note)
+                    with self.assertRaises(ValueError) as caught:
+                        b.render(label="bogus")
+                    self.assertIn(name, str(caught.exception))
+        b = _stub_backend("dual-fr3", cameras=("right_wrist_rgb",), renderer_options={"width": 640, "height": 360})
+        spec = b.capabilities.camera_specs[0]
+        self.assertEqual((spec.width_px, spec.height_px, spec.sensor_size_m), (640, 360, (.036, .036*360/640)))
+
+    def test_robot_cameras_reach_the_world_only_when_selected(self):
+        from gym_anything_robotics.backends.newton_welding import NewtonWeldingBackend
+
+        class Built(Exception):
+            pass
+        for robot, cameras, mounted in (("dual-fr3", ["bench", "right_wrist_rgb"], ("right_wrist_rgb",)),
+                                        ("dual-panda", ["left_wrist_rgb", "right_wrist_rgb"],
+                                         ("left_wrist_rgb", "right_wrist_rgb")),
+                                        ("g1", ["head_rgb"], ("head_rgb",)), ("ur10e-fr3", None, None),
+                                        ("dual-fr3", ["bench", "side", "weld_camera"], None), ("g1", [], None)):
+            with self.subTest(robot=robot, cameras=cameras), tempfile.TemporaryDirectory() as d, \
+                    patch("welding.env.WeldingEnv", side_effect=Built) as env, self.assertRaises(Built):
+                NewtonWeldingBackend(robot=robot, output_dir=d + "/s",
+                                     **({} if cameras is None else {"cameras": cameras}))
+            self.assertEqual(env.call_args.kwargs.get("robot_cameras"), mounted)
+            if mounted is None:
+                self.assertEqual(set(env.call_args.kwargs), {"output_dir"})
+
+    def test_cameras_a_deployment_does_not_carry_are_refused_before_the_world(self):
+        from gym_anything_robotics.backends.newton_welding import NewtonWeldingBackend, ROBOT_CAMERAS
+        from gym_anything_robotics.launch import LaunchSpec
+        why = {("single-fr3", "left_wrist_rgb"): "has no 'left' arm",
+               ("ur10e", "left_wrist_rgb"): "has no 'left' arm",
+               ("ur10e", "right_wrist_rgb"): "is a UR10e, which carries no camera",
+               ("ur10e-fr3", "right_wrist_rgb"): "is a UR10e, which carries no camera",
+               ("g1", "left_wrist_rgb"): "is the G1 (no Franka arm)", ("g1", "right_wrist_rgb"): "is the G1",
+               ("dual-fr3", "head_rgb"): "has no G1", ("ur10e", "head_rgb"): "has no G1"}
+        for robot, offered in self.OFFERED.items():
+            for name in ROBOT_CAMERAS:
+                if name in offered:
+                    LaunchSpec("welding", robot=robot, backend_options={"cameras": ["bench", name]})
+                    continue
+                with self.subTest(robot=robot, camera=name):
+                    with patch("welding.env.WeldingEnv") as env, \
+                            self.assertRaises(UnsupportedConfigurationError) as caught:
+                        NewtonWeldingBackend(robot=robot, cameras=["bench", name], output_dir="/nonexistent/never")
+                    env.assert_not_called()
+                    self.assertIn(f"Robot cameras of {robot!r}: {', '.join(offered) or 'none'}", str(caught.exception))
+                    if (robot, name) in why:
+                        self.assertIn(why[robot, name], str(caught.exception))
+                    with self.assertRaises(ValueError):
+                        LaunchSpec("welding", robot=robot, backend_options={"cameras": [name]})
+
+    def test_errors_of_camera_lists_without_robot_cameras_unchanged(self):
+        from gym_anything_robotics.backends.newton_welding import check_options
+        for robot in ALL:
+            for cameras in (["hero"], ["bench", "bench"], ["front"]):
+                with self.subTest(robot=robot, cameras=cameras), self.assertRaises(ValueError) as caught:
+                    check_options(robot, cameras=cameras)
+                self.assertEqual(str(caught.exception), "Policy cameras are ('bench', 'side', 'weld_camera'); "
+                                                        "('hero', 'seam') are privileged diagnostics")
+        with self.assertRaises(ValueError) as caught:
+            _stub_backend("dual-fr3", cameras=("bench",)).render(label="bogus")
+        self.assertEqual(str(caught.exception), "Render label must be one of ('bench', 'side', 'weld_camera', 'hero', "
+                                                "'seam')")
 
 
 class DoctorTest(unittest.TestCase):
@@ -325,6 +433,67 @@ class RigidCellTest(unittest.TestCase):
                 self.assertGreater(link, gun_mass)
                 self.assertEqual(w.reflexes, [])
                 self.assertTrue(w.hand_bodies())
+
+    def test_robot_cameras_on_the_rigid_cells(self):
+        """A wrist camera adds the D405's case and bracket (reference pose, 60 g + 10 g) to its arm's link7 and nothing
+        else; the case stays clear of the torch sharing that link; the G1's head camera adds nothing to the model."""
+        import numpy as np
+        import warp as wp
+        wp.config.quiet = True
+        from welding.world import World, Config
+        from welding.scene import D405
+        from welding.render import scene_meta
+
+        def arrays(w):
+            m = w.model
+            return {k: getattr(m, k).numpy() for k in ("body_mass", "body_inertia", "body_com", "shape_body",
+                                                     "shape_transform", "shape_scale", "shape_collision_group")}
+        for robot, cams in (("dual-panda", ("left_wrist_rgb", "right_wrist_rgb")), ("single-fr3", ("right_wrist_rgb",)),
+                            ("g1", ("head_rgb",))):
+            with self.subTest(robot=robot):
+                bare = World(Config(process=False, robot=robot, device="cpu"))
+                w = World(Config(process=False, robot=robot, device="cpu"), robot_cameras=cams)
+                a, b = arrays(bare), arrays(w)
+                labels = list(w.model.body_label)
+                self.assertEqual(labels, list(bare.model.body_label))
+                self.assertEqual(set(w.scene.cameras), set(cams))
+                self.assertEqual(scene_meta(w)["mounted_cameras"].keys(), set(cams))
+                self.assertNotIn("mounted_cameras", scene_meta(bare))
+                if cams == ("head_rgb",):
+                    for k in a:
+                        self.assertTrue(np.array_equal(a[k], b[k]), k)
+                    cam = w.scene.cameras["head_rgb"]
+                    self.assertTrue(labels[cam["body"]].endswith("/torso_link"))
+                    self.assertEqual(cam["fov"], 69.)
+                    continue
+                shape_labels = list(w.model.shape_label)
+                self.assertEqual(len(shape_labels), len(bare.model.shape_label) + 2*len(cams))
+                links = set()
+                for name in cams:
+                    arm = name[:-len("_wrist_rgb")]
+                    cam = w.scene.cameras[name]
+                    body = cam["body"]
+                    links.add(body)
+                    self.assertRegex(labels[body], rf"^{arm}/(fr3|panda)/(fr3|panda)_link7$")
+                    self.assertAlmostEqual(float(b["body_mass"][body] - a["body_mass"][body]), .070, places=6)
+                    for part in ("case", "bracket"):
+                        i = shape_labels.index(f"{arm}_camera_{part}")
+                        self.assertEqual(int(b["shape_body"][i]), body)
+                        self.assertTrue(np.allclose(b["shape_transform"][i], [*D405[part][0], 0., 0., 0., 1.]))
+                        self.assertTrue(np.allclose(b["shape_scale"][i], D405[part][1]))
+                    self.assertEqual((cam["eye"], cam["target"], cam["fov"]),
+                                     (list(D405["eye"]), list(D405["target"]), 87.))
+                    if arm == w.torch_arm:
+                        mj, m, d = w.solver._mujoco, w.solver.mj_model, w.solver.mj_data
+                        g2s = np.asarray(w.solver.mjc_geom_to_newton_shape.numpy()).reshape(-1)
+                        s2g = {int(sh): g for g, sh in enumerate(g2s) if sh >= 0}
+                        for part in ("case", "bracket"):
+                            g = s2g[shape_labels.index(f"{arm}_camera_{part}")]
+                            for gun in w.scene.gun_shapes:
+                                self.assertGreater(mj.mj_geomDistance(m, d, g, s2g[gun], .2, np.zeros(6)), .03)
+                others = [k for k in range(len(labels)) if k not in links]
+                for k in ("body_mass", "body_inertia", "body_com"):
+                    self.assertTrue(np.array_equal(a[k][others], b[k][others]), k)
 
 
 if __name__ == "__main__":

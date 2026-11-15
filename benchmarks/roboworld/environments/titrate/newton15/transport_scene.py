@@ -171,7 +171,12 @@ class LaboratoryScene:
     def build(self, camera_name, width, height, liquid, field):
         from .volume_transport import medium
         mi, stage = self.mi,self.stage
-        cam = UsdGeom.Camera(stage.GetPrimAtPath('/Cameras/'+camera_name))
+        entry = stage.GetPrimAtPath('/Cameras/'+camera_name)
+        # A camera fixed to a moving body (usd_lab.mounted_camera) is named by its mounted_camera_path.
+        mounted = entry.GetCustomDataByKey('mounted_camera_path') if entry else None
+        if mounted and not mounted.startswith('/Lab/body_'):
+            raise ValueError('Invalid mounted camera path')
+        cam = UsdGeom.Camera(stage.GetPrimAtPath(mounted) if mounted else entry)
         if not cam:
             raise ValueError('Unknown camera '+camera_name)
         cache = UsdGeom.XformCache()

@@ -149,8 +149,11 @@ class SyringePolicyAccess(PolicyAccess):
         return out
 
 
-# bay_rgb: the ceiling recording camera, the one that sees the wall clock slow-push's instruction times the push by
-POLICY_CAMERAS = ("station_rgb", "overhead_rgb", "left_wrist_rgb", "right_wrist_rgb", "bay_rgb")
+# bay_rgb: the ceiling recording camera, the one that sees the wall clock slow-push's instruction times the push by;
+# head_rgb: the G1's head D435 (syringe_handling/g1.py HEAD_CAMERA), offered with the G1 only
+POLICY_CAMERAS = ("station_rgb", "overhead_rgb", "left_wrist_rgb", "right_wrist_rgb", "bay_rgb", "head_rgb")
+HEAD_CAMERA_NOTE = ("head_rgb: the G1 head D435 mount (URDF d435_joint on the torso link), 69 deg HFOV, native "
+                    "1280x720, ideal pinhole; part of the G1 model, it adds no body")
 DIAGNOSTIC = ("hero", "front", "front_left", "side", "tray_close", "work_close")
 SESSION_MARKER = ".gar-syringe-handling-session"
 SESSION_RETENTION = 20
@@ -354,8 +357,12 @@ class NewtonSyringeHandlingBackend(RoboticsBackend):
         samples_given = values.get("policy_samples")          # None unless the launch's config named it
         self.config = Config.from_dict(values)
         self.cameras = tuple(cameras if cameras is not None else ("station_rgb",))
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
-            raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; others are privileged diagnostics")
+        # head_rgb is the G1's: an arm setup refuses it by name, and the cameras an arm setup lists leave it out
+        offered = POLICY_CAMERAS if robot == "g1" else tuple(c for c in POLICY_CAMERAS if c != "head_rgb")
+        if robot != "g1" and "head_rgb" in self.cameras:
+            raise UnsupportedConfigurationError(f"{robot} has no head_rgb: it is the G1's head D435 (robot g1)")
+        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(offered):
+            raise ValueError(f"Policy cameras are {offered}; others are privileged diagnostics")
         rig_arms = robot_setup.arms_of(robot)                # the wrist cameras follow the rig's arms
         for cam in self.cameras:
             side = cam.split("_")[0]
@@ -399,7 +406,8 @@ class NewtonSyringeHandlingBackend(RoboticsBackend):
             fov = self.env.world.scene.cameras[name]["fov"]
             focal = .018/math.tan(math.radians(fov/2))
             mount = ("link7_d405_envelope" if "wrist" in name else "ceiling_arm" if name == "overhead_rgb" else
-                     "ceiling_bracket" if name == "bay_rgb" else "services_trunking")
+                     "ceiling_bracket" if name == "bay_rgb" else "g1_torso_d435" if name == "head_rgb" else
+                     "services_trunking")
             self.camera_specs[name] = CameraSpec(name, mount, width, height, 1280, 720, (.036, .036*height/width), (focal, focal))
         self.kinds = frozenset({"named_joint_target"}) if robot == "g1" else frozenset({"named_joint_target", "gripper", "cartesian_pose", "cartesian_delta", "keyboard", "raw"})
         self.min_command_published = min_command_s(len(self.cameras), width, height, self.options["samples"])
@@ -510,6 +518,8 @@ class NewtonSyringeHandlingBackend(RoboticsBackend):
                 keyboard="Not offered for G1; use named joint targets.",
                 load="Not offered for G1; no Franka setLoad emulation.",
                 proprioception="43 body and Dex3 joint positions, velocities and actuator torques; no liquid/evaluator fields.")
+            if "head_rgb" in self.cameras:
+                self._capabilities.notes["cameras"] += "; " + HEAD_CAMERA_NOTE
 
     def _task_note(self):
         c = self.config

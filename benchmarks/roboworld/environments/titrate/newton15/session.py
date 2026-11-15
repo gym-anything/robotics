@@ -21,12 +21,17 @@ from .magnetics import MagneticDrive
 
 class ApparatusSession:
     def __init__(self, config=None, *, dt_s=.001, output_dir=None, renderer_options=None,
-                 liquid_numerics=None, reagents=None):
+                 liquid_numerics=None, reagents=None, wrist_cameras=()):
         if not math.isfinite(dt_s) or dt_s <= 0:
             raise ValueError("Positive finite timestep required")
         self._lock = threading.RLock()
         self.dt_s = float(dt_s)
-        self.world = LaboratoryMechanics(config)
+        if wrist_cameras:
+            # Only these arms carry the D405 case and bracket (wrist_camera.py).
+            from .wrist_camera import WristCameraMechanics
+            self.world = WristCameraMechanics(config, wrist_cameras)
+        else:
+            self.world = LaboratoryMechanics(config)
         self.config = self.world.lab.config
         support = self.world.lab.apparatus.bodies["stirrer"]
         self.magnet = MagneticDrive(self.world.lab.apparatus.bodies["stir_bar"],
@@ -220,7 +225,9 @@ class ApparatusSession:
 
     def observe(self, cameras=("bench_rgb",)):
         names = tuple(cameras)
-        if len(names) != len(set(names)) or not names or set(names)-{"bench_rgb", "laboratory", "apparatus", "flask", "valve", "dispensing", "gripper", "pipetting", "pipette_tip", "pipette_rack"}:
+        authored = {"bench_rgb", "laboratory", "apparatus", "flask", "valve", "dispensing", "gripper", "pipetting",
+                    "pipette_tip", "pipette_rack", *getattr(self.world.lab, "camera_mounts", ())}
+        if len(names) != len(set(names)) or not names or set(names)-authored:
             raise ValueError("Choose distinct authored cameras")
         with self.locked():
             if self._renderer is None:

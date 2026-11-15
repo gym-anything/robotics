@@ -130,6 +130,8 @@ def export(env, output):
     from .scene import CAMERA_EYE, CAMERA_TARGET
     camera(stage, "bench_rgb", CAMERA_EYE, CAMERA_TARGET,
            18./np.tan(np.radians(69./2)), role="policy")
+    from .wrist_camera import export as wrist_cameras
+    wrist_cameras(stage, b)
     stage.GetRootLayer().Save()
     return output / "scene.usdc"
 

@@ -241,12 +241,17 @@ def load_wall_time_note(paths=None, quiet_paths=None, pause_paths=None):
 
 
 WALL_TIME_NOTE = load_wall_time_note()
-# every policy camera is rendered by default (the launch's `cameras` option selects fewer)
+# the default observation renders these cameras (the launch's `cameras` option selects fewer, or adds a wrist camera)
 POLICY_CAMERAS = ("operator", "overhead", "needle")
 G1_POLICY_CAMERAS = ("head_rgb", "overhead", "needle")      # the humanoid looks through its head D435 (sewing/g1.py)
+# each Franka arm's wrist D405 (FR3 or Panda; sewing/scene.py WRIST_D405), named after the arm as the rig names it (a
+# one-arm rig offers its own arm's): rendered only when the launch's `cameras` option selects it, and only then does
+# the arm carry the D405's case and bracket
+WRIST_CAMERAS = ("left_wrist_rgb", "right_wrist_rgb")
 DIAGNOSTIC = ("hero", "macro", "seam", "machine")
 MOUNTS = {"operator": "external_operator_mount", "overhead": "cell_overhead_d435_boom",
-          "needle": "machine_face_plate_mount", "head_rgb": "g1_head_d435_mount"}
+          "needle": "machine_face_plate_mount", "head_rgb": "g1_head_d435_mount",
+          "left_wrist_rgb": "link7_d405_envelope", "right_wrist_rgb": "link7_d405_envelope"}
 # the longest command one request may carry (simulated seconds): at the worst ratio E16 measured on the shared host
 # (WALL_TIME_NOTE) a 2 s command returns inside the declared 900 s client timeout; an uncapped one could outlast it
 # while the server kept stepping
@@ -349,6 +354,12 @@ def _check_renderer_options(options):
     return {k: v for k, v in options.items() if v is not None}
 
 
+def _rig_arms(robot):
+    """The arm names of a qualified arm deployment (its rig's instances: left and right, or right alone)."""
+    from robots.catalog import for_environment
+    return tuple(for_environment("sewing", robot).to_dict()["instances"])
+
+
 def _check_robot(robot):
     from robots.catalog import ENVIRONMENTS
     catalog = ENVIRONMENTS["sewing"]
@@ -367,6 +378,8 @@ def _check_robot(robot):
 
 
 class NewtonSewingBackend(RoboticsBackend):
+    wrist_camera_arms = ()      # the arms whose wrist camera the session selects (__init__ sets them; none by default)
+
     def __init__(self, *, robot="dual-fr3", preset=None, task=None, seed=0, device=None, config=None,
                  cameras=None, output_dir=None, renderer_options=None, trace=True, trace_bytes=None, contract=None):
         if not isinstance(trace, bool):
@@ -378,8 +391,11 @@ class NewtonSewingBackend(RoboticsBackend):
         _import_engine()
         robot = _check_robot(robot)
         self.g1 = robot == "g1"
-        self.policy_cameras = G1_POLICY_CAMERAS if self.g1 else POLICY_CAMERAS
-        cameras = self.policy_cameras if cameras is None else cameras
+        default = G1_POLICY_CAMERAS if self.g1 else POLICY_CAMERAS
+        # the arm deployments also offer the wrist camera of each arm the rig has
+        rig_arms = () if self.g1 else _rig_arms(robot)
+        self.policy_cameras = default + tuple(f"{a}_wrist_rgb" for a in rig_arms)
+        cameras = default if cameras is None else cameras
         values = dict(config or {})
         clash = sorted(set(TOP_LEVEL) & set(values))
         if clash:
@@ -389,8 +405,15 @@ class NewtonSewingBackend(RoboticsBackend):
         if isinstance(seed, bool) or not isinstance(seed, int):
             raise ValueError("seed must be an integer")
         self.cameras = tuple(cameras)
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(self.policy_cameras):
+        offered = default if self.g1 else default + WRIST_CAMERAS
+        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(offered):
             raise ValueError(f"Policy cameras are {self.policy_cameras}; {DIAGNOSTIC} are privileged diagnostics")
+        absent = [c for c in self.cameras if c not in self.policy_cameras]
+        if absent:
+            raise UnsupportedConfigurationError(f"{robot} has one arm ({', '.join(rig_arms)}): no {', '.join(absent)}; "
+                                                f"policy cameras are {', '.join(self.policy_cameras)}")
+        # the arms whose wrist camera the session selects: the scene builds their D405 (sewing/scene.py WRIST_D405)
+        self.wrist_camera_arms = tuple(a for a in rig_arms if f"{a}_wrist_rgb" in self.cameras)
         from sewing.variants import check_robot
         from sewing.task_set import resolve, choose_contract
         from sewing.world import Config
@@ -413,7 +436,7 @@ class NewtonSewingBackend(RoboticsBackend):
         values["robot"] = robot
         if device is not None:
             values["device"] = device
-        self.config = Config(**{k: v for k, v in values.items() if k in Config.__dataclass_fields__})
+        self.config = self._world_config(values)
         self.output = Path(output_dir) if output_dir else _session_folder()
         self.output.mkdir(parents=True, exist_ok=False)
         if not output_dir:
@@ -445,6 +468,9 @@ class NewtonSewingBackend(RoboticsBackend):
         for name in self.policy_cameras:
             if name in LY.CAMERAS:
                 fov = float(LY.CAMERAS[name]["hfov"])
+            elif name in WRIST_CAMERAS:
+                from sewing.scene import WRIST_D405
+                fov = float(WRIST_D405["hfov_deg"])
             else:
                 from sewing.g1 import HEAD_CAMERA
                 fov = float(HEAD_CAMERA["hfov_deg"])
@@ -519,7 +545,8 @@ class NewtonSewingBackend(RoboticsBackend):
                 "evaluator": "Physical-state evaluator (sewing/task.py, self-tested on fixtures): the stitch ledger "
                              "in the plies' material coordinates, the plies' registration where they lie stacked, "
                              "seam-band heights and the seam's length along its path",
-                "cameras": "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; no depth or noise",
+                "cameras": "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; no depth or noise"
+                           + self._wrist_camera_note(),
                 "force": ("No force or tactile channel: the Dex3's fingertip tactile sensors are not simulated, and "
                           "the G1's joint torque estimates are not exposed" if self.g1 else
                           "Each arm joint's estimated external torque (proprioception joints.<arm>/<joint>."
@@ -538,6 +565,18 @@ class NewtonSewingBackend(RoboticsBackend):
                               "is restarted on the new scene) and 208-418 s when it was prepared (the FR3 pair on the "
                               "shared GPU; GET /v1/variations: note)",
                 "checkpoints": CHECKPOINT_SCOPE})
+
+    def _wrist_camera_note(self):
+        """What the cameras note adds for the selected wrist cameras (nothing without one)."""
+        if not self.wrist_camera_arms:
+            return ""
+        from sewing.scene import WRIST_D405
+        names = ", ".join(f"{a}_wrist_rgb" for a in self.wrist_camera_arms)
+        return (f". {names}: the RealSense D405 on the arm's wrist (link7), {WRIST_D405['hfov_deg']:g} deg HFOV, "
+                f"1280 x 720 native, ideal pinhole; the wrist camera adds the D405's "
+                f"{WRIST_D405['case'][2]*1e3:g} g case and the {WRIST_D405['bracket'][2]*1e3:g} g bracket to the arm "
+                f"when selected (MuJoCo mass and collision geometry on link7; the cloth meets the hand's fingers and "
+                f"housing only)")
 
     # ------------------------------------------------------------------ lifecycle
     def _task_note(self):
@@ -568,7 +607,6 @@ class NewtonSewingBackend(RoboticsBackend):
         so the switched world and its cached start state are those of a fresh session at that task and seed."""
         from sewing import variations as VR
         from sewing.variants import check_robot
-        from sewing.world import Config
         values = dict(self._config_overrides)
         values.update(VR.config_values(entry))
         values["robot"] = self.config.robot
@@ -578,7 +616,18 @@ class NewtonSewingBackend(RoboticsBackend):
             check_robot(self.config.robot, entry["task"])
         except ValueError as exc:
             raise ActionRejectedError(f"{exc}; nothing changed") from exc
-        return Config(**{k: v for k, v in values.items() if k in Config.__dataclass_fields__})
+        return self._world_config(values)
+
+    def _world_config(self, values):
+        """The world's Config of these values (the Config fields among them). A session that selects wrist cameras
+        builds from a WristCameraConfig naming their arms: the scene builds those arms' D405 and its start state is
+        cached apart (sewing/task_set_env.py)."""
+        from sewing.world import Config
+        fields = {k: v for k, v in values.items() if k in Config.__dataclass_fields__}
+        if not self.wrist_camera_arms:
+            return Config(**fields)
+        from sewing.task_set_env import WristCameraConfig
+        return WristCameraConfig(**fields, wrist_camera_arms=self.wrist_camera_arms)
 
     def _start_variation(self, variation_id, contract=None):
         """Replace the episode by a catalogue variation (same robot, cameras, renderer options, device, config overrides
@@ -1087,8 +1136,10 @@ class NewtonSewingBackend(RoboticsBackend):
 
     def render(self, *, label="interactive"):
         name = "hero" if label in ("interactive", "http") else label
-        if name not in self.policy_cameras + DIAGNOSTIC:
-            raise ValueError(f"Render label must be one of {self.policy_cameras + DIAGNOSTIC}")
+        # a wrist camera exists in the scene only when the session selects it
+        labels = tuple(c for c in self.policy_cameras if c not in WRIST_CAMERAS or c in self.cameras) + DIAGNOSTIC
+        if name not in labels:
+            raise ValueError(f"Render label must be one of {labels}")
         return self._render((name,))[name]
 
     # ------------------------------------------------------------------ geometry and checkpoints

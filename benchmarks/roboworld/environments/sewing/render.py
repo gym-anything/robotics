@@ -749,6 +749,19 @@ def export_scene(folder, frame, world_meta, extra_cameras=None):
         _camera(stage, mounted, c["eye"], c["target"], c["fov"], c.get("role", "policy"), up=tuple(c["up"]))
         UsdGeom.Xform.Define(stage, "/Cameras/" + name).GetPrim().SetCustomDataByKey("mounted_camera_path", mounted)
         cams[name] = c
+        if name.endswith("_wrist_rgb"):
+            # the D405 the physics builds on the wrist link (scene.py WRIST_D405): its case, the bracket and the two
+            # imager windows on the case's face
+            from .scene import WRIST_D405 as D
+            d405 = f"{body_paths[c['body']]}/{name}_d405"
+            for part, mat in (("case", A.pbr("d405_case", (28, 29, 31), rough=.4)),
+                              ("bracket", A.pbr("d405_bracket", (160, 162, 165), rough=.3, metal=1.))):
+                centre, half = np.asarray(D[part][0], float), np.asarray(D[part][1], float)
+                A.box(f"{d405}/{part}", centre - half, centre + half, mat)
+            face = D["case"][0][2] + D["case"][1][2]
+            for k, dy in enumerate((-.012, .012)):
+                A.cyl(f"{d405}/lens_{k}", (D["eye"][0], dy, face), (D["eye"][0], dy, face + .001), .004,
+                      A.pbr("d405_lens", (5, 5, 8), rough=.05))
     stage.GetRootLayer().Save()
     meta = dict(bodies=labels, body_paths=body_paths, plies=ply_paths, threads=[f"/World/Threads/c{k}"
                                                                                 for k in range(n_curves)],

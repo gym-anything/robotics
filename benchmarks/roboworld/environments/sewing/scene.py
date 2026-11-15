@@ -1,6 +1,7 @@
 """Rigid scene of the sewing cell (Newton ModelBuilder -> MuJoCo on the CPU): floor, the K-leg table with the
 machine bed flush in its top, the machine head (pillar, arm, head, needle and presser bars, handwheel) as static
-colliders, the robot pedestal, and the robots from the shared catalog with the Franka Hand's URDF finger boxes.
+colliders, the robot pedestal, and the robots from the shared catalog with the Franka Hand's URDF finger boxes (and
+the wrist D405 with its bracket on each arm whose wrist camera the session selects).
 
 The cloth, the needle, the feed dog and the presser foot live in the cloth solver (sewing/cloth.py, sewing/machine.py).
 Here the foot's shank and the needle bar are static keep-out colliders for the arms only (they never touch cloth in
@@ -23,6 +24,14 @@ FRANKA_HAND_FINGER_BOXES = (((0., 18.5e-3, 11e-3), (0., 0., 0.), (22e-3, 15e-3, 
 # hand housing as the cloth sees it (hand frame: z along the approach, y across the fingers) [estimate from the Franka
 # Hand drawing: 204 mm across, 60 mm thick, 63 mm tall to the finger base]
 HAND_HOUSING = dict(center=(0.0, 0.0, 0.035), half=(0.030, 0.102, 0.032))
+# Intel RealSense D405 on a Franka arm's wrist (link7 frame), the mount of drilling, label_application, wine_pouring,
+# syringe_handling, percussion and barcode_scanning: the case (centre, half extents; 42 x 42 x 23 mm, 60 g [read:
+# robots/attachments/d405]) and its aluminium bracket (10 g [estimate]), and the camera's optical centre looking along
+# link7's +z, the hand's approach (87 deg HFOV, 1280 x 720 native, ideal RGB pinhole). Built only on the arms whose
+# wrist camera the session selects (wrist_camera_arms of task_set_env.WristCameraConfig)
+WRIST_D405 = dict(case=((.075, 0., .07), (.021, .021, .0115), .060),
+                  bracket=((.05, 0., .046), (.025, .013, .003), .010),
+                  eye=(.075, -.012, .083), target=(.075, -.012, .283), up=(0., 1., 0.), hfov_deg=87.)
 
 
 class Scene:
@@ -37,7 +46,7 @@ class Scene:
         self.finger_boxes = {}           # arm -> list of (body, xyz, quat_xyzw, half) in the finger body frame
         self.hand_bodies = {}            # arm -> hand body id
         self.hand_housing = {}           # arm -> (centre, half) of the hand body as the cloth sees it (hand frame)
-        self.cameras = {}                # robot-mounted cameras (the G1's head camera)
+        self.cameras = {}                # robot-mounted cameras (the G1's head camera, the selected wrist cameras)
         self.g1 = config.robot == "g1"
         self.room()
         self.machine()
@@ -123,6 +132,12 @@ class Scene:
                 self.materials[i] = "robot_" + self.arm_hw[name]["model"]
             if self.arm_hw[name].get("hand"):
                 self._fingers(name, handle)
+        # the D405 of each selected wrist camera (task_set_env.WristCameraConfig), after every other shape: the shapes
+        # of the cell without them keep their indices
+        wrist = getattr(self.c, "wrist_camera_arms", ())
+        for name, handle in self.rig_pending.instances.items():
+            if name in wrist:
+                self._wrist_camera(name, handle)
 
     def _g1_robot(self):
         """Unitree G1 + two Dex3-1 hands standing on the floor in front of the table (g1.py; rig
@@ -190,3 +205,24 @@ class Scene:
                     self.box(f"{arm}_{short}_box{k}", p - np.asarray(half), p + np.asarray(half), "robot", body=body,
                              rot=self.wp.quat(*map(float, R.as_quat())), density=0., mu=.8)
                 self.finger_boxes[arm].append((body, p, R.as_quat(), half))
+
+    def _wrist_camera(self, arm, handle):
+        """The arm's wrist D405 (WRIST_D405) on its link7: the case and the bracket as MuJoCo colliders with their mass
+        (the cloth solver couples to the hand's fingers and housing only), and the wrist camera on the link, which the
+        renderer poses with it (render.py: mounted cameras)."""
+        b = self.b
+        link7 = [k for k in handle.body_ids if b.body_label[k].endswith("link7")]
+        if len(link7) != 1:
+            raise RuntimeError(f"{arm}: no single link7 to carry the wrist D405 ({link7})")
+        body = link7[0]
+        for part, material in (("case", "camera_dark"), ("bracket", "aluminum")):
+            centre, half, mass = WRIST_D405[part]
+            density = mass/((2*half[0])*(2*half[1])*(2*half[2]))
+            name = f"{arm}_camera_{part}"
+            i = b.add_shape_box(body, xform=self.wp.transform(centre, self.wp.quat_identity()), hx=half[0], hy=half[1],
+                                hz=half[2], cfg=self.cfg(density=density), label=name)
+            self.materials[i] = material
+            self.shapes[name] = i
+        D = WRIST_D405
+        self.cameras[f"{arm}_wrist_rgb"] = dict(body=body, eye=list(D["eye"]), target=list(D["target"]),
+                                                up=list(D["up"]), fov=D["hfov_deg"], role="policy")

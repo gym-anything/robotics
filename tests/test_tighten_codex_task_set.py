@@ -441,6 +441,40 @@ def test_checkpoint_restores_original_progress_baseline(env_class):
     env.restore(arrays, meta)
 
 
+def test_checkpoint_restores_only_into_its_wrist_camera_selection(env_class):
+    env = fake(env_class, "front-m4")
+    env.lock = __import__("threading").RLock()
+    env.state.body_qd = Arr(np.zeros((4, 6)))
+    env.state.joint_qd = Arr(np.zeros(13))
+    env.next_state = SimpleNamespace(assign=lambda state: None)
+    env.model.joint_dof_count = 13
+    env.control = SimpleNamespace(joint_target_q=Arr(np.zeros(13)), joint_target_qd=Arr(np.zeros(13)),
+                                  joint_f=Arr(np.zeros(13)))
+    env.targets = np.zeros(13)
+    env.setup = SimpleNamespace(id="stub", fingerprint="stub")
+    env._arm_motion = env._clutch = env._screw_lock = env._head_touched = {}
+    env._clamp_stick = []
+    env.tick, env.generation = 11, 0
+    env.pipeline = SimpleNamespace(reset_contact_matching=lambda: None, contacts=lambda: None)
+    env._make_solver = lambda: None
+    env._map_friction_rows = lambda: None
+    env._setup_arm_motion = lambda *args: None
+    env.get_state = lambda: env.evaluation
+    plain_arrays, plain_meta = env.checkpoint()
+    # Without a wrist camera the checkpoint carries no camera field, as before.
+    assert "wrist_cameras" not in plain_meta
+    env.wrist_cameras = {"right_wrist_rgb": {}}     # the D405 adds mass to the arm: another scene
+    with pytest.raises(ValueError):
+        env.restore(plain_arrays, plain_meta)
+    arrays, meta = env.checkpoint()
+    assert meta["wrist_cameras"] == ["right_wrist_rgb"]
+    env.restore(arrays, meta)
+    del env.wrist_cameras
+    with pytest.raises(ValueError):
+        env.restore(arrays, meta)
+    env.restore(plain_arrays, plain_meta)
+
+
 def test_public_policy_instruction_uses_selected_contract_without_leaking_truth():
     from gym_anything_robotics.backends.newton_tighten_codex import NewtonTightenCodexBackend
     backend = object.__new__(NewtonTightenCodexBackend)

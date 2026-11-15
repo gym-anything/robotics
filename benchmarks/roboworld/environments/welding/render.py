@@ -2291,10 +2291,31 @@ def export_scene(folder, frame, world_meta, extra_cameras=None):
     cam = _camera(stage, gb + "/weld_camera", wc_eye, wc_tgt, LY.WELD_CAMERA["hfov"], "policy", up=tuple(up))
     alias = UsdGeom.Xform.Define(stage, "/Cameras/weld_camera")
     alias.GetPrim().SetCustomDataByKey("mounted_camera_path", str(cam.GetPath()))
+    # ---- the robot cameras the session selected (scene.py): an arm's wrist D405 (its case, bracket and lenses on
+    # link7) and the G1's head D435; each camera under its body's prim, posed with it every frame, and an alias under
+    # /Cameras that names it (render_worker: mounted_camera_path)
+    mounted = world_meta.get("mounted_cameras", {})
+    if any(name.endswith("_wrist_rgb") for name in mounted):
+        from .scene import D405
+        d405_case = A.pbr("d405_case", (28, 29, 31), rough=.4)
+        d405_bracket = A.pbr("d405_bracket", (160, 162, 165), rough=.3, metal=.9)
+        d405_lens = A.pbr("d405_lens", (5, 5, 8), rough=.05)
+    for name, c in mounted.items():
+        p = body_paths[c["body"]]
+        if name.endswith("_wrist_rgb"):
+            A.box(f"{p}/{name}_case", D405["case"][0], D405["case"][1], d405_case)
+            A.box(f"{p}/{name}_bracket", D405["bracket"][0], D405["bracket"][1], d405_bracket)
+            lens_z = D405["case"][0][2] + D405["case"][1][2]
+            for k, dy in enumerate((-.012, .012)):
+                A.cyl(f"{p}/{name}_lens_{k}", (D405["eye"][0], dy, lens_z), (D405["eye"][0], dy, lens_z + .001), .004,
+                      d405_lens)
+        mc = _camera(stage, f"{p}/{name}", c["eye"], c["target"], c["fov"], c.get("role", "policy"), up=tuple(c["up"]))
+        UsdGeom.Xform.Define(stage, "/Cameras/" + name).GetPrim().SetCustomDataByKey("mounted_camera_path",
+                                                                                    str(mc.GetPath()))
     stage.GetRootLayer().Save()
     meta = dict(bodies=labels, body_paths=body_paths, band=band_parent + "/surface", pool=band_parent + "/pool",
                 pieces=piece_paths, cameras=list(LY.CAMERAS) + list(extra_cameras or {}) + ["weld_camera", "follow",
-                                                                                              "track"],
+                                                                                              "track"] + list(mounted),
                 exposure=EXPOSURE, render_exposure=RENDER_EXPOSURE, rtx_k=RTX_K,
                 bracket_band=piece_paths.get("bracket/" + BRACKET_BAND_PIECE))
     (folder/"export.json").write_text(json.dumps(meta, indent=1, default=str))
@@ -2447,12 +2468,17 @@ def scene_meta(world):
         base = L.ROBOT_BASES[arm]
         arms[arm] = dict(model=hw["model"], mount_pos=list(base["pos"]), mount_yaw_deg=base["yaw_deg"])
     band = band_edges(world.process.g)[1] if world.process is not None else dict(BAND)
-    return dict(arms=arms, band=band, gun_body_label=world.model.body_label[sc.gun_body], tool0_pos=pt.tolist(),
+    meta = dict(arms=arms, band=band, gun_body_label=world.model.body_label[sc.gun_body], tool0_pos=pt.tolist(),
                 gun_model=sc.arm_hw[getattr(sc, "torch_instance", sc.torch_arm)]["model"],
                 bare_arms=[a for a, hw in sc.arm_hw.items() if hw["model"] in ("fr3", "panda") and not hw.get("hand")],
                 tool0_R=np.asarray(Rt).tolist(), coupon=world.coupon,
                 weld_origin_in={"base_plate": (-sc.weld_origin_in_base).tolist(),
                                 "bracket": (-sc.weld_origin_in_bracket).tolist() if hasattr(sc, "weld_origin_in_bracket") else [0, 0, 0]})
+    cams = getattr(sc, "cameras", None)
+    if cams:                                          # the selected robot cameras, by their body's label
+        labels = list(world.model.body_label)
+        meta["mounted_cameras"] = {name: dict(c, body=labels[c["body"]]) for name, c in cams.items()}
+    return meta
 
 
 # ------------------------------------------------------------------------------------------------ worker client

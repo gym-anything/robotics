@@ -70,10 +70,11 @@ class Simulation(Style3DGarmentSimulation):
         from .scene import build
         self.newton.solvers.SolverMuJoCo.register_custom_attributes(builder)
         builder.request_state_attributes("mujoco:qfrc_actuator")
-        self.joints = {}
+        self.joints, cameras = {}, {}
         for arm in ("left", "right"):
-            self.joints.update(add_robot(builder, arm, self.workcell))
+            self.joints.update(add_robot(builder, arm, self.workcell, cameras))
         self.materials = build(builder, self.workcell, self.newton, self.wp)
+        self.materials.update(cameras)
         self.materials[self.table_shape] = "wood"
         self.builder = builder
 

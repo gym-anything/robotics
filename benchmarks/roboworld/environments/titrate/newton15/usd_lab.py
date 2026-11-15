@@ -18,6 +18,8 @@ PALETTE = {
     "robot_red": ((.55, .018, .012), .3, 0.),
     "skirting": ((.23, .28, .28), .6, 0.),
 }
+# Defined only in a scene that uses them: the wrist D405's case and bracket (wrist_camera.py; drilling/render.py).
+ACCESSORY_PALETTE = {"camera_dark": ((.03, .03, .035), .45, 0.), "aluminum": ((.62, .64, .66), .25, .9)}
 
 
 def pose(prim, position, quat=(0., 0., 0., 1.)):
@@ -42,9 +44,9 @@ def mesh(stage, path, vertices, faces, smooth=False):
     return m
 
 
-def materials(stage):
+def materials(stage, palette=PALETTE):
     result = {}
-    for name, (color, roughness, metallic) in PALETTE.items():
+    for name, (color, roughness, metallic) in palette.items():
         material = UsdShade.Material.Define(stage, f"/Materials/{name}")
         s = UsdShade.Shader.Define(stage, f"/Materials/{name}/surface")
         s.CreateIdAttr("UsdPreviewSurface")
@@ -80,6 +82,22 @@ def camera(stage, name, eye, target, focal=36, role="teacher"):
     c.GetPrim().SetCustomDataByKey("observation_role", role)
 
 
+def mounted_camera(stage, name, mount):
+    """A policy camera fixed to a moving body: the camera prim under the body's prim (eye, target and up in the body
+    frame), and /Cameras/<name> naming it by its customData mounted_camera_path."""
+    path = f"/Lab/body_{mount['body']}/{name}"
+    c = UsdGeom.Camera.Define(stage, path)
+    c.AddTransformOp().Set(Gf.Matrix4d().SetLookAt(Gf.Vec3d(*mount["eye"]), Gf.Vec3d(*mount["target"]),
+                                                   Gf.Vec3d(*mount["up"])).GetInverse())
+    c.CreateFocalLengthAttr(18/np.tan(np.radians(mount["horizontal_fov_deg"]/2)))
+    c.CreateHorizontalApertureAttr(36.)
+    c.CreateVerticalApertureAttr(20.25)
+    c.CreateClippingRangeAttr(Gf.Vec2f(.001, 30.))
+    c.GetPrim().SetCustomDataByKey("observation_role", "policy")
+    alias = UsdGeom.Xform.Define(stage, "/Cameras/"+name)
+    alias.GetPrim().SetCustomDataByKey("mounted_camera_path", path)
+
+
 def export(lab, model, state, output, liquid_surface=None):
     newton, _ = require_newton()
     from whiteboard.usd_scene import bevel_box
@@ -90,7 +108,9 @@ def export(lab, model, state, output, liquid_surface=None):
     UsdGeom.SetStageUpAxis(stage, "Z")
     UsdGeom.SetStageMetersPerUnit(stage, 1.)
     stage.SetDefaultPrim(UsdGeom.Xform.Define(stage, "/Lab").GetPrim())
-    mats, q, b = materials(stage), state.body_q.numpy(), lab.builder
+    used = set(lab.materials.values())
+    palette = {**PALETTE, **{k: v for k, v in ACCESSORY_PALETTE.items() if k in used}}
+    mats, q, b = materials(stage, palette), state.body_q.numpy(), lab.builder
     from .appearance import apply_room_finishes
 
     stage.GetRootLayer().customLayerData = {"appearance_assets": str(apply_room_finishes(stage, mats, output))}
@@ -180,5 +200,7 @@ def export(lab, model, state, output, liquid_surface=None):
     camera(stage, "bench_rgb", lab.config.camera_eye, lab.config.camera_target, 28., role="policy")
     # Physical external camera mount, calibrated extrinsics; wrist camera is
     # added to the robot model separately, not implied to be Panda hardware.
+    for name, mount in getattr(lab, "camera_mounts", {}).items():
+        mounted_camera(stage, name, mount)
     stage.GetRootLayer().Save()
     return output/"laboratory.usdc"

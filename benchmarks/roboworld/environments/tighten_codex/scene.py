@@ -1016,3 +1016,46 @@ def build(config, robot_setup="tighten-fr3"):
         if i not in materials:
             materials[i] = "robot_white"
     return b, items, materials, pending, setup
+
+
+# Intel RealSense D405 on each Franka wrist (one per wrist in Franka's FR3 Duo kit). The case, the bracket, their
+# masses and the camera pose in the arm's link 7 frame are those of the reference Franka scenes (drilling,
+# label_application, wine_pouring, syringe_handling, percussion, barcode_scanning); the sensor data is the catalog's
+# d405 accessory. Part: (label, centre m, half extents m, mass kg, material).
+D405_PARTS = (("camera_case", (.075, 0., .07), (.021, .021, .0115), .060, "camera_dark"),
+              ("camera_bracket", (.05, 0., .046), (.025, .013, .003), .010, "aluminum"))
+D405_VIEW = {"eye": (.075, -.012, .083), "target": (.075, -.012, .283), "up": (0., 1., 0.)}
+
+
+def add_wrist_cameras(builder, materials, rig, config, names):
+    """Mount the D405 of each selected wrist camera ("<arm>_wrist_rgb") on that arm's wrist link (link 7): its 60 g
+    case and 10 g aluminium bracket as collision boxes with the scene's contact law, labelled under the arm
+    ("<arm>/camera_case"), so contact with them is robot contact. Only the selected cameras' arms get one, after every
+    scene and task shape, so an arm without a wrist camera keeps its catalog mass and geometry and every other shape
+    keeps its index. Returns {name: camera} (link 7 body, D405 shapes, pose in the link 7 frame, sensor data)."""
+    import newton
+    import warp as wp
+    from robots.catalog import model
+    offered = {f"{arm}_wrist_rgb": arm for arm in rig.instances}
+    if set(names) - set(offered):
+        raise ValueError(f"Wrist cameras of this setup are {', '.join(offered)}")
+    rgb = model("d405").to_dict()["sensors"]["rgb"]
+    cameras = {}
+    for name, arm in offered.items():
+        if name not in names:
+            continue
+        frame = rig.instances[arm].frames["wrist"]
+        if any(frame["position_m"]) or list(frame["orientation_wxyz"]) != [1., 0., 0., 0.]:
+            raise ValueError(f"The {arm} wrist frame is not its link 7 origin")
+        shapes = []
+        for part, centre, half, mass, material in D405_PARTS:
+            # The scene's default contact law (build's cfg) with the part's density.
+            cfg = newton.ModelBuilder.ShapeConfig(mu=.45, density=mass/(8*half[0]*half[1]*half[2]), ke=2e6, kd=150.,
+                                                  gap=config.contact_gap_m, mu_torsional=0., mu_rolling=0.)
+            i = builder.add_shape_box(frame["body"], xform=wp.transform(centre, wp.quat_identity()),
+                                      hx=half[0], hy=half[1], hz=half[2], cfg=cfg, label=f"{arm}/{part}")
+            materials[i] = material
+            shapes.append(i)
+        cameras[name] = dict(body=frame["body"], shapes=tuple(shapes), fov_deg=float(rgb["horizontal_fov_deg"]),
+                             native_px=tuple(rgb["native_resolution_px"]), **D405_VIEW)
+    return cameras

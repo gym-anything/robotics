@@ -13,6 +13,8 @@ from ..errors import UnsupportedActionError, UnsupportedConfigurationError, Back
 from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
+POLICY_CAMERAS = ("bench_rgb", "left_wrist_rgb")
+
 
 class NewtonLockKeyBackend(RoboticsBackend):
     def __init__(self, *, robot="panda", config=None, device=None, cameras=("bench_rgb",),
@@ -22,6 +24,7 @@ class NewtonLockKeyBackend(RoboticsBackend):
         from lockkey.newton15.catalog import Catalog
         from lockkey.newton15.kinematics import Kinematics
         from lockkey.task_set.catalogue import task_setup, validate
+        from pencap.newton15 import wrist_camera
         self.task = validate(task)
         if contract is not None:
             # Opt-in lockkey-tasks-v2 (lockkey/task_set/*_v2.py); without `contract` nothing below changes.
@@ -33,13 +36,19 @@ class NewtonLockKeyBackend(RoboticsBackend):
         if device is not None:
             config = replace(config, device=device)
         self.cameras = tuple(cameras)
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-{"bench_rgb"}:
-            raise ValueError("Policy camera is bench_rgb; other views are privileged diagnostics")
+        if "right_wrist_rgb" in self.cameras:
+            raise UnsupportedConfigurationError(f"{robot} has one arm ('left' in actions): policy cameras are "
+                                                f"{', '.join(POLICY_CAMERAS)}")
+        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
+            raise ValueError(f"Policy cameras are {', '.join(POLICY_CAMERAS)}; other views are privileged diagnostics")
+        # The D405 of the wrist camera is built on the Panda (robot instance 'panda') only when the session selects it.
+        self.wrist_cameras = {"panda": "left_wrist_rgb"} if "left_wrist_rgb" in self.cameras else {}
         self.options = dict(renderer_options or {})
         self.output = Path(output_dir or Path.home()/".cache/gar/lockkey"/uuid.uuid4().hex)
         self.output.mkdir(parents=True, exist_ok=False)
         # The task's setup.py (lockkey/tasks/<task>/) builds its environment at its start.
-        self.env = task_setup(self.task).setup(config, contract)
+        with wrist_camera.selected(self.wrist_cameras):
+            self.env = task_setup(self.task).setup(config, contract)
         self.catalog, self.ik = Catalog(self.env), Kinematics()
         self.images, self.trace = deque(), None
         if recording:
@@ -47,12 +56,13 @@ class NewtonLockKeyBackend(RoboticsBackend):
             self.trace = Trace(self.env, self.output/"physics.sqlite3")
         width, height = self.options.get("width", 1280), self.options.get("height", 720)
         focal = .018/math.tan(math.radians(69/2))
-        self.camera = CameraSpec("bench_rgb", "external_floor_stand", width, height, 1920, 1080,
-            (.036, .036*height/width), (focal, focal))
+        self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "external_floor_stand", width, height, 1920, 1080,
+            (.036, .036*height/width), (focal, focal))}
+        self.camera_specs.update((n, wrist_camera.spec(n, width, height)) for n in self.wrist_cameras.values())
         self.kinds = frozenset({"named_joint_target", "gripper", "cartesian_pose", "cartesian_delta"})
         self.capabilities = Capabilities("lockkey", "newton", robot, self.kinds,
             frozenset({"proprioception", *(["rgb"] if self.cameras else [])}), True, False, True,
-            self.cameras, (self.camera,) if self.cameras else (), notes={
+            self.cameras, tuple(self.camera_specs[c] for c in self.cameras), notes={
                 "qualification": ("Reference configuration qualified by assisted physical fixtures, RGB/history runtime and HTTP checks; see lockkey/REPORT.pdf"
                     if self.task == "unlock" else
                     "Task addition checked in constructed states only; settling, contacts and rendering are not yet checked in the simulator"
@@ -63,7 +73,8 @@ class NewtonLockKeyBackend(RoboticsBackend):
                 "arm": "left selects the single Panda; right is unavailable",
                 "camera": "Ideal pinhole, 69-degree horizontal FOV; external mounted RGB, not onboard hardware",
                 "gripper": "0..40 mm per finger, 45 N effort limit; effort override unavailable",
-                "joint_units": "panda/panda_joint1..7 radians; panda/panda_finger_joint1/2 metres"})
+                "joint_units": "panda/panda_joint1..7 radians; panda/panda_finger_joint1/2 metres",
+                **({"wrist_cameras": wrist_camera.note(self.wrist_cameras.values())} if self.wrist_cameras else {})})
 
     def reset(self, *, seed=None, options=None):
         if options or seed is not None:
@@ -102,7 +113,7 @@ class NewtonLockKeyBackend(RoboticsBackend):
                 raise RuntimeError("Cannot combine stale state and a new camera image")
             frames = self._render(self.cameras) if self.cameras else {}
             return Observation(sequence, state["time_s"], "panda", {"joints": state["joints"]},
-                {n: ImageFrame(n, p, True, camera=self.camera) for n, p in frames.items()})
+                {n: ImageFrame(n, p, True, camera=self.camera_specs[n]) for n, p in frames.items()})
 
     def _ticks(self, seconds):
         ticks = seconds/self.env.config.dt
@@ -175,7 +186,7 @@ class NewtonLockKeyBackend(RoboticsBackend):
 
     def policy_access(self):
         from lockkey.task_set.catalogue import description
-        return PolicyAccess("panda", (self.camera,) if self.cameras else (),
+        return PolicyAccess("panda", tuple(self.camera_specs[c] for c in self.cameras),
             {("joints", n, f): None for n in self.env.joints for f in ("position", "velocity")},
             self.kinds, lambda: description(self.task), {"dt_s": self.env.config.dt,
                 "joints": {n: {**{k:v for k,v in s.items() if k not in ("q", "dof")},
@@ -187,8 +198,9 @@ class NewtonLockKeyBackend(RoboticsBackend):
 
     def render(self, *, label="interactive"):
         name = "room" if label in ("interactive", "http") else label
-        if name not in ("room", "bench", "lock", "keys", "keyway", "grasp", "bench_rgb"):
-            raise ValueError("Render label must be room, bench, lock, keys, keyway, grasp, or bench_rgb")
+        labels = ("room", "bench", "lock", "keys", "keyway", "grasp", "bench_rgb", *self.wrist_cameras.values())
+        if name not in labels:
+            raise ValueError(f"Render label must be {', '.join(labels[:-1])}, or {labels[-1]}")
         return self._render((name,))[name]
 
     def get_geometry_index(self):

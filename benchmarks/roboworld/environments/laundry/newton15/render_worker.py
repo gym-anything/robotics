@@ -50,7 +50,7 @@ def main():
         import omni.timeline
         import omni.replicator.core as rep
         from PIL import Image
-        from pxr import UsdGeom, UsdPhysics, UsdRender
+        from pxr import Sdf, UsdGeom, UsdPhysics, UsdRender
         from whiteboard.render_readback import capture_rgb
         from .render_updates import apply_recorded_state
         settings = carb.settings.get_settings()
@@ -63,10 +63,20 @@ def main():
             app.update()
         omni.timeline.get_timeline_interface().pause()
         stage = omni.usd.get_context().get_stage()
+        # Isaac 6.0.1 renders a render product retargeted to another camera with that camera's own exposure:*
+        # attributes (defaults ISO 100, f/1, 1 s: ~7.7 EV brighter than the settings above, a white image); the
+        # camera the product is created on keeps the settings. Author the settings' exposure on every camera without
+        # its own, as titrate's render worker does; with Kit's responsivity the first camera's image is unchanged.
+        exposure = {"iso": 800., "fStop": 2.8, "time": 1/120.,
+                    "responsivity": settings.get("/rtx/post/tonemap/responsivity") or 1.}
         for prim in stage.Traverse():
             if prim.IsA(UsdGeom.Camera):
                 camera = UsdGeom.Camera(prim)
                 camera.GetVerticalApertureAttr().Set(camera.GetHorizontalApertureAttr().Get()*a.height/a.width)
+                for name, value in exposure.items():
+                    attr = prim.CreateAttribute("exposure:"+name, Sdf.ValueTypeNames.Float)
+                    if not attr.HasAuthoredValue():
+                        attr.Set(float(value))
         if any(p.HasAPI(UsdPhysics.RigidBodyAPI) or p.IsA(UsdPhysics.Scene) for p in stage.Traverse()):
             raise RuntimeError("Renderer must not contain a dynamics scene")
         rep.orchestrator.set_capture_on_play(False)
@@ -85,6 +95,13 @@ def main():
                 images = {}
                 for name in request["cameras"]:
                     camera_path = "/Cameras/"+name
+                    # A wrist camera's entry names its camera on the link7 body (pencap wrist_camera.export).
+                    entry = stage.GetPrimAtPath(camera_path)
+                    mounted = entry.GetCustomDataByKey("mounted_camera_path") if entry else None
+                    if mounted:
+                        if not mounted.startswith("/Lab/body_"):
+                            raise ValueError("Invalid mounted camera path")
+                        camera_path = mounted
                     camera = UsdGeom.Camera(stage.GetPrimAtPath(camera_path))
                     if not camera:
                         raise ValueError("Unknown camera")

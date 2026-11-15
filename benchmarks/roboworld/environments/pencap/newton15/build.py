@@ -7,11 +7,15 @@ from .geometry import add_cap, collision_mesh, pen_profile, set_mass
 from .runtime import require_engine
 
 
-def robot(builder, arm, position, yaw):
+def robot(builder, arm, position, yaw, contact, materials):
     # Reuse the repository's hash-verified manufacturer asset, not its fluid or
     # robot controller. The common source is Isaac's franka_description 0.7.1.
     from robots.backends.newton import add_robot as build, mount
-    return build(builder,'panda','pencap',instance=arm,placement=mount(position,yaw)).metadata['legacy_addresses']
+    from .wrist_camera import install
+    addresses = build(builder,'panda','pencap',instance=arm,placement=mount(position,yaw)).metadata['legacy_addresses']
+    # The D405 wrist camera, only on an arm whose camera the session selects (wrist_camera.py).
+    install(builder, arm, contact, materials)
+    return addresses
 
 
 def build(c):
@@ -45,9 +49,12 @@ def build(c):
     for i in range(first_cap, b.shape_count):
         materials[i] = "cap"
     joints = {}
+    # A wrist camera's case and bracket touch the scene like the studio furniture (scene.py).
+    camera_contact = newton.ModelBuilder.ShapeConfig(gap=c.contact_gap, mu=.4, ke=1e7, kd=5000.,
+        mu_torsional=0., mu_rolling=0.)
     for arm, pos, yaw in (("left", (0., .55, c.table_top), -math.pi/2),
                            ("right", (0., -.55, c.table_top), math.pi/2)):
-        joints.update(robot(b, arm, pos, yaw))
+        joints.update(robot(b, arm, pos, yaw, camera_contact, materials))
     bodies = {"pen": pen, "cap": cap}
     if c.scene == "studio":
         from .scene import studio

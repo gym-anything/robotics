@@ -8,16 +8,12 @@ setup(world) gets the task's world (world.World), built and not yet settled, and
 keeps as start_info (env.prepare_start calls it). part-id-match starts from the printer's presented label as the scene
 builds it: setup constructs nothing and returns {}. place_items(scene, z) lays the plates on the bench and names the
 target plate (scene.part calls it while building the scene, z the bench top); payload(seed) is the barcode payload
-printed for the seed (layouts.payload calls it): PAYLOAD at seed 0. WRIST_CAMERAS: the backend turns the wrist cameras
-on by default."""
+printed for the seed (layouts.payload calls it): PAYLOAD at seed 0."""
 import math
 from label_application.layouts import _rng, _serial
 
 # seed 0 (payload draws it: plates(0)'s target part number and serial 318)
 PAYLOAD = "NG-7715-0042-000318"
-# wrist cameras on by default (backend): the plates' laser-marked part numbers and the label's printed one (~3 px per
-# character overhead)
-WRIST_CAMERAS = True
 PLATE_SIZE = (.16, .12, .006)          # the stainless plate of the retired part-id-steel task, unchanged
 PLATE_SLOTS = (-.03, .17, .37)         # x of the three plates on the receiving bench (left of the tool tray)
 PLATE_Y = -.03

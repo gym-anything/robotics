@@ -128,5 +128,25 @@ class ClosingSweep(unittest.TestCase):
         self.assertLess(p(dict(done, pencil="left out", scraps_binned=3, scraps_in_pans=5)), p(dict(done, pencil="left out", scraps_binned=8)))
 
 
+class Cameras(unittest.TestCase):
+    """The session's policy cameras (also concrete-finishing's): by default every camera the robot carries."""
+
+    def test_default_is_every_robot_camera(self):
+        from gym_anything_robotics.backends.newton_sweeping import NewtonSweepingBackend as B
+        from gym_anything_robotics.errors import UnsupportedConfigurationError
+        single = ("head_rgb", "right_wrist_rgb", "front_rgb", "rear_rgb", "left_rgb", "right_rgb")
+        duo = ("head_rgb", "left_wrist_rgb", "right_wrist_rgb", "front_rgb", "rear_rgb", "left_rgb", "right_rgb")
+        for allowed in (single, duo):
+            self.assertEqual(B._cameras(None, allowed, "mobile-fr3-duo"), allowed)
+            self.assertEqual(B._cameras([], allowed, "mobile-fr3-duo"), ())                 # a physics-only session
+            self.assertEqual(B._cameras(["right_wrist_rgb", "head_rgb"], allowed, "mobile-fr3-duo"),
+                             ("right_wrist_rgb", "head_rgb"))
+        with self.assertRaises(UnsupportedConfigurationError):
+            B._cameras(["left_wrist_rgb"], single, "mobile-fr3-single")
+        # the shortest command follows the default observation: 0.05 s per 640x360 frame at 16 samples
+        self.assertAlmostEqual(B._min_action_s(len(duo), 640, 360), 0.35, places=12)
+        self.assertAlmostEqual(B._min_action_s(len(single), 640, 360), 0.3, places=12)
+
+
 if __name__ == "__main__":
     unittest.main()

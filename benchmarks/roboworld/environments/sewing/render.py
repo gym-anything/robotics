@@ -742,8 +742,8 @@ def export_scene(folder, frame, world_meta, extra_cameras=None):
             **{k: dict(v, role="diagnostic") for k, v in LY.DIAGNOSTIC_CAMERAS.items()}, **(extra_cameras or {})}
     for name, c in cams.items():
         _camera(stage, "/Cameras/" + name, c["eye"], c["target"], c["hfov"], c.get("role", "diagnostic"))
-    # robot-mounted cameras (the G1's head D435): a camera under the body's prim, which the worker poses every frame,
-    # and an alias under /Cameras that names it (render_worker: mounted_camera_path)
+    # robot-mounted cameras (the G1's head D435, each arm's wrist D405): a camera under the body's prim, which the
+    # worker poses every frame, and an alias under /Cameras that names it (render_worker: mounted_camera_path)
     for name, c in world_meta.get("mounted_cameras", {}).items():
         mounted = f"{body_paths[c['body']]}/{name}_cam"
         _camera(stage, mounted, c["eye"], c["target"], c["fov"], c.get("role", "policy"), up=tuple(c["up"]))

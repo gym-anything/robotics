@@ -16,7 +16,8 @@ from .runtime import require_newton
 def identity(world):
     files = ("mechanics.py", "mechanical_snapshot.py", "laboratory.py", "lab_config.py",
              "apparatus.py", "geometry.py", "rigid_contact.py", "panda.py", "bored_geometry.py",
-             "pipette_geometry.py", "room.py", "assets.py", "actuator_targets.py", "pipette_filler.py")
+             "pipette_geometry.py", "room.py", "assets.py", "actuator_targets.py", "pipette_filler.py",
+             "wrist_camera.py")
     source = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest() for name in files}
     from .assets import MANIFEST
     source["panda_manifest.json"] = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()

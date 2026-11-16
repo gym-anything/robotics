@@ -68,7 +68,7 @@ class NewtonSurfaceRinsingV2Backend(TaskSetBackend):
         self.arms = tuple(w.arms)
         self.ik = ArmKinematics(w)
         self.policy_cameras = tuple(c for c in POLICY_CAMERAS if c == "head_rgb" or c in BASE_CAMERAS or c.split("_")[0] in self.arms)
-        self.cameras = tuple(cameras if cameras is not None else ("head_rgb",))
+        self.cameras = tuple(cameras if cameras is not None else self.policy_cameras)   # default: every robot camera
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(self.policy_cameras):
             raise ValueError(f"Policy cameras are {self.policy_cameras}; others are privileged diagnostics")
         width, height = self.options.get("width", 640), self.options.get("height", 360)

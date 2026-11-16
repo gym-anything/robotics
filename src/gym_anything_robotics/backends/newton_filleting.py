@@ -37,6 +37,7 @@ WALL_TIME_NOTE = ("Slow: tens to a few hundred wall seconds per simulated second
                   "has already committed)")
 
 POLICY_CAMERAS = ("overhead", "supervisor", "left_wrist_rgb", "right_wrist_rgb")
+SCENE_DEFAULT = ("overhead",)      # the scene camera a session gets when it names no cameras
 DIAGNOSTIC = ("hero", "hero_reverse", "bench", "workpiece", "knife_block")
 MOUNTS = {"overhead": "external_overhead_mount", "supervisor": "external_supervisor_mount",
           "left_wrist_rgb": "link7_d405_envelope", "right_wrist_rgb": "link7_d405_envelope"}
@@ -80,9 +81,16 @@ def _check_robot(robot):
     return robot
 
 
+def default_cameras(arms):
+    """The policy cameras of a session that names none: SCENE_DEFAULT, then the wrist D405 of each of `arms` (the
+    deployment's arm instances; single-fr3: its one arm, on the right) in POLICY_CAMERAS order."""
+    onboard = tuple(c for c in POLICY_CAMERAS if c.endswith("_wrist_rgb") and c.split("_")[0] in arms)
+    return SCENE_DEFAULT + tuple(c for c in onboard if c not in SCENE_DEFAULT)
+
+
 class NewtonFilletingBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-fr3", preset=None, task=None, seed=0, device=None, config=None,
-                 cameras=("overhead",), output_dir=None, renderer_options=None):
+                 cameras=None, output_dir=None, renderer_options=None):
         robot = _check_robot(robot)
         values = dict(config or {})
         if "phantom_rig" in values:
@@ -94,8 +102,10 @@ class NewtonFilletingBackend(RoboticsBackend):
             raise UnsupportedConfigurationError("Device supplied at two levels; choose exactly one")
         if isinstance(seed, bool) or not isinstance(seed, int):
             raise ValueError("seed must be an integer")
-        self.cameras = tuple(cameras)
-        if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
+        # None: the overhead camera and the wrist D405 of each arm (default_cameras), once the arms are built
+        self.cameras = None if cameras is None else tuple(cameras)
+        if self.cameras is not None and (len(set(self.cameras)) != len(self.cameras)
+                                         or set(self.cameras) - set(POLICY_CAMERAS)):
             raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; {DIAGNOSTIC} are privileged diagnostics")
         self.options = dict(renderer_options or {})
         if set(self.options) - RENDERER_OPTIONS:
@@ -131,6 +141,8 @@ class NewtonFilletingBackend(RoboticsBackend):
         self.env = FilletingEnv(self.config, output_dir=self.output)
         w = self.env.world
         self.arms = tuple(w.rig.instances)
+        if self.cameras is None:
+            self.cameras = default_cameras(self.arms)
         missing = [c for c in self.cameras if c.endswith("_wrist_rgb") and c.split("_")[0] not in self.arms]
         if missing:
             raise UnsupportedConfigurationError(f"{missing}: this deployment has arms {', '.join(self.arms)} only")

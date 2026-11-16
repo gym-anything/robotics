@@ -171,6 +171,7 @@ class MixPolicyAccess(PolicyAccess):
 
 
 POLICY_CAMERAS = ("station_rgb", "overhead_rgb", "left_wrist_rgb", "right_wrist_rgb")
+SCENE_DEFAULT = ("station_rgb",)   # the scene camera a session gets when it names no cameras
 DIAGNOSTIC = ("room", "front", "front_left", "side", "closeup")
 SESSION_MARKER = ".gar-ingredient-mixing-session"
 SESSION_RETENTION = 20
@@ -328,6 +329,15 @@ def check_renderer_options(options, n_cameras=1, policy_samples=None, default_sa
     return out
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none: SCENE_DEFAULT, then the wrist D405 of each arm the robot setup
+    has, in POLICY_CAMERAS order. `robot` is an offered alias."""
+    from ingredient_mixing.robot_setup import arms_of
+    arms = arms_of(robot)
+    onboard = tuple(c for c in POLICY_CAMERAS if c.endswith("_wrist_rgb") and c.split("_")[0] in arms)
+    return SCENE_DEFAULT + tuple(c for c in onboard if c not in SCENE_DEFAULT)
+
+
 class NewtonIngredientMixingBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-fr3", preset=None, task=None, seed=0, variant=None, contract=None, device=None, config=None,
                  cameras=None, output_dir=None, renderer_options=None, recording=True):
@@ -372,7 +382,8 @@ class NewtonIngredientMixingBackend(RoboticsBackend):
             values["device"] = device
         samples_given = values.get("policy_samples")          # None unless the launch's config named it
         self.config = Config.from_dict(values)
-        self.cameras = tuple(cameras if cameras is not None else ("station_rgb",))
+        # none named: the station camera and the wrist cameras of the robot's arms (default_cameras)
+        self.cameras = tuple(cameras) if cameras is not None else default_cameras(robot)
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; others are privileged diagnostics")
         rig_arms = robot_setup.arms_of(robot)                # the wrist cameras follow the rig's arms

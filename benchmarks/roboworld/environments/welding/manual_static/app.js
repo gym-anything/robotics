@@ -153,7 +153,10 @@ async function showObservation(obs) {
     cap.textContent = `${name}${name === "weld_camera" ? " (process camera: dark unless the arc burns)" : ""} · observation ${obs.observation_id} · sim ${fmt(obs.sim_time_s, 3)} s`;
     fig.append(img, cap); return fig;
   }));
-  if (!fresh.length) $("frames").innerHTML = '<div class="empty">This session has no robot cameras (launch it with --backend-options-json \'{"cameras":["bench","side","weld_camera"]}\'; an FR3 or Panda arm also offers its wrist D405, e.g. "left_wrist_rgb", and the G1 its head D435, "head_rgb").</div>';
+  if (!fresh.length) $("frames").innerHTML = '<div class="empty">This session has no robot cameras (it was launched '
+    + 'with an empty camera list; by default a session renders "bench" and its robots\' own cameras, each FR3 or '
+    + 'Panda arm\'s wrist D405, e.g. "left_wrist_rgb", and the G1\'s head D435, "head_rgb"; '
+    + '--backend-options-json \'{"cameras":["bench","side","weld_camera"]}\' selects the cell\'s cameras).</div>';
   $("frames").classList.toggle("multi", fresh.length > 1);
   $("frames").dataset.observation = obs.observation_id;
   lastObs = obs;

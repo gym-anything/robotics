@@ -274,6 +274,19 @@ class IntegrationContractTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Config(preset="counter", task="scan-location")
 
+    def test_default_cameras_are_the_mast_camera_and_the_robots_own(self):
+        from robots.catalog import ENVIRONMENTS
+        from gym_anything_robotics.backends.newton_barcode_scanning import (G1_POLICY_CAMERAS, POLICY_CAMERAS,
+                                                                            default_cameras)
+        expected = {"dual-fr3": ("cart_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "dual-panda": ("cart_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "single-fr3": ("cart_rgb", "left_wrist_rgb"),           # its one arm is on the left mount
+                    "g1": ("head_rgb",)}                                    # the cart mast camera is selectable
+        aliases = ENVIRONMENTS["barcode-scanning"]["aliases"]
+        self.assertEqual({alias: default_cameras(alias) for alias in aliases}, expected)
+        for alias, cameras in expected.items():
+            self.assertLessEqual(set(cameras), set(G1_POLICY_CAMERAS if alias == "g1" else POLICY_CAMERAS))
+
     def test_policy_interface_has_no_scan_action(self):
         src = (ROOT/"gym_anything_robotics"/"backends"/"newton_barcode_scanning.py").read_text()
         for forbidden in ("def scan(", "\"scan\"", "trigger_switch\": True"):

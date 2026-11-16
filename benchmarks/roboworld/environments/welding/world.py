@@ -91,15 +91,13 @@ def require_engine():
 
 
 class World:
-    def __init__(self, config=None, coupon=None, robot_cameras=()):
-        """robot_cameras: the robot cameras the session selects (welding/scene.py): a selected wrist camera adds its
-        D405 to the arm; the G1's head camera and the cell's fixed cameras add nothing to the model."""
+    def __init__(self, config=None, coupon=None):
         self.config = c = config or Config()
         newton, wp = self.newton, self.wp = require_engine()
         from .process import tee_coupon, WeldProcess
         self.coupon = coupon or tee_coupon()
         from .scene import Scene
-        self.scene = Scene(c, self.coupon, newton, wp, robot_cameras=robot_cameras)
+        self.scene = Scene(c, self.coupon, newton, wp)
         b = self.scene.b
         with wp.ScopedDevice("cpu"):
             self.model = b.finalize(device="cpu")

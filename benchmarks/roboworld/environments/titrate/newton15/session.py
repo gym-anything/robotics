@@ -21,17 +21,12 @@ from .magnetics import MagneticDrive
 
 class ApparatusSession:
     def __init__(self, config=None, *, dt_s=.001, output_dir=None, renderer_options=None,
-                 liquid_numerics=None, reagents=None, wrist_cameras=()):
+                 liquid_numerics=None, reagents=None):
         if not math.isfinite(dt_s) or dt_s <= 0:
             raise ValueError("Positive finite timestep required")
         self._lock = threading.RLock()
         self.dt_s = float(dt_s)
-        if wrist_cameras:
-            # Only these arms carry the D405 case and bracket (wrist_camera.py).
-            from .wrist_camera import WristCameraMechanics
-            self.world = WristCameraMechanics(config, wrist_cameras)
-        else:
-            self.world = LaboratoryMechanics(config)
+        self.world = LaboratoryMechanics(config)
         self.config = self.world.lab.config
         support = self.world.lab.apparatus.bodies["stirrer"]
         self.magnet = MagneticDrive(self.world.lab.apparatus.bodies["stir_bar"],

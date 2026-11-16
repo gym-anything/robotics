@@ -1,15 +1,12 @@
-"""Intel RealSense D405 wrist camera on a Panda's link7, built only for a session that selects it.
+"""Intel RealSense D405 wrist camera on a Panda's link7, bolted to every arm whatever cameras a session selects.
 
 Used by pencap, lockkey and laundry. The case, the bracket and the optical frame are the Franka wrist mount of the
 other RoboWorld simulations (drilling/scene.py _wrist_camera): the D405's published 42 x 42 x 23 mm envelope and 60 g
 beside the flange on a 10 g aluminium bracket (an estimate), both collision geometry whose mass and inertia join
-link7, and an ideal RGB pinhole at the case front looking along link7 +z. A backend constructs its environment inside
-`selected`; the Panda builder then calls `install` for each arm, which adds nothing to an arm whose camera the session
-does not select, so such an arm is built exactly as without this module.
+link7, and an ideal RGB pinhole at the case front looking along link7 +z. The Panda builder calls `install` for each
+arm, so the built model does not depend on the session's camera list; the list only chooses which images are served.
 """
 
-from contextlib import contextmanager
-from contextvars import ContextVar
 import math
 
 NAMES = ("left_wrist_rgb", "right_wrist_rgb")
@@ -22,26 +19,11 @@ EYE, TARGET, UP = (.075, -.012, .083), (.075, -.012, .283), (0., 1., 0.)
 PARTS = (("camera_case", (.075, 0., .07), (.021, .021, .0115), .060/(.042*.042*.023), "robot_dark"),
          ("camera_bracket", (.05, 0., .046), (.025, .013, .003), .010/(.050*.026*.006), "aluminum"))
 
-_selected = ContextVar("wrist_cameras", default=None)
 
-
-@contextmanager
-def selected(cameras):
-    """Environments built inside this block carry the wrist cameras `cameras`, {robot instance: camera name}."""
-    token = _selected.set(dict(cameras))
-    try:
-        yield
-    finally:
-        _selected.reset(token)
-
-
-def install(builder, arm, cfg, materials):
+def install(builder, arm, cfg, materials, name=None):
     """Add the D405 case and bracket to link7 of the robot instance `arm` (built by robots.backends.newton.add_robot)
-    when the session selects its wrist camera, with the contact settings `cfg`; record each part's render material in
-    `materials` and the camera's link7 body in builder.wrist_cameras. Add nothing otherwise."""
-    name = (_selected.get() or {}).get(arm)
-    if name is None:
-        return
+    with the contact settings `cfg`; record each part's render material in `materials` and the camera's link7 body in
+    builder.wrist_cameras under `name`, by default `<arm>_wrist_rgb`."""
     import warp as wp
     body = builder._gar_robots[arm].frames["wrist"]["body"]
     for label, center, half, density, material in PARTS:
@@ -52,7 +34,7 @@ def install(builder, arm, cfg, materials):
         materials[shape] = material
     if not hasattr(builder, "wrist_cameras"):
         builder.wrist_cameras = {}
-    builder.wrist_cameras[name] = body
+    builder.wrist_cameras[name or f"{arm}_wrist_rgb"] = body
 
 
 def export(stage, builder):
@@ -81,9 +63,8 @@ def spec(name, width, height):
 
 
 def note(names):
-    """Capability note for the session's wrist cameras `names`."""
+    """Capability note for the wrist cameras `names`."""
     return (f"{', '.join(names)}: Intel RealSense D405 on its Panda's link7 beside the Franka Hand "
             f"({MOUNT_FRAME}), {HFOV_DEG:g} deg HFOV, native {NATIVE_RESOLUTION_PX[0]}x{NATIVE_RESOLUTION_PX[1]}, "
-            "ideal pinhole RGB; no depth or noise model. A selected wrist camera adds the D405's 60 g case and its "
-            "10 g bracket to that arm as collision geometry and mass; an arm whose wrist camera is not selected is "
-            "built without them")
+            "ideal pinhole RGB; no depth or noise model. Every arm carries the D405's 60 g case and its 10 g bracket "
+            "as collision geometry and mass, whichever cameras the session selects")

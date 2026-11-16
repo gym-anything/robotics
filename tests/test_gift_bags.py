@@ -127,6 +127,20 @@ class GiftBagsContractTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             NewtonGiftBagsBackend(preset="home", task="lift-lid", cameras=("room",))   # privileged diagnostic camera
 
+    def test_a_session_that_names_no_cameras_gets_the_robots_own(self):
+        # the overhead camera, then the wrist D405 of each arm (the one-arm setups: the left pedestal's), or the G1's
+        # head D435 (GIFT_BAGS_G1_DEV only)
+        import inspect
+        from robots.catalog import ENVIRONMENTS
+        from gym_anything_robotics.backends import newton_gift_bags as B
+        self.assertIsNone(inspect.signature(B.NewtonGiftBagsBackend).parameters["cameras"].default)
+        both, left = ("overhead_rgb", "left_wrist_rgb", "right_wrist_rgb"), ("overhead_rgb", "left_wrist_rgb")
+        expected = {"dual-fr3": both, "dual-panda": both, "single-fr3": left, "single-panda": left}
+        self.assertEqual(set(expected), set(ENVIRONMENTS["gift-bags"]["aliases"]))
+        for robot, cams in {**expected, "g1": ("overhead_rgb", "head_rgb")}.items():
+            with self.subTest(robot=robot):
+                self.assertEqual(B.default_cameras(robot), cams)
+
     def test_doctor_reports_gpu_memory_and_the_cpu_device_switch(self):
         """A session keeps the robot model on the GPU unless GIFT_BAGS_DEVICE=cpu; on a full card a launch dies with a
         CUDA out-of-memory error. The doctor says so beforehand."""

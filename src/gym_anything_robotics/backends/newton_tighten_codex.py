@@ -19,13 +19,14 @@ from ..errors import (UnsupportedActionError,UnsupportedConfigurationError,
 from ..types import BackendStep,CameraSpec,Capabilities,ImageFrame,Observation
 from ..policy_access import PolicyAccess
 
-# Fixed bench_rgb and overview_rgb (the default), and the D405 on the wrist of each mounted arm: <arm>_wrist_rgb.
+# Fixed bench_rgb and overview_rgb, and the D405 on the wrist of each mounted arm: <arm>_wrist_rgb. A session that
+# passes no cameras observes the fixed cameras and the wrist camera of every arm of its setup, in this order.
 POLICY_CAMERAS = ("bench_rgb", "overview_rgb", "left_wrist_rgb", "right_wrist_rgb")
 
 
 class NewtonTightenCodexBackend(RoboticsBackend):
     def __init__(self,*,robot="dual-fr3",config=None,device=None,
-                 cameras=("bench_rgb","overview_rgb"),output_dir=None,
+                 cameras=None,output_dir=None,
                  renderer_options=None,recording=True):
         from tighten_codex.config import Config
         from tighten_codex.env import TightenEnv
@@ -59,17 +60,18 @@ class NewtonTightenCodexBackend(RoboticsBackend):
             c=replace(c,device=device)
         if c.fixture_mode:
             raise UnsupportedConfigurationError("Assisted fixture mode is evidence-only; GAR serves the ordinary scene")
-        self.cameras=tuple(cameras)
+        from robots import resolve
+        arms=resolve(setup).to_dict()["instances"]
+        offered=tuple(name for name in POLICY_CAMERAS if name in
+                      ("bench_rgb","overview_rgb",*(f"{arm}_wrist_rgb" for arm in arms)))
+        self.cameras=offered if cameras is None else tuple(cameras)
         if len(set(self.cameras))!=len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {', '.join(POLICY_CAMERAS)}; a one-arm setup offers only its "
                              "own arm's wrist camera")
-        from robots import resolve
-        offered=("bench_rgb","overview_rgb",*(f"{arm}_wrist_rgb" for arm in resolve(setup).to_dict()["instances"]))
         if set(self.cameras)-set(offered):
             missing=sorted(set(self.cameras)-set(offered))[0].removesuffix("_wrist_rgb")
             raise UnsupportedConfigurationError(f"{robot_id} has no {missing} arm: its policy cameras are "
                                                 f"{', '.join(offered)}")
-        wrist=tuple(name for name in offered if name in self.cameras and name.endswith("_wrist_rgb"))
         requested_options=dict(renderer_options or {})
         if set(requested_options)-{"width","height","samples"}:
             raise ValueError("Unknown renderer option")
@@ -83,7 +85,7 @@ class NewtonTightenCodexBackend(RoboticsBackend):
         self.options={"width":width,"height":height,"samples":samples}
         self.output=Path(output_dir or Path.home()/".cache/gar/tighten-codex"/uuid.uuid4().hex)
         self.output.mkdir(parents=True,exist_ok=False)
-        self.env=TightenEnv(c,setup,wrist_cameras=wrist)
+        self.env=TightenEnv(c,setup)
         self.robot=robot_id
         self.catalog=Catalog(self.env)
         self.arms=frozenset(self.env.rig.instances)
@@ -115,13 +117,11 @@ class NewtonTightenCodexBackend(RoboticsBackend):
             "camera":"Fixed inspection-camera housing with ideal RGB pinhole; no depth/noise or distortion model",
             "fasteners":"Prestarted M3/M4; native bit/socket collision, helical guidance and solved bearing force",
             "fixture":"Phantom assistance is separate and unavailable in GAR robot actions",
-            "history":"Bounded privileged every-step state/contact records when recording enabled"}
-        if wrist:
-            notes["wrist_camera"]=("Intel RealSense D405 on link 7 of each arm whose <arm>_wrist_rgb is selected "
-                "(link7_d405_envelope): ideal RGB pinhole, 87 deg HFOV, native 1280 x 720, no depth/noise or "
-                "distortion model. Selecting it adds the D405's 60 g case and its 10 g aluminium bracket to that arm "
-                "as mass and collision geometry (contact with them is robot contact); an arm without a selected wrist "
-                "camera carries neither")
+            "history":"Bounded privileged every-step state/contact records when recording enabled",
+            "wrist_camera":("Intel RealSense D405 on link 7 of each arm, <arm>_wrist_rgb (link7_d405_envelope): "
+                "ideal RGB pinhole, 87 deg HFOV, native 1280 x 720, no depth/noise or distortion model. Every arm "
+                "carries the D405's 60 g case and its 10 g aluminium bracket as mass and collision geometry (contact "
+                "with them is robot contact), whichever cameras the session observes")}
         self.capabilities=Capabilities("tighten-codex","newton",robot_id,self.kinds,
             frozenset({"proprioception",*(["rgb"] if self.cameras else [])}),
             True,False,True,self.cameras,

@@ -1,7 +1,8 @@
 """The D405 wrist cameras of the Panda simulations (pencap/newton15/wrist_camera.py) and pencap's camera selection.
 
 The accessory checks build on a Newton ModelBuilder on the CPU (no simulator step); the Panda itself only where its
-pinned description assets are installed. The backend checks replace the environment with a recording double.
+pinned description assets are installed. The backend checks replace the environment with a recording double: the
+default session serves every robot camera, and the environment is built the same whichever cameras are selected.
 """
 
 import math
@@ -62,25 +63,11 @@ def contact():
 
 @unittest.skipUnless(HAVE_NEWTON, "Newton engine not importable in this interpreter")
 class AccessoryTests(unittest.TestCase):
-    def test_an_arm_without_its_wrist_camera_selected_gets_nothing(self):
-        for selection in (None, {}, {"right": "right_wrist_rgb"}):
-            b, bodies = chain()
-            shapes, mass, materials = b.shape_count, list(b.body_mass), {}
-            if selection is None:
-                wrist_camera.install(b, "left", contact(), materials)
-            else:
-                with wrist_camera.selected(selection):
-                    wrist_camera.install(b, "left", contact(), materials)
-            self.assertEqual((b.shape_count, list(b.body_mass), materials), (shapes, mass, {}))
-            self.assertFalse(hasattr(b, "wrist_cameras"))
-
-    def test_selected_arm_gets_the_reference_case_and_bracket_on_link7(self):
+    def test_every_arm_gets_the_reference_case_and_bracket_on_link7(self):
         b, bodies = chain()
         cfg, materials = contact(), {}
         mass = b.body_mass[bodies[1]]
-        with wrist_camera.selected({"left": "left_wrist_rgb"}):
-            wrist_camera.install(b, "left", cfg, materials)
-        self.assertIsNone(wrist_camera._selected.get())
+        wrist_camera.install(b, "left", cfg, materials)
         case, bracket = b.shape_count-2, b.shape_count-1
         self.assertEqual([b.shape_label[case], b.shape_label[bracket]], ["left_camera_case", "left_camera_bracket"])
         self.assertEqual([b.shape_body[case], b.shape_body[bracket]], [bodies[1]]*2)
@@ -103,6 +90,14 @@ class AccessoryTests(unittest.TestCase):
                     for i, j in b.shape_collision_filter_pairs if shape in (i, j)}
         self.assertTrue({bodies[0], bodies[2]} <= filtered)
 
+    def test_a_named_camera_is_recorded_under_its_name(self):
+        # lockkey's single Panda is robot instance 'panda'; the actions call it 'left'.
+        b, bodies = chain()
+        b._gar_robots = {"panda": b._gar_robots["left"]}
+        wrist_camera.install(b, "panda", contact(), {}, "left_wrist_rgb")
+        self.assertEqual(b.wrist_cameras, {"left_wrist_rgb": bodies[1]})
+        self.assertEqual(list(b.shape_label[-2:]), ["panda_camera_case", "panda_camera_bracket"])
+
     def test_spec_and_note(self):
         spec = wrist_camera.spec("right_wrist_rgb", 640, 480)
         self.assertEqual((spec.name, spec.mount_frame), ("right_wrist_rgb", "link7_d405_envelope"))
@@ -114,28 +109,25 @@ class AccessoryTests(unittest.TestCase):
         note = wrist_camera.note(["left_wrist_rgb"])
         self.assertTrue(note.startswith("left_wrist_rgb: Intel RealSense D405"))
         self.assertIn("60 g case and its 10 g bracket", note)
+        self.assertIn("whichever cameras the session selects", note)
 
     @unittest.skipUnless(panda_assets(), "pinned Panda description assets are not installed")
     def test_on_the_panda_the_parts_ride_panda_link7_beside_the_hand(self):
         from robots.backends.newton import add_robot, mount
         from pencap.newton15.runtime import require_engine
         require_engine()
-        for selection in ({}, {"left": "left_wrist_rgb"}):
-            b = newton.ModelBuilder()
-            with wrist_camera.selected(selection):
-                add_robot(b, "panda", "pencap", instance="left", placement=mount((0., .55, .75), -math.pi/2))
-                before = (b.shape_count, list(b.body_mass))
-                wrist_camera.install(b, "left", contact(), {})
-            if not selection:
-                self.assertEqual((b.shape_count, list(b.body_mass)), before)
-                continue
-            link7 = b.wrist_cameras["left_wrist_rgb"]
-            self.assertTrue(b.body_label[link7].endswith("panda_link7"))
-            self.assertAlmostEqual(b.body_mass[link7]-before[1][link7], .070, places=6)
-            filtered = {b.body_label[b.shape_body[j if i == b.shape_count-2 else i]]
-                        for i, j in b.shape_collision_filter_pairs if b.shape_count-2 in (i, j)}
-            self.assertTrue(any(n.endswith("panda_link6") for n in filtered))
-            self.assertTrue(any(n.endswith("finger") for n in filtered))
+        b = newton.ModelBuilder()
+        add_robot(b, "panda", "pencap", instance="left", placement=mount((0., .55, .75), -math.pi/2))
+        before = (b.shape_count, list(b.body_mass))
+        wrist_camera.install(b, "left", contact(), {})
+        self.assertEqual(b.shape_count, before[0]+2)
+        link7 = b.wrist_cameras["left_wrist_rgb"]
+        self.assertTrue(b.body_label[link7].endswith("panda_link7"))
+        self.assertAlmostEqual(b.body_mass[link7]-before[1][link7], .070, places=6)
+        filtered = {b.body_label[b.shape_body[j if i == b.shape_count-2 else i]]
+                    for i, j in b.shape_collision_filter_pairs if b.shape_count-2 in (i, j)}
+        self.assertTrue(any(n.endswith("panda_link6") for n in filtered))
+        self.assertTrue(any(n.endswith("finger") for n in filtered))
 
 
 @unittest.skipUnless(HAVE_USD, "OpenUSD (pxr) not importable in this interpreter")
@@ -165,12 +157,12 @@ class ExportTests(unittest.TestCase):
 
 
 class Recorder:
-    """Stands in for the pen-cap environment and records the wrist cameras selected while it is built."""
+    """Stands in for the pen-cap environment and records what each build receives."""
     def __init__(self):
-        self.selections = []
+        self.builds = []
 
     def __call__(self, config, task="seat-cap"):
-        self.selections.append(wrist_camera._selected.get())
+        self.builds.append((config, task))
         return NS(config=config, task=task, joints={}, lock=threading.RLock(), tick=0, generation=0)
 
 
@@ -180,54 +172,62 @@ class BackendTests(unittest.TestCase):
         from pencap.task_backend import NewtonPenCapTaskBackend
         return NewtonPenCapBackend, NewtonPenCapTaskBackend
 
-    def test_wrist_cameras_select_their_arms_and_the_bench_camera_is_unchanged(self):
+    def test_the_default_serves_every_robot_camera_and_any_subset_can_be_selected(self):
         # The real modules load before any patch: pencap.task_env subclasses PenCapEnv at import.
         import pencap.newton15.catalog, pencap.newton15.env, pencap.newton15.kinematics, pencap.task_env  # noqa: F401
         backends = self.backends()
         record = Recorder()
+        everything = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
         with patch("pencap.newton15.env.PenCapEnv", side_effect=record), \
              patch("pencap.task_env.TaskPenCapEnv", side_effect=record), \
              patch("pencap.newton15.catalog.Catalog", return_value=NS()), \
              patch("pencap.newton15.kinematics.Kinematics", return_value=NS()), \
              tempfile.TemporaryDirectory() as tmp:
             for i, backend in enumerate(backends):
-                plain = backend(recording=False, output_dir=Path(tmp)/f"{i}-plain")
-                self.assertEqual(record.selections.pop(), {})
-                self.assertEqual([s.name for s in plain.capabilities.camera_specs], ["bench_rgb"])
-                self.assertEqual(plain.capabilities.camera_specs[0].mount_frame, "floor_stand_D435_enclosure")
-                self.assertNotIn("wrist_cameras", plain.capabilities.notes)
-                for n, (cameras, arms) in enumerate(((("left_wrist_rgb",), {"left": "left_wrist_rgb"}),
-                                                     (("bench_rgb", "right_wrist_rgb"), {"right": "right_wrist_rgb"}),
-                                                     (("right_wrist_rgb", "bench_rgb", "left_wrist_rgb"),
-                                                      {"left": "left_wrist_rgb", "right": "right_wrist_rgb"}))):
+                default = backend(recording=False, output_dir=Path(tmp)/f"{i}-default")
+                self.assertEqual(default.capabilities.robot_cameras, everything)
+                self.assertEqual([s.name for s in default.capabilities.camera_specs], list(everything))
+                self.assertEqual([s.name for s in default.policy_access().cameras], list(everything))
+                self.assertEqual(default.capabilities.camera_specs[0].mount_frame, "floor_stand_D435_enclosure")
+                for n, cameras in enumerate(((), ("left_wrist_rgb",), ("bench_rgb", "right_wrist_rgb"),
+                                             ("right_wrist_rgb", "bench_rgb", "left_wrist_rgb"))):
                     obj = backend(cameras=cameras, recording=False, output_dir=Path(tmp)/f"{i}-{n}")
-                    self.assertEqual(record.selections.pop(), arms)
                     self.assertEqual(obj.capabilities.robot_cameras, cameras)
                     self.assertEqual([s.name for s in obj.capabilities.camera_specs], list(cameras))
                     self.assertEqual([s.name for s in obj.policy_access().cameras], list(cameras))
                     for spec in obj.capabilities.camera_specs:
                         if spec.name != "bench_rgb":
                             self.assertEqual(spec, wrist_camera.spec(spec.name, 1280, 720))
-                    self.assertTrue(obj.capabilities.notes["wrist_cameras"].startswith(", ".join(arms.values())))
-                    frames = {name: Path(tmp)/f"{name}.png" for name in cameras}
-                    with patch.object(obj, "_render", return_value=frames):
+                    # Both arms carry their D405 in every session, so the note names both.
+                    self.assertTrue(obj.capabilities.notes["wrist_cameras"].startswith(
+                        "left_wrist_rgb, right_wrist_rgb: "))
+                    frames = {name: Path(tmp)/f"{name}.png" for name in everything}
+                    with patch.object(obj, "_render", side_effect=lambda names: {c: frames[c] for c in names}):
                         state = {"tick": 0, "generation": 0, "time_s": 0., "joints": {}}
                         observation = obj.observation_from_state(state, sequence=1)
                         for name in cameras:
                             self.assertEqual(observation.images[name].camera, obj.camera_specs[name])
-                        for name in arms.values():
+                        for name in wrist_camera.NAMES:
                             self.assertEqual(obj.render(label=name), frames[name])
-                    with patch.object(obj, "_render", return_value=frames), \
-                            self.assertRaisesRegex(ValueError, "Render label must be"):
-                        obj.render(label=(set(wrist_camera.NAMES)-set(arms.values()) or {"head_rgb"}).pop())
+                        with self.assertRaisesRegex(ValueError, "Render label must be"):
+                            obj.render(label="head_rgb")
                 for bad in (("head_rgb",), ("left_wrist_rgb", "left_wrist_rgb")):
                     with self.assertRaisesRegex(ValueError, "Policy cameras are bench_rgb, left_wrist_rgb, "
                                                             "right_wrist_rgb"):
                         backend(cameras=bad, recording=False, output_dir=Path(tmp)/f"{i}-bad")
+                for cameras in (everything, ("left_wrist_rgb",)):
+                    with self.assertRaisesRegex(ValueError, "requires the studio scene"):
+                        backend(config={"scene": "baseline"}, cameras=cameras, recording=False,
+                                output_dir=Path(tmp)/f"{i}-baseline")
                 with self.assertRaisesRegex(ValueError, "requires the studio scene"):
-                    backend(config={"scene": "baseline"}, cameras=("left_wrist_rgb",), recording=False,
-                            output_dir=Path(tmp)/f"{i}-baseline")
-            self.assertEqual(record.selections, [])
+                    backend(config={"scene": "baseline"}, recording=False, output_dir=Path(tmp)/f"{i}-baseline")
+                backend(config={"scene": "baseline"}, cameras=(), recording=False,
+                        output_dir=Path(tmp)/f"{i}-physics-only")
+            # One build per accepted session, each receiving only its configuration and task: the camera list does
+            # not reach the environment.
+            self.assertEqual(len(record.builds), 2*6)
+            self.assertEqual({(c.scene, t) for c, t in record.builds}, {("studio", "seat-cap"),
+                                                                        ("baseline", "seat-cap")})
 
 
 if __name__ == "__main__":

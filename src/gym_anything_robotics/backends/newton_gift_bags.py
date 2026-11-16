@@ -34,6 +34,7 @@ from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
 POLICY_CAMERAS = ("overhead_rgb", "left_wrist_rgb", "right_wrist_rgb", "head_rgb")   # head_rgb: G1 only (torso D435)
+SCENE_DEFAULT = ("overhead_rgb",)   # the scene camera a session gets when it names no cameras
 DIAGNOSTIC = ("room", "front", "counter_wide", "bag", "mat", "gift", "side", "carton", "carton_end")
 SESSION_MARKER = ".gar-gift-bags-session"
 SESSION_RETENTION = 20
@@ -189,11 +190,23 @@ def _session_folder():
     return base/uuid.uuid4().hex
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none: SCENE_DEFAULT, then every camera the robot setup carries (the
+    wrist D405 of each of its arms; the G1's head D435) in POLICY_CAMERAS order. `robot` is a qualified alias."""
+    from gift_bags.robot_setup import HUMANOID, resolve_setup
+    if robot in HUMANOID:
+        onboard = ("head_rgb",)
+    else:
+        arms = tuple(resolve_setup(robot).to_dict()["instances"])
+        onboard = tuple(c for c in POLICY_CAMERAS if c.endswith("_wrist_rgb") and c.split("_")[0] in arms)
+    return SCENE_DEFAULT + tuple(c for c in onboard if c not in SCENE_DEFAULT)
+
+
 class NewtonGiftBagsBackend(RoboticsBackend):
     g1 = False                              # the Unitree G1 configuration (set in __init__)
 
     def __init__(self, *, robot="dual-fr3", preset=None, task=None, seed=0, device=None, config=None, contract=None,
-                 cameras=("overhead_rgb",), output_dir=None, renderer_options=None, recording=True):
+                 cameras=None, output_dir=None, renderer_options=None, recording=True):
         from gift_bags.task_set_catalog import Config, TASKS, completes_window
         from gift_bags.task_set_env import GiftBagsEnv
         from gift_bags.kinematics import ArmKinematics
@@ -241,7 +254,8 @@ class NewtonGiftBagsBackend(RoboticsBackend):
         if device is not None:
             values["device"] = device
         self.config = Config(**values)
-        self.cameras = tuple(cameras)
+        # none named: the overhead camera and every camera the robot carries (default_cameras)
+        self.cameras = tuple(cameras) if cameras is not None else default_cameras(robot)
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; others are privileged diagnostics")
         self.options = dict(renderer_options or {})

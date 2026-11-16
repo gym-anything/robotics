@@ -244,6 +244,20 @@ class RegistrationTest(unittest.TestCase):
             self.assertIn("needs a second hand", str(caught.exception))
             env.assert_not_called()
 
+    def test_a_session_that_names_no_cameras_gets_the_wrist_cameras(self):
+        # the overhead camera, then the wrist D405 of each arm of the deployment (its rig's arm instances)
+        import inspect
+        from robots.catalog import ENVIRONMENTS, for_environment
+        from gym_anything_robotics.backends import newton_filleting as B
+        self.assertIsNone(inspect.signature(B.NewtonFilletingBackend).parameters["cameras"].default)
+        both = ("overhead", "left_wrist_rgb", "right_wrist_rgb")
+        expected = {"dual-fr3": both, "dual-panda": both, "single-fr3": ("overhead", "right_wrist_rgb")}
+        self.assertEqual(set(expected), set(ENVIRONMENTS["filleting"]["aliases"]))
+        for robot, cams in expected.items():
+            with self.subTest(robot=robot):
+                arms = tuple(for_environment("filleting", robot).to_dict()["instances"])
+                self.assertEqual(B.default_cameras(arms), cams)
+
     def test_invalid_configuration_fails_before_the_world_is_built(self):
         from gym_anything_robotics.backends.newton_filleting import NewtonFilletingBackend
         bad = (dict(cameras=("hero",)), dict(cameras=("overhead", "overhead")), dict(config={"task": "A1"}),

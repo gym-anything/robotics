@@ -160,8 +160,8 @@ def _wall_time_note(f):
     pause_text = (("; " if measured else " and ").join(pauses))
     pause_text = pause_text[:1].upper() + pause_text[1:] if measured else pause_text
     return (
-        f"Measured through gar run + HTTP with the policy key and each deployment's policy cameras on the shared RTX "
-        f"5090 host (physics {f['physics_hash']}): the plain "
+        f"Measured through gar run + HTTP with the policy key and the cameras operator (the G1: head_rgb), overhead "
+        f"and needle on the shared RTX 5090 host (physics {f['physics_hash']}): the plain "
         f"seam sewn at 600 sti/min while one hand travels with the work. Wall seconds per simulated second for 0.5 s "
         f"actions while sewing: FR3 pair {f['dual-fr3_sewing']}, Panda pair {f['dual-panda_sewing']}, single FR3 "
         f"{f['single-fr3_sewing']}, G1 {f['g1_sewing']}; the hand's approach with the machine idle: "
@@ -241,12 +241,12 @@ def load_wall_time_note(paths=None, quiet_paths=None, pause_paths=None):
 
 
 WALL_TIME_NOTE = load_wall_time_note()
-# the default observation renders these cameras (the launch's `cameras` option selects fewer, or adds a wrist camera)
+# every policy camera of the deployment is rendered by default (the launch's `cameras` option selects fewer): these,
+# then the wrist cameras of the rig's arms
 POLICY_CAMERAS = ("operator", "overhead", "needle")
 G1_POLICY_CAMERAS = ("head_rgb", "overhead", "needle")      # the humanoid looks through its head D435 (sewing/g1.py)
 # each Franka arm's wrist D405 (FR3 or Panda; sewing/scene.py WRIST_D405), named after the arm as the rig names it (a
-# one-arm rig offers its own arm's): rendered only when the launch's `cameras` option selects it, and only then does
-# the arm carry the D405's case and bracket
+# one-arm rig offers its own arm's); every arm carries the D405's case and bracket whichever cameras are selected
 WRIST_CAMERAS = ("left_wrist_rgb", "right_wrist_rgb")
 DIAGNOSTIC = ("hero", "macro", "seam", "machine")
 MOUNTS = {"operator": "external_operator_mount", "overhead": "cell_overhead_d435_boom",
@@ -378,8 +378,6 @@ def _check_robot(robot):
 
 
 class NewtonSewingBackend(RoboticsBackend):
-    wrist_camera_arms = ()      # the arms whose wrist camera the session selects (__init__ sets them; none by default)
-
     def __init__(self, *, robot="dual-fr3", preset=None, task=None, seed=0, device=None, config=None,
                  cameras=None, output_dir=None, renderer_options=None, trace=True, trace_bytes=None, contract=None):
         if not isinstance(trace, bool):
@@ -395,7 +393,7 @@ class NewtonSewingBackend(RoboticsBackend):
         # the arm deployments also offer the wrist camera of each arm the rig has
         rig_arms = () if self.g1 else _rig_arms(robot)
         self.policy_cameras = default + tuple(f"{a}_wrist_rgb" for a in rig_arms)
-        cameras = default if cameras is None else cameras
+        cameras = self.policy_cameras if cameras is None else cameras
         values = dict(config or {})
         clash = sorted(set(TOP_LEVEL) & set(values))
         if clash:
@@ -412,8 +410,6 @@ class NewtonSewingBackend(RoboticsBackend):
         if absent:
             raise UnsupportedConfigurationError(f"{robot} has one arm ({', '.join(rig_arms)}): no {', '.join(absent)}; "
                                                 f"policy cameras are {', '.join(self.policy_cameras)}")
-        # the arms whose wrist camera the session selects: the scene builds their D405 (sewing/scene.py WRIST_D405)
-        self.wrist_camera_arms = tuple(a for a in rig_arms if f"{a}_wrist_rgb" in self.cameras)
         from sewing.variants import check_robot
         from sewing.task_set import resolve, choose_contract
         from sewing.world import Config
@@ -561,22 +557,21 @@ class NewtonSewingBackend(RoboticsBackend):
                 "variations": f"Owner: catalogue {VR.VERSION} ({VR.COUNT} entries, task x seed; sewing/variations.py); "
                               "GET /v1/variations, POST /v1/variations/start or reset with options {\"variation_id\": "
                               "N}; a switch took 4.6 s with the start state cached and no cameras (18.5-22.6 s "
-                              "with the three policy cameras: the render worker "
+                              "with the operator, overhead and needle cameras: the render worker "
                               "is restarted on the new scene) and 208-418 s when it was prepared (the FR3 pair on the "
                               "shared GPU; GET /v1/variations: note)",
                 "checkpoints": CHECKPOINT_SCOPE})
 
     def _wrist_camera_note(self):
-        """What the cameras note adds for the selected wrist cameras (nothing without one)."""
-        if not self.wrist_camera_arms:
+        """What the cameras note says of the arms' wrist D405s (nothing on the G1)."""
+        names = ", ".join(c for c in self.policy_cameras if c in WRIST_CAMERAS)
+        if not names:
             return ""
         from sewing.scene import WRIST_D405
-        names = ", ".join(f"{a}_wrist_rgb" for a in self.wrist_camera_arms)
         return (f". {names}: the RealSense D405 on the arm's wrist (link7), {WRIST_D405['hfov_deg']:g} deg HFOV, "
-                f"1280 x 720 native, ideal pinhole; the wrist camera adds the D405's "
-                f"{WRIST_D405['case'][2]*1e3:g} g case and the {WRIST_D405['bracket'][2]*1e3:g} g bracket to the arm "
-                f"when selected (MuJoCo mass and collision geometry on link7; the cloth meets the hand's fingers and "
-                f"housing only)")
+                f"1280 x 720 native, ideal pinhole; each arm carries the D405's {WRIST_D405['case'][2]*1e3:g} g case "
+                f"and the {WRIST_D405['bracket'][2]*1e3:g} g bracket whether or not its camera is selected (MuJoCo "
+                f"mass and collision geometry on link7; the cloth meets the hand's fingers and housing only)")
 
     # ------------------------------------------------------------------ lifecycle
     def _task_note(self):
@@ -618,16 +613,11 @@ class NewtonSewingBackend(RoboticsBackend):
             raise ActionRejectedError(f"{exc}; nothing changed") from exc
         return self._world_config(values)
 
-    def _world_config(self, values):
-        """The world's Config of these values (the Config fields among them). A session that selects wrist cameras
-        builds from a WristCameraConfig naming their arms: the scene builds those arms' D405 and its start state is
-        cached apart (sewing/task_set_env.py)."""
+    @staticmethod
+    def _world_config(values):
+        """The world's Config of these values (the Config fields among them)."""
         from sewing.world import Config
-        fields = {k: v for k, v in values.items() if k in Config.__dataclass_fields__}
-        if not self.wrist_camera_arms:
-            return Config(**fields)
-        from sewing.task_set_env import WristCameraConfig
-        return WristCameraConfig(**fields, wrist_camera_arms=self.wrist_camera_arms)
+        return Config(**{k: v for k, v in values.items() if k in Config.__dataclass_fields__})
 
     def _start_variation(self, variation_id, contract=None):
         """Replace the episode by a catalogue variation (same robot, cameras, renderer options, device, config overrides
@@ -1136,10 +1126,8 @@ class NewtonSewingBackend(RoboticsBackend):
 
     def render(self, *, label="interactive"):
         name = "hero" if label in ("interactive", "http") else label
-        # a wrist camera exists in the scene only when the session selects it
-        labels = tuple(c for c in self.policy_cameras if c not in WRIST_CAMERAS or c in self.cameras) + DIAGNOSTIC
-        if name not in labels:
-            raise ValueError(f"Render label must be one of {labels}")
+        if name not in self.policy_cameras + DIAGNOSTIC:
+            raise ValueError(f"Render label must be one of {self.policy_cameras + DIAGNOSTIC}")
         return self._render((name,))[name]
 
     # ------------------------------------------------------------------ geometry and checkpoints

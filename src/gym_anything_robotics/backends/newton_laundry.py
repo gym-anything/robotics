@@ -14,11 +14,12 @@ from ..errors import ActionRejectedError, UnsupportedActionError, UnsupportedCon
 from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
+# Also the default: the bench camera, then the D405 on each arm's wrist.
 POLICY_CAMERAS = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
 
 
 class NewtonLaundryBackend(RoboticsBackend):
-    def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=("bench_rgb",),
+    def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=POLICY_CAMERAS,
                  output_dir=None, renderer_options=None, recording=True, task=None, contract=None):
         from laundry.newton15.config import Config
         from laundry.task_set import V2_CONTRACT
@@ -41,14 +42,12 @@ class NewtonLaundryBackend(RoboticsBackend):
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {', '.join(POLICY_CAMERAS)}; other cameras are privileged "
                              "diagnostics")
-        # The D405 of a wrist camera is built on its arm only when the session selects that camera.
-        self.wrist_cameras = {arm: f"{arm}_wrist_rgb" for arm in ("left", "right")
-                              if f"{arm}_wrist_rgb" in self.cameras}
+        # Each arm carries its D405 whichever cameras the session selects (pencap/newton15/wrist_camera.py).
+        self.wrist_cameras = wrist_camera.NAMES
         self.options = dict(renderer_options or {})
         self.output = Path(output_dir or Path.home()/".cache/gar/laundry"/uuid.uuid4().hex)
         self.output.mkdir(parents=True, exist_ok=False)
-        with wrist_camera.selected(self.wrist_cameras):
-            self.env = CatalogueLaundryEnv(config, task=task, contract=contract)
+        self.env = CatalogueLaundryEnv(config, task=task, contract=contract)
         self.catalog, self.ik = Catalog(self.env), Kinematics(config.robot_base_y)
         self.images, self.trace = deque(), None
         self.render_recoveries = []
@@ -59,7 +58,7 @@ class NewtonLaundryBackend(RoboticsBackend):
         f = .018/math.tan(math.radians(69/2))
         self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "external_floor_stand", w, h, 1920, 1080,
             (.036, .036*h/w), (f, f))}
-        self.camera_specs.update((n, wrist_camera.spec(n, w, h)) for n in self.wrist_cameras.values())
+        self.camera_specs.update((n, wrist_camera.spec(n, w, h)) for n in self.wrist_cameras)
         self.kinds = frozenset({"named_joint_target", "gripper", "cartesian_pose", "cartesian_delta"})
         self.capabilities = Capabilities("laundry", "newton", robot, self.kinds,
             frozenset({"proprioception", *(["rgb"] if self.cameras else [])}), True, False, True,
@@ -69,7 +68,7 @@ class NewtonLaundryBackend(RoboticsBackend):
                 "camera": "Mounted external ideal pinhole RGB, 69 degree horizontal FOV; no depth channel claimed.",
                 "cloth": "Sewn Style3D cloth; partitioned contact reaction to finite-mass robot, one-tick delay.",
                 "qualification": "Not an autonomous folding solver.",
-                **({"wrist_cameras": wrist_camera.note(self.wrist_cameras.values())} if self.wrist_cameras else {})})
+                "wrist_cameras": wrist_camera.note(self.wrist_cameras)})
 
     def reset(self, *, seed=None, options=None):
         if seed is not None or options:
@@ -232,7 +231,7 @@ class NewtonLaundryBackend(RoboticsBackend):
     def render(self, *, label="interactive"):
         name = "room" if label in ("interactive", "http") else label
         if name not in ("room", "bench", "cloth", "overhead", "bench_rgb", "bimanual",
-                        "handling_detail", "fabric", "edge_wide", *self.wrist_cameras.values()):
+                        "handling_detail", "fabric", "edge_wide", *self.wrist_cameras):
             raise ValueError("Unknown camera")
         return self._render((name,))[name]
 

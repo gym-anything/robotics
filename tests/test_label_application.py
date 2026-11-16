@@ -262,6 +262,19 @@ class LabelContractTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             NewtonLabelApplicationBackend(cameras=("carton_top",))       # privileged diagnostic camera
 
+    def test_a_session_that_names_no_cameras_gets_the_wrist_cameras(self):
+        # on every task: the bench camera, then the wrist D405 of each arm (single-fr3: the left pedestal's)
+        import inspect
+        from robots.catalog import ENVIRONMENTS
+        from gym_anything_robotics.backends import newton_label_application as B
+        self.assertIsNone(inspect.signature(B.NewtonLabelApplicationBackend).parameters["cameras"].default)
+        both = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
+        expected = {"dual-fr3": both, "dual-panda": both, "single-fr3": ("bench_rgb", "left_wrist_rgb")}
+        self.assertEqual(set(expected), set(ENVIRONMENTS["label-application"]["aliases"]))
+        for robot, cams in expected.items():
+            with self.subTest(robot=robot):
+                self.assertEqual(B.default_cameras(robot), cams)
+
     def test_doctor_declares_label_dependencies(self):
         from gym_anything_robotics.launch import LaunchSpec, doctor
         rep = doctor(LaunchSpec("label-application"))

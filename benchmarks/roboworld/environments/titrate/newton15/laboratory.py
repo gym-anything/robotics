@@ -15,6 +15,8 @@ class Laboratory:
     apparatus: Apparatus
     materials: dict = field(default_factory=dict)
     robot_joints: dict = field(default_factory=dict)
+    # Policy cameras fixed to a moving body (wrist_camera.install): name -> body, pose in its frame, horizontal FOV.
+    camera_mounts: dict = field(default_factory=dict)
 
     def box(self, name, pos, size, material, body=-1, density=0., mu=.4, quaternion=(0., 0., 0., 1.)):
         _, wp = require_newton()
@@ -242,6 +244,9 @@ def build_laboratory(config=None):
         shape = b.add_shape_cylinder(-1, xform=wp.transform(eye+distance*back, wp.quat(*rotation)),
             radius=radius, half_height=depth/2, cfg=b.ShapeConfig(density=0.), label=name)
         lab.materials[shape] = material
+    # The D405 on every arm's wrist, after every other shape; it also records lab.camera_mounts.
+    from .wrist_camera import install
+    install(lab)
     model = b.finalize(device=c.device)
     configure(model)
     model.set_gravity((0., 0., -9.80665))

@@ -80,6 +80,15 @@ def _session_folder():
     return base/uuid.uuid4().hex
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none. The station camera frames the work point (the wall marks, the
+    vise under the spindle); the kit trolley, the shop vacuum and the parts lying on the bench are outside it, so the
+    overview follows, in which every tool and part of every task is visible (looked at for both presets); then the
+    wrist D405 of every arm (a single arm is on the right mount)."""
+    wrists = ("right_wrist_rgb",) if robot.startswith("single-") else ("left_wrist_rgb", "right_wrist_rgb")
+    return ("station_rgb", "overview_rgb", *wrists)
+
+
 def min_command_s(resolutions, samples=16):
     """Shortest policy command (s) for cameras of these (width, height): drilling/runtime_cost.min_command_s."""
     return runtime_cost.min_command_s(resolutions, samples)
@@ -118,11 +127,7 @@ class NewtonDrillingBackend(RoboticsBackend):
         except ValueError as exc:
             raise UnsupportedConfigurationError(str(exc)) from exc
         single = robot.startswith("single-")
-        # the station camera frames the work point (the wall marks, the vise under the spindle); the kit trolley, the
-        # shop vacuum and the parts lying on the bench are outside it, so the default observation adds the overview,
-        # in which every tool and part of every task is visible (looked at for both presets)
-        default_cams = ("station_rgb", "overview_rgb")
-        self.cameras = tuple(cameras if cameras is not None else default_cams)
+        self.cameras = tuple(cameras if cameras is not None else default_cameras(robot))
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; others are privileged diagnostics")
         if single and "left_wrist_rgb" in self.cameras:

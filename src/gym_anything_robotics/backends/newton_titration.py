@@ -16,8 +16,8 @@ from ..errors import ActionRejectedError, BackendProtocolError, UnsupportedActio
 from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
-# bench_rgb: the external stand camera (the default); panda_wrist_rgb: the D405 on the Panda's wrist, whose case and
-# bracket the arm carries only in a session that selects it (titrate/newton15/wrist_camera.py).
+# bench_rgb: the external stand camera; panda_wrist_rgb: the D405 on the Panda's wrist, whose case and bracket the arm
+# always carries (titrate/newton15/wrist_camera.py). A session that passes no cameras observes both.
 POLICY_CAMERAS = ("bench_rgb", "panda_wrist_rgb")
 WRIST_CAMERAS = ("panda_wrist_rgb",)
 
@@ -32,7 +32,7 @@ def _session_factory(contract):
 
 class NewtonTitrationBackend(RoboticsBackend):
     def __init__(self, *, robot="panda", apparatus_fixture=False, config=None, dt_s=None,
-                 cameras=("bench_rgb",), output_dir=None, renderer_options=None, recording=True,
+                 cameras=POLICY_CAMERAS, output_dir=None, renderer_options=None, recording=True,
                  liquid_numerics=None, reagents=None, liquid_trace_stride=20, variation_id=None, task='titration',
                  contract=None):
         if robot != "panda":
@@ -77,16 +77,12 @@ class NewtonTitrationBackend(RoboticsBackend):
                                                 "wrist camera is panda_wrist_rgb")
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras)-set(POLICY_CAMERAS):
             raise ValueError(f"Policy observations support {', '.join(POLICY_CAMERAS)}; diagnostic views use render")
-        wrist = tuple(c for c in self.cameras if c in WRIST_CAMERAS)
-        # Only a session that selects the wrist camera builds the arm with its D405; the others pass no keyword.
-        self._session_options = {"wrist_cameras": wrist} if wrist else {}
         make_session = _session_factory(self.contract)
         from titrate.newton15.geometry_api import GeometryCatalog
         from titrate.newton15.session_trace import SessionTrace
         from whiteboard.storage import Store
         self.session = make_session(config, task=self.task, dt_s=effective_dt, output_dir=output_dir,
-            renderer_options=renderer_options, liquid_numerics=liquid_numerics, reagents=reagents,
-            **self._session_options)
+            renderer_options=renderer_options, liquid_numerics=liquid_numerics, reagents=reagents)
         self._liquid_numerics = liquid_numerics
         self._recording = recording
         self.session.trace_liquid_stride = liquid_trace_stride
@@ -102,18 +98,11 @@ class NewtonTitrationBackend(RoboticsBackend):
         width, height = options.get("width", 1280), options.get("height", 720)
         self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "authored_external_stand", width, height, width,
             height, (.036, .036*height/width), (.028, .028))}
-        notes = {}
-        if wrist:
-            from titrate.newton15.wrist_camera import HORIZONTAL_FOV_DEG, MOUNT_FRAME, NATIVE_RESOLUTION_PX
-            focal = .018/math.tan(math.radians(HORIZONTAL_FOV_DEG/2))
-            for name in wrist:
-                self.camera_specs[name] = CameraSpec(name, MOUNT_FRAME, width, height, *NATIVE_RESOLUTION_PX,
-                    (.036, .036*height/width), (focal, focal))
-            notes["wrist_camera"] = (f"panda_wrist_rgb: Intel RealSense D405 on panda_link7 ({MOUNT_FRAME}), "
-                f"{HORIZONTAL_FOV_DEG:g} deg HFOV, native {NATIVE_RESOLUTION_PX[0]}x{NATIVE_RESOLUTION_PX[1]}, ideal "
-                "RGB pinhole rendered from the simulated state; no depth or noise model. Selecting it adds the D405's "
-                "60 g case and the 10 g aluminium bracket to the arm as mass and collision geometry; a session "
-                "without it builds the arm without them")
+        from titrate.newton15.wrist_camera import HORIZONTAL_FOV_DEG, MOUNT_FRAME, NATIVE_RESOLUTION_PX
+        focal = .018/math.tan(math.radians(HORIZONTAL_FOV_DEG/2))
+        for name in WRIST_CAMERAS:
+            self.camera_specs[name] = CameraSpec(name, MOUNT_FRAME, width, height, *NATIVE_RESOLUTION_PX,
+                (.036, .036*height/width), (focal, focal))
         environment_id = "titration-apparatus-fixture" if apparatus_fixture else "titration-coupled-development"
         self.capabilities = Capabilities(environment_id, "newton", "panda",
             frozenset({"named_joint_target"}), frozenset({"proprioception", *(["rgb"] if self.cameras else [])}),
@@ -123,7 +112,11 @@ class NewtonTitrationBackend(RoboticsBackend):
                 "clock": "Explicit exact physics ticks; no background advancement",
                 "joint_units": "panda_joint1..7: radians; panda_finger_joint1/2: metres",
                 "camera": "Ideal calibrated external RGB; 36 mm virtual filmback, not a claim about measured sensor dimensions",
-                **notes})
+                "wrist_camera": (f"panda_wrist_rgb: Intel RealSense D405 on panda_link7 ({MOUNT_FRAME}), "
+                    f"{HORIZONTAL_FOV_DEG:g} deg HFOV, native {NATIVE_RESOLUTION_PX[0]}x{NATIVE_RESOLUTION_PX[1]}, "
+                    "ideal RGB pinhole rendered from the simulated state; no depth or noise model. The arm always "
+                    "carries the D405's 60 g case and the 10 g aluminium bracket as mass and collision geometry, "
+                    "whichever cameras the session observes")})
 
     def get_state(self):
         try:
@@ -191,7 +184,7 @@ class NewtonTitrationBackend(RoboticsBackend):
             candidate = make_session(config, task=task, dt_s=self.session.dt_s,
                 output_dir=self.output/'episodes'/uuid.uuid4().hex,
                 renderer_options=self.session.renderer_options,
-                liquid_numerics=self._liquid_numerics, reagents=reagents, **self._session_options)
+                liquid_numerics=self._liquid_numerics, reagents=reagents)
             candidate.trace_liquid_stride = self.session.trace_liquid_stride
             geometry = GeometryCatalog(candidate.world)
             trace = SessionTrace(candidate, candidate.output/'physics_trace.sqlite3') if self._recording else None

@@ -10,16 +10,12 @@ keeps as start_info (env.prepare_start calls it). setup builds the partly applie
 (ladder.build_start) and returns what that returns. laid_label(seed, carton_W) is where the label was stuck down and
 which areas of it are lifted (layouts.partly_applied, which draws them with this file's LAYOUT_TAG, label_side, YAW_DEG
 and lifted_areas), kept by scene.parcel as task_geometry["laid_label"]. payload(seed) is the barcode payload printed for
-the seed (layouts.payload calls it): a carrier tracking number, as on press-down, whose bench this task shares.
-WRIST_CAMERAS: the backend turns the wrist cameras on by default."""
+the seed (layouts.payload calls it): a carrier tracking number, as on press-down, whose bench this task shares."""
 from label_application.layouts import _flap, _flaps_ok, _rng
 
 TASK = "smooth-corner"
 LAYOUT_TAG = 9      # layouts.partly_applied's generator: _rng(seed, LAYOUT_TAG)
 YAW_DEG = 2.        # the label is turned up to +-YAW_DEG on the carton
-# wrist cameras on by default (backend): the close view of the lifted areas from the ready pose's hand above the
-# label (a 4 x 6 in label is ~90 x 60 px overhead)
-WRIST_CAMERAS = True
 
 
 def payload(seed):

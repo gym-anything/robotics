@@ -180,12 +180,12 @@ def _import_engine():
 class WeldingEnv:
     TCP_EVERY = 50                 # ticks between TCP motion samples (settled check)
 
-    def __init__(self, config=None, *, output_dir=None, use_cache=True, robot_cameras=()):
+    def __init__(self, config=None, *, output_dir=None, use_cache=True):
         self.config = c = config or Config()
         self.lock = threading.RLock()
         self.output = output_dir
         _import_engine()
-        self.world = World(c, robot_cameras=robot_cameras)
+        self.world = World(c)
         self.generation = 0
         self.steps = 0
         self.start_state = START_STATE.get(c.task, "loose")
@@ -253,9 +253,8 @@ class WeldingEnv:
         Recorded in assisted_log ('settle')."""
         w = self.world
         rig = w.scene.robot_setup.to_dict()["id"]
-        # a wrist D405 adds its mass to the arm: that robot keeps its own settled state, apart from the bare rig's
-        key = "+".join([rig] + [f"{arm}-d405" for arm in w.scene.wrist_d405])
-        path = _cache_dir()/f"rest_{physics_hash()}_{key}.pkl"
+        # the rig and the physics source decide the robot (each FR3 or Panda arm with its wrist D405: scene.py)
+        path = _cache_dir()/f"rest_{physics_hash()}_{rig}.pkl"
         placed = bool(use_cache and path.is_file() and place_robot_state(w, pickle.loads(path.read_bytes())))
         t0, limit = time.perf_counter(), REST_LIMIT_MM
         w.settle(SETTLE_S)

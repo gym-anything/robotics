@@ -16,8 +16,7 @@ from ..policy_access import PolicyAccess
 from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observation
 
 POLICY_CAMERAS = ("bench_rgb", "left_wrist_rgb", "right_wrist_rgb")
-# wrist cameras on by default (see __init__): these tasks, and a benchmark task whose setup.py sets WRIST_CAMERAS
-WRIST_CAMERA_TASKS = ("tube-wrap",)
+SCENE_DEFAULT = ("bench_rgb",)     # the scene camera a session gets when it names no cameras
 DIAGNOSTIC = ("room", "printer", "closeup", "scanner", "carton_top", "carton_side", "tube", "part")
 
 
@@ -40,10 +39,19 @@ def _session_folder():
     return base/uuid.uuid4().hex
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none: SCENE_DEFAULT, then the wrist D405 of each arm of the robot
+    setup (single-fr3: its one arm, on the left pedestal) in POLICY_CAMERAS order. `robot` is an offered alias."""
+    from robots.catalog import for_environment
+    arms = tuple(for_environment("label-application", robot).to_dict()["instances"])
+    onboard = tuple(c for c in POLICY_CAMERAS if c.endswith("_wrist_rgb") and c.split("_")[0] in arms)
+    return SCENE_DEFAULT + tuple(c for c in onboard if c not in SCENE_DEFAULT)
+
+
 class NewtonLabelApplicationBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-fr3", preset="parcel", task=None, seed=0, device=None, config=None,
                  cameras=None, output_dir=None, renderer_options=None, recording=True):
-        from label_application.config import Config, TASKS, task_setup
+        from label_application.config import Config, TASKS
         from label_application.env import LabelEnv
         from label_application.kinematics import ArmKinematics
         from robots.catalog import ENVIRONMENTS
@@ -60,14 +68,8 @@ class NewtonLabelApplicationBackend(RoboticsBackend):
         if device is not None:
             values["device"] = device
         self.config = Config(**values)
-        if cameras is None:
-            # per-task default: the overhead camera, plus the wrist cameras where the overhead view cannot show what the
-            # task asks the robot to look at: tube-wrap, the manufacturer label's edge for 0-2 mm registration (the
-            # 13 mm tube is ~11 px across overhead); a benchmark task's setup.py WRIST_CAMERAS says what for its task
-            cameras = ("bench_rgb",)
-            if self.config.task in WRIST_CAMERA_TASKS or getattr(task_setup(self.config.task), "WRIST_CAMERAS", False):
-                cameras += ("left_wrist_rgb",) if robot == "single-fr3" else ("left_wrist_rgb", "right_wrist_rgb")
-        self.cameras = tuple(cameras)
+        # none named: the bench camera and the wrist D405 of each arm the robot setup has (default_cameras)
+        self.cameras = tuple(cameras) if cameras is not None else default_cameras(robot)
         self.last_timing = {}                                  # per-operation timing breakdown
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; others are privileged diagnostics")

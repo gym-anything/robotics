@@ -6,16 +6,13 @@ it has just printed (GS1_LABEL: env.make_art prints the GS1 layout), carrying th
 setup(world) gets the task's world (world.World), built and not yet settled, and returns the start information LabelEnv
 keeps as start_info (env.prepare_start calls it). gs1-case-side starts from the printer's presented label as the scene
 builds it: setup constructs nothing and returns {}. CARTON_Y is read by scene.parcel; payload(seed) is the barcode
-payload printed for the seed (layouts.payload calls it); WRIST_CAMERAS: the backend turns the wrist cameras on by
-default."""
+payload printed for the seed (layouts.payload calls it)."""
 from label_application.layouts import _rng, gs1_check_digit
 
 # seed 0: the SSCC's GS1 mod-10 check digit is 4
 PAYLOAD = "00106141410000004154"
 CARTON_Y = -.12         # m: the carton's place across the bench (scene.parcel; the other carton tasks' is -0.06)
 GS1_LABEL = True        # the printer prints the GS1 logistic label (artwork.shipping_label gs1)
-# wrist cameras on by default (backend): the long side faces (the robot-facing one is not visible overhead at all)
-WRIST_CAMERAS = True
 
 
 def payload(seed):

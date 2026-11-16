@@ -115,6 +115,23 @@ class OffersAndForceLaw(unittest.TestCase):
         self.assertEqual(HEAD_CAMERA["pitch"], 0.8307767239493009)
         self.assertEqual(HEAD_CAMERA["hfov_deg"], 69.)
 
+    def test_a_session_that_names_no_cameras_gets_the_robots_own(self):
+        # the station camera, then the wrist D405 of each arm the setup has, or the G1's head D435; the default
+        # session's first command floor stays inside what check_renderer_options accepts
+        import inspect
+        from gym_anything_robotics.backends import newton_syringe_handling as B
+        self.assertIsNone(inspect.signature(B.NewtonSyringeHandlingBackend).parameters["cameras"].default)
+        expected = {"dual-fr3": ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "dual-panda": ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "single-fr3": ("station_rgb", "right_wrist_rgb"), "g1": ("station_rgb", "head_rgb")}
+        from robots.catalog import ENVIRONMENTS
+        self.assertEqual(set(expected), set(ENVIRONMENTS["syringe-handling"]["aliases"]))
+        for robot, cams in expected.items():
+            with self.subTest(robot=robot):
+                self.assertEqual(B.default_cameras(robot), cams)
+                o = B.check_renderer_options(None, len(cams))
+                self.assertLessEqual(B.min_command_s(len(cams), o["width"], o["height"], o["samples"]), B.FLOOR_MAX_S)
+
     def test_cameras_a_setup_does_not_carry_are_refused_before_anything_is_built(self):
         import tempfile
         from gym_anything_robotics.backends.newton_syringe_handling import NewtonSyringeHandlingBackend

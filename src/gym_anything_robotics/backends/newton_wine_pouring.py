@@ -50,6 +50,13 @@ SURFACE_S = 0.6
 PHYSICS_RATIO_MAX = 70.0
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none: the station camera and the wrist D405 of every arm (a single
+    arm is on the left mount)."""
+    wrists = ("left_wrist_rgb",) if robot.startswith("single-") else ("left_wrist_rgb", "right_wrist_rgb")
+    return ("station_rgb", *wrists)
+
+
 def min_command_s(n_cameras, width=1280, height=720, samples=24):
     """Shortest policy command (s) whose wall time, physics plus the observation it returns, stays under 200x wall/sim:
     T * PHYSICS_RATIO_MAX + obs <= 200 T. Rounded up to whole milliseconds; never below MIN_POLICY_COMMAND_S. With three
@@ -84,7 +91,7 @@ class NewtonWinePouringBackend(RoboticsBackend):
         if device is not None:
             values["device"] = device
         self.config = Config.from_dict(values)
-        self.cameras = tuple(cameras if cameras is not None else ("station_rgb",))
+        self.cameras = tuple(cameras if cameras is not None else default_cameras(robot))
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(POLICY_CAMERAS):
             raise ValueError(f"Policy cameras are {POLICY_CAMERAS}; others are privileged diagnostics")
         if robot.startswith("single-") and "right_wrist_rgb" in self.cameras:

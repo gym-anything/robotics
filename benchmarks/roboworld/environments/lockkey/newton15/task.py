@@ -12,6 +12,7 @@ INSTRUCTION = (
 
 DESCRIPTION = INSTRUCTION + (
     " Operate the Panda through joint, gripper or Cartesian commands. The lock and chest are fixed to the workbench. "
-    "The external bench_rgb camera and joint encoders are the policy's observations. "
+    "The external bench_rgb camera, the left_wrist_rgb camera on the Panda's wrist and joint encoders are the "
+    "policy's observations. "
     "The shared action interface names this single arm 'left'; there is no right arm."
 )

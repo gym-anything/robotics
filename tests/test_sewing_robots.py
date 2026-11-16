@@ -1,9 +1,9 @@
 """Contract checks for sewing's four robot deployments (dual-fr3, dual-panda, single-fr3, g1) through the real backend
 constructor over a stub world shaped like each deployment's (sewing/world.py): the arms a command may name, the action
-kinds (a gripper only where there is a Franka Hand), the policy cameras (each Franka arm's wrist D405 only when
-selected) and the refusal of the diagnostic ones, the machine's control box on any arm, a command to an arm the rig does
-not have, selection by alias, rig id, rig path and setup object, and the environment's doctor. No GPU, no physics, no
-renderer (seconds).
+kinds (a gripper only where there is a Franka Hand), the policy cameras (every one by default, each Franka arm's wrist
+D405 among them; the world the same whichever are selected) and the refusal of the diagnostic ones, the machine's
+control box on any arm, a command to an arm the rig does not have, selection by alias, rig id, rig path and setup
+object, and the environment's doctor. No GPU, no physics, no renderer (seconds).
 """
 
 import tempfile
@@ -54,16 +54,14 @@ def _backend(robot, cameras=None):
 
 class DeploymentContractTest(unittest.TestCase):
     EXPECTED = {  # arms a command may name, gripper offered, default policy cameras
-        "dual-fr3": (("left", "right"), True, ("operator", "overhead", "needle")),
-        "dual-panda": (("left", "right"), True, ("operator", "overhead", "needle")),
-        "single-fr3": (("right",), True, ("operator", "overhead", "needle")),
+        "dual-fr3": (("left", "right"), True, ("operator", "overhead", "needle", "left_wrist_rgb", "right_wrist_rgb")),
+        "dual-panda": (("left", "right"), True, ("operator", "overhead", "needle", "left_wrist_rgb",
+                                                 "right_wrist_rgb")),
+        "single-fr3": (("right",), True, ("operator", "overhead", "needle", "right_wrist_rgb")),
         "g1": (("left", "right", "left+waist", "right+waist"), False, ("head_rgb", "overhead", "needle")),
     }
-    # every policy camera a deployment offers: the defaults and each Franka arm's wrist D405
-    OFFERED = {"dual-fr3": ("operator", "overhead", "needle", "left_wrist_rgb", "right_wrist_rgb"),
-               "dual-panda": ("operator", "overhead", "needle", "left_wrist_rgb", "right_wrist_rgb"),
-               "single-fr3": ("operator", "overhead", "needle", "right_wrist_rgb"),
-               "g1": ("head_rgb", "overhead", "needle")}
+    # every policy camera a deployment offers (each Franka arm's wrist D405 among them): all in the default observation
+    OFFERED = {robot: cams for robot, (_, _, cams) in EXPECTED.items()}
 
     def test_arms_kinds_and_cameras_per_deployment(self):
         for robot, (arms, gripper, cams) in self.EXPECTED.items():
@@ -73,8 +71,7 @@ class DeploymentContractTest(unittest.TestCase):
                 self.assertEqual("gripper" in b.kinds, gripper)
                 self.assertTrue({"named_joint_target", "cartesian_pose", "cartesian_delta", "tool_io"} <= b.kinds)
                 self.assertEqual(b.policy_cameras, self.OFFERED[robot])
-                self.assertEqual(b.cameras, cams)              # the wrist cameras are not in the default observation
-                self.assertEqual(b.wrist_camera_arms, ())
+                self.assertEqual(b.cameras, cams)              # every policy camera in the default observation
                 pa = b.policy_access()
                 self.assertEqual([c.name for c in pa.cameras], list(cams))
                 self.assertEqual(pa.capabilities()["hardware"]["arms"], list(arms))
@@ -114,8 +111,6 @@ class DeploymentContractTest(unittest.TestCase):
     def test_each_franka_arm_offers_its_wrist_d405(self):
         import math
         from gym_anything_robotics.backends.newton_sewing import NewtonSewingBackend
-        from sewing.task_set_env import WristCameraConfig
-        from sewing.world import Config
         from gym_anything_robotics.types import CameraSpec
         focal = .018/math.tan(math.radians(87/2))
         for robot, cams in (("dual-fr3", ("left_wrist_rgb",)), ("dual-fr3", ("operator", "right_wrist_rgb")),
@@ -125,13 +120,7 @@ class DeploymentContractTest(unittest.TestCase):
                 build.return_value = _stub_env(robot)
                 b = NewtonSewingBackend(robot=robot, task="plain-seam", cameras=cams,
                                         output_dir=str(Path(tempfile.mkdtemp())/"session"))
-                arms = tuple(a for a in ("left", "right") if f"{a}_wrist_rgb" in cams)
-                self.assertEqual((b.cameras, b.wrist_camera_arms), (cams, arms))
-                config = build.call_args.args[0]                   # the world is built with those arms' D405
-                self.assertIs(type(config), WristCameraConfig)
-                self.assertEqual(config.wrist_camera_arms, arms)
-                self.assertEqual({k: getattr(config, k) for k in Config.__dataclass_fields__},
-                                 {k: getattr(b.config, k) for k in Config.__dataclass_fields__})
+                self.assertEqual(b.cameras, cams)
                 for name in cams:
                     if name.endswith("_wrist_rgb"):
                         self.assertEqual(b.camera_specs[name],
@@ -140,28 +129,34 @@ class DeploymentContractTest(unittest.TestCase):
                 self.assertEqual(b.capabilities.robot_cameras, cams)
                 self.assertEqual([c.name for c in b.policy_access().cameras], list(cams))
                 note = b.capabilities.notes["cameras"]
-                self.assertIn("the wrist camera adds the D405's 60 g case and the 10 g bracket to the arm when "
+                self.assertIn("each arm carries the D405's 60 g case and the 10 g bracket whether or not its camera is "
                               "selected", note)
-                self.assertIn(", ".join(f"{a}_wrist_rgb" for a in arms) + ": the RealSense D405", note)
+                wrists = [c for c in self.OFFERED[robot] if c.endswith("_wrist_rgb")]
+                self.assertIn(", ".join(wrists) + ": the RealSense D405", note)
 
-    def test_a_session_without_a_wrist_camera_builds_the_cell_without_a_d405(self):
+    def test_the_world_and_the_notes_do_not_depend_on_the_selected_cameras(self):
         from gym_anything_robotics.backends.newton_sewing import DIAGNOSTIC, NewtonSewingBackend
         from sewing.world import Config
-        for robot in self.EXPECTED:
-            for cams in (None, (), ("needle",), ("overhead", "needle")):
+        for robot, (_, _, offered) in self.EXPECTED.items():
+            built = []
+            for cams in (None, (), ("needle",), ("overhead", "needle"), offered[-1:], offered):
                 with self.subTest(robot=robot, cameras=cams), patch("sewing.task_set_env.make_environment") as build:
                     build.return_value = _stub_env(robot)
                     b = NewtonSewingBackend(robot=robot, task="plain-seam", cameras=cams,
                                             output_dir=str(Path(tempfile.mkdtemp())/"session"))
-                    self.assertIs(type(build.call_args.args[0]), Config)
-                    self.assertEqual(b.capabilities.notes["cameras"],
-                                     "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; no depth or "
-                                     "noise")
-                    # a wrist camera the session did not select is not in its scene: not a render label either
+                    self.assertEqual(b.cameras, offered if cams is None else cams)
+                    config = build.call_args.args[0]
+                    self.assertIs(type(config), Config)
+                    built.append((config, b.capabilities.notes["cameras"]))
+                    # every policy camera of the deployment is in its scene: a render label whichever are selected
                     with self.assertRaises(ValueError) as caught:
-                        b.render(label="right_wrist_rgb")
-                    self.assertEqual(str(caught.exception), "Render label must be one of "
-                                     f"{self.EXPECTED[robot][2] + DIAGNOSTIC}")
+                        b.render(label="bogus")
+                    self.assertEqual(str(caught.exception), f"Render label must be one of {offered + DIAGNOSTIC}")
+            self.assertEqual(len(set(map(repr, built))), 1, robot)
+            note = built[0][1]
+            self.assertTrue(note.startswith("Ideal pinhole RGB rendered by Isaac RTX from the simulated state; no "
+                                            "depth or noise"))
+            self.assertEqual("D405" in note, robot != "g1")
 
     def test_a_wrist_camera_of_an_arm_the_rig_lacks_is_refused_before_the_world_is_built(self):
         from gym_anything_robotics.backends.newton_sewing import NewtonSewingBackend
@@ -180,24 +175,26 @@ class DeploymentContractTest(unittest.TestCase):
                                                             "policy cameras are operator, overhead, needle, "
                                                             "right_wrist_rgb")
 
-    def test_the_square_plies_start_keeps_a_sessions_wrist_cameras(self):
-        from dataclasses import asdict
+    def test_the_cached_start_is_keyed_by_the_task_not_the_cameras(self):
+        from gym_anything_robotics.backends.newton_sewing import NewtonSewingBackend
         from sewing.env import start_path
         from sewing.task import task_setup
-        from sewing.task_set_env import SquareConfig, SquareWristCameraConfig, WristCameraConfig
-        from sewing.world import Config
-        setup = task_setup("square-plies").setup
-        plain = setup(None, Config(task="square-plies", robot="dual-fr3"))
-        self.assertIs(type(plain), SquareConfig)
-        wrist = setup(None, WristCameraConfig(task="square-plies", robot="dual-fr3", wrist_camera_arms=("left",)))
-        self.assertIs(type(wrist), SquareWristCameraConfig)
-        self.assertEqual(asdict(wrist), dict(asdict(plain), wrist_camera_arms=("left",)))
-        # every start with a D405 on an arm is cached apart from the start without it
-        keys = {start_path(c) for c in (plain, wrist, Config(task="load", robot="dual-fr3"),
-                                         WristCameraConfig(task="load", robot="dual-fr3", wrist_camera_arms=("left",)),
-                                         WristCameraConfig(task="load", robot="dual-fr3",
-                                                           wrist_camera_arms=("left", "right")))}
-        self.assertEqual(len(keys), 5)
+        from sewing.task_set_env import SquareConfig
+        keys = {}
+        for task in ("load", "square-plies"):
+            for cams in (None, (), ("left_wrist_rgb",), ("operator", "right_wrist_rgb")):
+                with self.subTest(task=task, cameras=cams), patch("sewing.task_set_env.make_environment") as build:
+                    build.return_value = _stub_env("dual-fr3")
+                    NewtonSewingBackend(robot="dual-fr3", task=task, cameras=cams,
+                                        output_dir=str(Path(tempfile.mkdtemp())/"session"))
+                    config = build.call_args.args[0]
+                    if task == "square-plies":                         # the world's Config (its setup.py)
+                        config = task_setup(task).setup(None, config)
+                        self.assertIs(type(config), SquareConfig)
+                    keys.setdefault(task, set()).add(start_path(config))
+        # one start per task whatever the cameras; the slipped start never the aligned load start's
+        self.assertEqual([len(k) for k in keys.values()], [1, 1])
+        self.assertNotEqual(keys["load"], keys["square-plies"])
 
     def test_an_arm_the_rig_lacks_is_refused_before_any_tick(self):
         from gym_anything_robotics.actions import ToolIO

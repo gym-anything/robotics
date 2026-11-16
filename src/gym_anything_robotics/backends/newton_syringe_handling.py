@@ -154,6 +154,7 @@ class SyringePolicyAccess(PolicyAccess):
 POLICY_CAMERAS = ("station_rgb", "overhead_rgb", "left_wrist_rgb", "right_wrist_rgb", "bay_rgb", "head_rgb")
 HEAD_CAMERA_NOTE = ("head_rgb: the G1 head D435 mount (URDF d435_joint on the torso link), 69 deg HFOV, native "
                     "1280x720, ideal pinhole; part of the G1 model, it adds no body")
+SCENE_DEFAULT = ("station_rgb",)   # the scene camera a session gets when it names no cameras
 DIAGNOSTIC = ("hero", "front", "front_left", "side", "tray_close", "work_close")
 SESSION_MARKER = ".gar-syringe-handling-session"
 SESSION_RETENTION = 20
@@ -313,6 +314,16 @@ def check_renderer_options(options, n_cameras=1, policy_samples=None, default_sa
     return out
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none: SCENE_DEFAULT, then every camera the robot setup carries (the
+    wrist D405 of each of its arms, the G1's head D435) in POLICY_CAMERAS order. `robot` is an offered alias."""
+    from syringe_handling.robot_setup import arms_of
+    arms = arms_of(robot)
+    onboard = tuple(c for c in POLICY_CAMERAS if (c == "head_rgb" and robot == "g1")
+                    or (c.endswith("_wrist_rgb") and c.split("_")[0] in arms))
+    return SCENE_DEFAULT + tuple(c for c in onboard if c not in SCENE_DEFAULT)
+
+
 class NewtonSyringeHandlingBackend(RoboticsBackend):
     def __init__(self, *, robot="dual-fr3", preset=None, task=None, seed=0, variant=None, contract=None, device=None, config=None,
                  cameras=None, output_dir=None, renderer_options=None, recording=True):
@@ -356,7 +367,8 @@ class NewtonSyringeHandlingBackend(RoboticsBackend):
             raise UnsupportedConfigurationError("syringe-handling physics supports device=cpu only; rendering engine is selected separately")
         samples_given = values.get("policy_samples")          # None unless the launch's config named it
         self.config = Config.from_dict(values)
-        self.cameras = tuple(cameras if cameras is not None else ("station_rgb",))
+        # none named: the station camera and the robot's own cameras (default_cameras)
+        self.cameras = tuple(cameras) if cameras is not None else default_cameras(robot)
         # head_rgb is the G1's: an arm setup refuses it by name, and the cameras an arm setup lists leave it out
         offered = POLICY_CAMERAS if robot == "g1" else tuple(c for c in POLICY_CAMERAS if c != "head_rgb")
         if robot != "g1" and "head_rgb" in self.cameras:

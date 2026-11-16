@@ -78,77 +78,91 @@ class TightenContractTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 NewtonTightenCodexBackend(cameras=cameras)
 
-    def test_wrist_camera_mounts_the_reference_d405_on_link7(self):
+    def test_every_arm_carries_the_reference_d405_on_link7(self):
         import sys
         from unittest.mock import patch
         from tighten_codex.config import Config
-        from tighten_codex.env import TightenEnv
         from tighten_codex.scene import add_wrist_cameras
         added = []
         builder = SimpleNamespace(add_shape_box=lambda body, **kw: added.append((body, kw)) or 300 + len(added))
-        wrist = lambda body: SimpleNamespace(frames={"wrist": {"body": body, "position_m": [0., 0., 0.],
-                                                               "orientation_wxyz": [1., 0., 0., 0.]}})
+        wrist = lambda body, position=(0., 0., 0.): SimpleNamespace(frames={"wrist": {
+            "body": body, "position_m": list(position), "orientation_wxyz": [1., 0., 0., 0.]}})
         rig = SimpleNamespace(instances={"left": wrist(17), "right": wrist(26)})
         newton = SimpleNamespace(ModelBuilder=SimpleNamespace(ShapeConfig=lambda **kw: kw))
         warp = SimpleNamespace(transform=lambda pos, rot: pos, quat_identity=lambda: (0, 0, 0, 1))
         materials = {}
         with patch.dict(sys.modules, {"newton": newton, "warp": warp}):
-            cameras = add_wrist_cameras(builder, materials, rig, Config(), ("right_wrist_rgb",))
-            with self.assertRaises(ValueError):
-                add_wrist_cameras(builder, materials, SimpleNamespace(instances={"right": wrist(26)}), Config(),
-                                  ("left_wrist_rgb",))
-        self.assertEqual(TightenEnv.wrist_cameras, {})     # a session without a wrist camera mounts nothing
-        self.assertEqual(set(cameras), {"right_wrist_rgb"})
-        camera = cameras["right_wrist_rgb"]
-        self.assertEqual((camera["body"], camera["shapes"], camera["fov_deg"], camera["native_px"]),
-                         (26, (301, 302), 87., (1280, 720)))
-        self.assertEqual((camera["eye"], camera["target"], camera["up"]),
-                         ((.075, -.012, .083), (.075, -.012, .283), (0., 1., 0.)))
-        self.assertEqual(materials, {301: "camera_dark", 302: "aluminum"})
+            cameras = add_wrist_cameras(builder, materials, rig, Config())
+            one_arm = add_wrist_cameras(SimpleNamespace(add_shape_box=lambda body, **kw: 400), {},
+                                        SimpleNamespace(instances={"right": wrist(26)}), Config())
+            with self.assertRaisesRegex(ValueError, "not its link 7 origin"):
+                add_wrist_cameras(builder, {}, SimpleNamespace(instances={"left": wrist(17, (0., 0., .1))}),
+                                  Config())
+        self.assertEqual(list(cameras), ["left_wrist_rgb", "right_wrist_rgb"])
+        self.assertEqual(list(one_arm), ["right_wrist_rgb"])
+        for name, body, shapes in (("left_wrist_rgb", 17, (301, 302)), ("right_wrist_rgb", 26, (303, 304))):
+            camera = cameras[name]
+            self.assertEqual((camera["body"], camera["shapes"], camera["fov_deg"], camera["native_px"]),
+                             (body, shapes, 87., (1280, 720)))
+            self.assertEqual((camera["eye"], camera["target"], camera["up"]),
+                             ((.075, -.012, .083), (.075, -.012, .283), (0., 1., 0.)))
+        self.assertEqual(materials, {301: "camera_dark", 302: "aluminum", 303: "camera_dark", 304: "aluminum"})
         for (body, kw), label, centre, half, mass in (
-                (added[0], "right/camera_case", (.075, 0., .07), (.021, .021, .0115), .060),
-                (added[1], "right/camera_bracket", (.05, 0., .046), (.025, .013, .003), .010)):
+                (added[0], "left/camera_case", (.075, 0., .07), (.021, .021, .0115), .060),
+                (added[1], "left/camera_bracket", (.05, 0., .046), (.025, .013, .003), .010),
+                (added[2], "right/camera_case", (.075, 0., .07), (.021, .021, .0115), .060),
+                (added[3], "right/camera_bracket", (.05, 0., .046), (.025, .013, .003), .010)):
             self.assertEqual((body, kw["label"], kw["xform"], (kw["hx"], kw["hy"], kw["hz"])),
-                             (26, label, centre, half))
+                             (17 if label.startswith("left/") else 26, label, centre, half))
             self.assertAlmostEqual(kw["cfg"]["density"] * 8 * half[0] * half[1] * half[2], mass, places=12)
             self.assertEqual((kw["cfg"]["mu"], kw["cfg"]["ke"], kw["cfg"]["kd"]), (.45, 2e6, 150.))
 
-    def test_wrist_camera_spec_and_note_only_when_selected(self):
+    def test_default_cameras_are_the_fixed_and_every_wrist_camera(self):
         import tempfile
         from unittest.mock import patch
+        from robots import resolve
         from gym_anything_robotics.backends.newton_tighten_codex import NewtonTightenCodexBackend
         built = []
 
         class Env:
-            def __init__(self, config, setup, wrist_cameras=()):
-                built.append(wrist_cameras)
-                self.rig = SimpleNamespace(instances={"left": None, "right": None})
+            # The camera list is not an argument: every arm of the setup carries its D405.
+            def __init__(self, config, setup):
+                built.append(setup)
+                arms = resolve(setup).to_dict()["instances"]
+                self.rig = SimpleNamespace(instances=dict.fromkeys(arms))
                 self.setup, self.lock, self.renderer = setup, __import__("threading").RLock(), None
-                self.wrist_cameras = {name: {"fov_deg": 87., "native_px": (1280, 720)} for name in wrist_cameras}
+                self.wrist_cameras = {f"{arm}_wrist_rgb": {"fov_deg": 87., "native_px": (1280, 720)} for arm in arms}
 
             def close(self):
                 pass
 
-        default_notes = {"clock", "control", "gripper", "camera", "fasteners", "fixture", "history"}
+        notes = {"clock", "control", "gripper", "camera", "fasteners", "fixture", "history", "wrist_camera"}
+        backends = {}
         with tempfile.TemporaryDirectory() as tmp, patch("tighten_codex.env.TightenEnv", Env), \
                 patch("tighten_codex.catalog.Catalog", lambda env: None), \
                 patch("tighten_codex.kinematics.ArmKinematics", lambda rig, setup: None):
-            plain = NewtonTightenCodexBackend(output_dir=Path(tmp) / "plain", recording=False)
-            both = NewtonTightenCodexBackend(output_dir=Path(tmp) / "both", recording=False,
-                                             cameras=("bench_rgb", "right_wrist_rgb", "left_wrist_rgb"))
-        self.assertEqual(built, [(), ("left_wrist_rgb", "right_wrist_rgb")])
-        self.assertEqual(plain.capabilities.robot_cameras, ("bench_rgb", "overview_rgb"))
-        self.assertEqual(set(plain.capabilities.notes), default_notes)
-        self.assertEqual(set(both.capabilities.notes), default_notes | {"wrist_camera"})
-        self.assertIn("60 g case", both.capabilities.notes["wrist_camera"])
-        self.assertIn("10 g aluminium bracket", both.capabilities.notes["wrist_camera"])
+            for key, robot, cameras in (("dual", "dual-fr3", None), ("panda", "dual-panda", None),
+                                        ("single", "single-fr3", None), ("none", "dual-fr3", ()),
+                                        ("both", "dual-fr3", ("bench_rgb", "right_wrist_rgb", "left_wrist_rgb"))):
+                backends[key] = NewtonTightenCodexBackend(robot=robot, output_dir=Path(tmp) / key, recording=False,
+                                                          **({} if cameras is None else {"cameras": cameras}))
+        self.assertEqual(built, ["tighten-fr3", "tighten-panda", "tighten-fr3-single", "tighten-fr3", "tighten-fr3"])
+        for key, expected in (("dual", ("bench_rgb", "overview_rgb", "left_wrist_rgb", "right_wrist_rgb")),
+                              ("panda", ("bench_rgb", "overview_rgb", "left_wrist_rgb", "right_wrist_rgb")),
+                              ("single", ("bench_rgb", "overview_rgb", "right_wrist_rgb")), ("none", ()),
+                              ("both", ("bench_rgb", "right_wrist_rgb", "left_wrist_rgb"))):
+            capabilities = backends[key].capabilities
+            self.assertEqual(capabilities.robot_cameras, expected)
+            self.assertEqual(tuple(spec.name for spec in capabilities.camera_specs), expected)
+            self.assertEqual(set(capabilities.notes), notes)
+        note = backends["none"].capabilities.notes["wrist_camera"]
+        for text in ("60 g case", "10 g aluminium bracket", "Every arm carries", "whichever cameras"):
+            self.assertIn(text, note)
         focal = .018 / math.tan(math.radians(87 / 2))
-        for spec in both.capabilities.camera_specs[1:]:
+        for spec in backends["both"].capabilities.camera_specs[1:]:
             self.assertEqual((spec.mount_frame, spec.width_px, spec.height_px, spec.native_width_px,
                               spec.native_height_px, spec.sensor_size_m, spec.focal_length_m),
                              ("link7_d405_envelope", 960, 540, 1280, 720, (.036, .036 * 540 / 960), (focal, focal)))
-        self.assertEqual([s.name for s in both.capabilities.camera_specs],
-                         ["bench_rgb", "right_wrist_rgb", "left_wrist_rgb"])
 
     def test_duration_must_be_whole_ticks(self):
         from gym_anything_robotics.backends.newton_tighten_codex import NewtonTightenCodexBackend

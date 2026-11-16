@@ -278,9 +278,10 @@ class NewtonSweepingBackend(NewtonClassroomArrangementBackend):
 
     @staticmethod
     def _cameras(cameras, allowed, robot_name):
-        """The session's policy cameras, checked before the room is built (not after the 40 s build and settle)."""
+        """The session's policy cameras, checked before the room is built (not after the 40 s build and settle); by
+        default every camera the robot carries (head, wrists and base, in the order of `allowed`)."""
         if cameras is None:
-            return ("head_rgb",)
+            return tuple(allowed)
         if isinstance(cameras, (str, bytes)) or not isinstance(cameras, (list, tuple)) or not all(isinstance(c, str) for c in cameras):
             raise UnsupportedConfigurationError(f"cameras must be a list of camera names from {', '.join(allowed)} (got {cameras!r})")
         names = tuple(cameras)
@@ -393,7 +394,7 @@ class NewtonSweepingBackend(NewtonClassroomArrangementBackend):
                                "for 1 s and the base is held for that second",
             "base_sensors": "robot_status.base_sensors: IMU (angular rate, specific force; base frame) and two corner LIDAR "
                             "scans (275 deg, 0.5 deg steps, 0.05-10 m); base RGB cameras front_rgb, rear_rgb, left_rgb, "
-                            "right_rgb (D455, 90 deg) are selectable policy cameras",
+                            "right_rgb (D455, 90 deg) are policy cameras, on by default",
             "cameras": "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; no depth or noise model",
             "keyboard": "keyboard chords: W/S/A/D/R/F move the chosen arm's hand along world y/x/z, I/K/J/L/U/O rotate it, Q/E "
                         "close/open the fingers, H grips by force (G 10 N, default 35 N, B 70 N total), ALT slow, SHIFT fast; "

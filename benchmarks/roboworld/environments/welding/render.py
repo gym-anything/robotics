@@ -2291,9 +2291,9 @@ def export_scene(folder, frame, world_meta, extra_cameras=None):
     cam = _camera(stage, gb + "/weld_camera", wc_eye, wc_tgt, LY.WELD_CAMERA["hfov"], "policy", up=tuple(up))
     alias = UsdGeom.Xform.Define(stage, "/Cameras/weld_camera")
     alias.GetPrim().SetCustomDataByKey("mounted_camera_path", str(cam.GetPath()))
-    # ---- the robot cameras the session selected (scene.py): an arm's wrist D405 (its case, bracket and lenses on
-    # link7) and the G1's head D435; each camera under its body's prim, posed with it every frame, and an alias under
-    # /Cameras that names it (render_worker: mounted_camera_path)
+    # ---- the robot cameras (scene.py): each FR3 or Panda arm's wrist D405 (its case, bracket and lenses on link7) and
+    # the G1's head D435; each camera under its body's prim, posed with it every frame, and an alias under /Cameras
+    # that names it (render_worker: mounted_camera_path)
     mounted = world_meta.get("mounted_cameras", {})
     if any(name.endswith("_wrist_rgb") for name in mounted):
         from .scene import D405
@@ -2475,7 +2475,7 @@ def scene_meta(world):
                 weld_origin_in={"base_plate": (-sc.weld_origin_in_base).tolist(),
                                 "bracket": (-sc.weld_origin_in_bracket).tolist() if hasattr(sc, "weld_origin_in_bracket") else [0, 0, 0]})
     cams = getattr(sc, "cameras", None)
-    if cams:                                          # the selected robot cameras, by their body's label
+    if cams:                                          # the robot cameras, by their body's label
         labels = list(world.model.body_label)
         meta["mounted_cameras"] = {name: dict(c, body=labels[c["body"]]) for name, c in cams.items()}
     return meta

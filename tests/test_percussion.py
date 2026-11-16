@@ -111,6 +111,18 @@ class CommandMinimum(unittest.TestCase):
             self.assertGreaterEqual(b.last_timing["wall_per_sim"], ratio + 50.0)
         self.assertEqual(self._backend(("station_rgb", "left_wrist_rgb", "right_wrist_rgb")).min_command_now(), 0.01)
 
+    def test_default_cameras_are_the_robots_own(self):
+        from gym_anything_robotics.backends import newton_percussion as NP
+        from percussion.config import Config
+        from robots.catalog import ENVIRONMENTS
+        expected = {"dual-fr3": ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "dual-panda": ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "single-fr3": ("station_rgb", "right_wrist_rgb"),       # one arm, on the right mount
+                    "g1": ("head_rgb",)}
+        self.assertEqual({a: NP.default_cameras(a) for a in ENVIRONMENTS["percussion"]["aliases"]}, expected)
+        for alias, cameras in expected.items():                       # the 10 ms minimum at the default samples
+            self.assertEqual(NP.min_command_s(len(cameras), 1280, 720, Config().policy_samples), 0.01, alias)
+
     def test_shorter_command_is_refused_with_the_minimum(self):
         from gym_anything_robotics.errors import ActionRejectedError
         b = self._backend()

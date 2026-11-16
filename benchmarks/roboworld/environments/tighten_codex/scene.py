@@ -1027,23 +1027,18 @@ D405_PARTS = (("camera_case", (.075, 0., .07), (.021, .021, .0115), .060, "camer
 D405_VIEW = {"eye": (.075, -.012, .083), "target": (.075, -.012, .283), "up": (0., 1., 0.)}
 
 
-def add_wrist_cameras(builder, materials, rig, config, names):
-    """Mount the D405 of each selected wrist camera ("<arm>_wrist_rgb") on that arm's wrist link (link 7): its 60 g
+def add_wrist_cameras(builder, materials, rig, config):
+    """Mount the D405 of every arm's wrist camera ("<arm>_wrist_rgb") on that arm's wrist link (link 7): its 60 g
     case and 10 g aluminium bracket as collision boxes with the scene's contact law, labelled under the arm
-    ("<arm>/camera_case"), so contact with them is robot contact. Only the selected cameras' arms get one, after every
-    scene and task shape, so an arm without a wrist camera keeps its catalog mass and geometry and every other shape
-    keeps its index. Returns {name: camera} (link 7 body, D405 shapes, pose in the link 7 frame, sensor data)."""
+    ("<arm>/camera_case"), so contact with them is robot contact. Every arm carries one, whichever cameras a session
+    observes; they are added after every scene and task shape, so every other shape keeps its index. Returns
+    {name: camera} (link 7 body, D405 shapes, pose in the link 7 frame, sensor data)."""
     import newton
     import warp as wp
     from robots.catalog import model
-    offered = {f"{arm}_wrist_rgb": arm for arm in rig.instances}
-    if set(names) - set(offered):
-        raise ValueError(f"Wrist cameras of this setup are {', '.join(offered)}")
     rgb = model("d405").to_dict()["sensors"]["rgb"]
     cameras = {}
-    for name, arm in offered.items():
-        if name not in names:
-            continue
+    for arm in rig.instances:
         frame = rig.instances[arm].frames["wrist"]
         if any(frame["position_m"]) or list(frame["orientation_wxyz"]) != [1., 0., 0., 0.]:
             raise ValueError(f"The {arm} wrist frame is not its link 7 origin")
@@ -1056,6 +1051,7 @@ def add_wrist_cameras(builder, materials, rig, config, names):
                                       hx=half[0], hy=half[1], hz=half[2], cfg=cfg, label=f"{arm}/{part}")
             materials[i] = material
             shapes.append(i)
-        cameras[name] = dict(body=frame["body"], shapes=tuple(shapes), fov_deg=float(rgb["horizontal_fov_deg"]),
-                             native_px=tuple(rgb["native_resolution_px"]), **D405_VIEW)
+        cameras[f"{arm}_wrist_rgb"] = dict(body=frame["body"], shapes=tuple(shapes),
+                                           fov_deg=float(rgb["horizontal_fov_deg"]),
+                                           native_px=tuple(rgb["native_resolution_px"]), **D405_VIEW)
     return cameras

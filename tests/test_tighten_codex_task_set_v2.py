@@ -73,6 +73,7 @@ def fake(env_class, task, seed=0, start=False, contract=CONTRACT):
     env.items.update(rail=0, bracket=1, sensor=2, flag=3, flag_joint=9, flag_center_z_m=1.083)
     env.model = SimpleNamespace(joint_q_start=Arr([0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]))
     env.builder = SimpleNamespace(joint_label=["horizontal_profile_slot_travel"])
+    env.wrist_cameras = {"left_wrist_rgb": {}, "right_wrist_rgb": {}}     # every arm's D405
     env._bracket_origin = np.array([.013, .095, 1.075])
     body = np.array([[.14, .1, 1.0955, 0, 0, 0, 1], [*env._bracket_origin, 0, 0, 0, 1],
                      [.2655, .08, 1.088, 0, 0, 0, 1], [.2655 + flag_home(env.config), -.063, .934, 0, 0, 0, 1]])

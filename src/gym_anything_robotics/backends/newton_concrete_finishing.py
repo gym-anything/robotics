@@ -273,7 +273,7 @@ class NewtonConcreteFinishingBackend(NewtonSweepingBackend):
                                "for 1 s and the base is held for that second",
             "base_sensors": "robot_status.base_sensors: IMU (angular rate, specific force; base frame) and two corner LIDAR "
                             "scans (275 deg, 0.5 deg steps, 0.05-10 m); base RGB cameras front_rgb, rear_rgb, left_rgb, "
-                            "right_rgb (D455, 90 deg) are selectable policy cameras",
+                            "right_rgb (D455, 90 deg) are policy cameras, on by default",
             "cameras": "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; no depth or noise model",
             "keyboard": "keyboard chords: W/S/A/D/R/F move the chosen arm's hand along world y/x/z, I/K/J/L/U/O rotate it, Q/E "
                         "close/open the fingers, H grips by force (G 10 N, default 35 N, B 70 N total), ALT slow, SHIFT fast; "

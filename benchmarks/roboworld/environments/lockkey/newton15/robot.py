@@ -18,8 +18,8 @@ def add_robot(builder, c, materials):
     for name, spec in addresses.items():
         if "finger" not in name:
             spec["velocity_limit"] *= LOCK_OPERATION_SPEED
-    # The D405 wrist camera, only when the session selects it (pencap/newton15/wrist_camera.py); its case and
-    # bracket touch the scene like the workshop furniture (scene.py).
+    # The D405 wrist camera (pencap/newton15/wrist_camera.py), named left_wrist_rgb as the actions call this arm
+    # 'left'; its case and bracket touch the scene like the workshop furniture (scene.py).
     install(builder, "panda", newton.ModelBuilder.ShapeConfig(gap=c.contact_gap, mu=.4, ke=c.contact_ke,
-        kd=c.contact_kd, mu_torsional=0., mu_rolling=0.), materials)
+        kd=c.contact_kd, mu_torsional=0., mu_rolling=0.), materials, "left_wrist_rgb")
     return addresses

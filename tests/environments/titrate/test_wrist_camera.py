@@ -1,5 +1,5 @@
-"""Wrist D405 policy camera (panda_wrist_rgb): selection, refusal, the accessory's geometry and mass, the mounted
-render camera, and that a session without it builds the released laboratory.
+"""Wrist D405 policy camera (panda_wrist_rgb): the default camera list, selection, refusal, the accessory's geometry
+and mass, the mounted render camera, and that every laboratory with the robot carries the D405.
 
 Only TitrationWristModelTest builds Newton models (CPU); it needs the pinned Panda assets and is skipped without them.
 """
@@ -60,21 +60,26 @@ class BackendCameraTest(unittest.TestCase):
         from gym_anything_robotics.backends.newton_titration import NewtonTitrationBackend
         return NewtonTitrationBackend(apparatus_fixture=True, recording=False, **kwargs)
 
-    def test_default_and_bench_only_sessions_are_unchanged(self):
+    def test_default_and_explicit_camera_lists_build_the_same_session(self):
         bench = CameraSpec("bench_rgb", "authored_external_stand", 1280, 720, 1280, 720, (.036, .036*720/1280),
                            (.028, .028))
-        for cameras, specs in ((None, (bench,)), (("bench_rgb",), (bench,)), ((), ())):
+        focal = .018/math.tan(math.radians(87/2))
+        wrist = CameraSpec("panda_wrist_rgb", "link7_d405_envelope", 1280, 720, 1280, 720, (.036, .036*720/1280),
+                           (focal, focal))
+        for cameras, specs in ((None, (bench, wrist)), (("bench_rgb",), (bench,)), (("panda_wrist_rgb",), (wrist,)),
+                               ((), ())):
             b = self.backend(**({} if cameras is None else {'cameras': cameras}))
-            self.assertNotIn('wrist_cameras', Session.instances[-1].kwargs)
+            self.assertEqual(b.capabilities.robot_cameras, tuple(spec.name for spec in specs))
             self.assertEqual(b.capabilities.camera_specs, specs)
             self.assertEqual(b.policy_access().cameras, specs)
-            self.assertNotIn('wrist_camera', b.capabilities.notes)
+            self.assertIn('wrist_camera', b.capabilities.notes)
+            # The camera list is not a session argument: every session builds the arm with its D405.
+            self.assertNotIn('wrist_cameras', Session.instances[-1].kwargs)
             b.reset(options={'variation_id': 3})
             self.assertNotIn('wrist_cameras', Session.instances[-1].kwargs)
 
-    def test_wrist_camera_spec_session_and_reset(self):
-        b = self.backend(cameras=("bench_rgb", "panda_wrist_rgb"), renderer_options={'width': 640, 'height': 480})
-        self.assertEqual(Session.instances[-1].kwargs['wrist_cameras'], ("panda_wrist_rgb",))
+    def test_wrist_camera_spec_and_note(self):
+        b = self.backend(renderer_options={'width': 640, 'height': 480})
         focal = .018/math.tan(math.radians(87/2))
         wrist = CameraSpec("panda_wrist_rgb", "link7_d405_envelope", 640, 480, 1280, 720, (.036, .036*480/640),
                            (focal, focal))
@@ -83,11 +88,8 @@ class BackendCameraTest(unittest.TestCase):
         self.assertEqual(b.policy_access().cameras[1], wrist)
         self.assertEqual(b.capabilities.camera_specs[0].name, "bench_rgb")
         note = b.capabilities.notes['wrist_camera']
-        for text in ("D405", "87 deg", "1280x720", "60 g case", "10 g", "without it"):
+        for text in ("D405", "87 deg", "1280x720", "60 g case", "10 g", "always carries", "whichever cameras"):
             self.assertIn(text, note)
-        # A reset to another variation builds the new session with the same accessory.
-        b.reset(options={'variation_id': 7})
-        self.assertEqual(Session.instances[-1].kwargs['wrist_cameras'], ("panda_wrist_rgb",))
 
     def test_absent_arm_and_unknown_cameras_are_refused_before_building(self):
         for cameras in (("left_wrist_rgb",), ("bench_rgb", "right_wrist_rgb"), ("panda_wrist_rgb", "left_wrist_rgb")):
@@ -100,8 +102,10 @@ class BackendCameraTest(unittest.TestCase):
 
 
 class Lab:
-    def __init__(self, robots):
-        self.builder = NS(_gar_robots={arm: NS(frames={'wrist': {'body': body}}) for arm, body in robots.items()})
+    def __init__(self, robots=None):
+        # A laboratory without the robot has no _gar_robots (robots.backends.newton sets it).
+        self.builder = NS() if robots is None else NS(
+            _gar_robots={arm: NS(frames={'wrist': {'body': body}}) for arm, body in robots.items()})
         self.boxes = []
 
     def box(self, name, pos, size, material, body=-1, density=0.):
@@ -111,7 +115,7 @@ class Lab:
 class InstallTest(unittest.TestCase):
     def test_reference_case_bracket_and_optics_on_the_wrist_link(self):
         lab = Lab({'panda': 18})
-        mounts = wrist_camera.install(lab, ("panda_wrist_rgb",))
+        mounts = wrist_camera.install(lab)
         case, bracket = lab.boxes
         # drilling/scene.py _wrist_camera: centres, half extents, 60 g case and 10 g bracket on link7.
         self.assertEqual((case['name'], case['body'], case['pos'], case['material']),
@@ -128,12 +132,15 @@ class InstallTest(unittest.TestCase):
                                                           up=(0., 1., 0.), horizontal_fov_deg=87.)})
         self.assertIs(lab.camera_mounts, mounts)
 
-    def test_only_selected_arms_and_no_absent_arm(self):
-        lab = Lab({'panda': 18})
-        self.assertEqual(wrist_camera.install(lab, ()), {})
-        self.assertEqual(lab.boxes, [])
-        with self.assertRaisesRegex(ValueError, "No arm carries left_wrist_rgb"):
-            wrist_camera.install(Lab({'panda': 18}), ("left_wrist_rgb",))
+    def test_every_arm_and_none_without_the_robot(self):
+        lab = Lab({'left': 9, 'right': 18})
+        self.assertEqual(set(wrist_camera.install(lab)), {"left_wrist_rgb", "right_wrist_rgb"})
+        self.assertEqual([(box['name'], box['body']) for box in lab.boxes],
+                         [("left_camera_case", 9), ("left_camera_bracket", 9), ("right_camera_case", 18),
+                          ("right_camera_bracket", 18)])
+        lab = Lab()
+        self.assertEqual(wrist_camera.install(lab), {})
+        self.assertEqual((lab.boxes, lab.camera_mounts), ([], {}))
 
 
 class SessionCameraNamesTest(unittest.TestCase):
@@ -219,16 +226,18 @@ def panda_assets():
 
 @unittest.skipUnless(panda_assets(), "needs Newton and the pinned Panda assets")
 class TitrationWristModelTest(unittest.TestCase):
-    """CPU build: the wrist model is the released model plus two shapes on panda_link7 and 70 g on that link."""
+    """CPU build: the laboratory is the one without the D405 plus two shapes on panda_link7 and 70 g on that link."""
 
     @classmethod
     def setUpClass(cls):
         from titrate.newton15.mechanics import LaboratoryMechanics
         config = LabConfig(device="cpu")
-        cls.plain = LaboratoryMechanics(config)
-        cls.wrist = wrist_camera.WristCameraMechanics(config, ("panda_wrist_rgb",))
+        cls.wrist = LaboratoryMechanics(config)
+        # The same laboratory with the D405 left out, built only for this comparison.
+        with patch.object(wrist_camera, "install", lambda lab: {}):
+            cls.plain = LaboratoryMechanics(config)
 
-    def test_same_construction_and_released_model_plus_the_accessory(self):
+    def test_laboratory_is_the_one_without_the_d405_plus_the_accessory(self):
         plain, wrist = self.plain, self.wrist
         self.assertEqual(set(vars(plain)), set(vars(wrist)))
         self.assertEqual((wrist.model.body_count, wrist.model.joint_count), (plain.model.body_count,
@@ -251,4 +260,4 @@ class TitrationWristModelTest(unittest.TestCase):
         for name in ("body_q", "joint_q"):
             np.testing.assert_array_equal(getattr(plain.state, name).numpy(), getattr(wrist.state, name).numpy())
         self.assertEqual(wrist.lab.camera_mounts["panda_wrist_rgb"]["body"], link7)
-        self.assertFalse(hasattr(plain.lab, "camera_mounts"))
+        self.assertEqual(plain.lab.camera_mounts, {})

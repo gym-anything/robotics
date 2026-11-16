@@ -125,12 +125,25 @@ class DrillingBackendRuntimeTest(unittest.TestCase):
         self.addCleanup(b.close)
         return b
 
-    def test_default_observation_is_station_and_overview(self) -> None:
+    def test_default_observation_is_station_overview_and_wrists(self) -> None:
         from drilling import runtime_cost as rc
         b = self.build()
-        self.assertEqual(b.cameras, ("station_rgb", "overview_rgb"))   # the overview shows the kit and the bench parts
-        self.assertEqual(b.min_command_s, rc.min_command_s([STATION, OVERVIEW], b.config.policy_samples))
+        # the overview shows the kit and the bench parts; each arm carries its wrist D405
+        self.assertEqual(b.cameras, ("station_rgb", "overview_rgb", "left_wrist_rgb", "right_wrist_rgb"))
+        self.assertEqual(b.capabilities.robot_cameras, b.cameras)
+        self.assertEqual(b.min_command_s, rc.min_command_s(NATIVE[4], b.config.policy_samples))
         b.close()
+
+    def test_default_observation_of_a_single_arm(self) -> None:
+        from drilling import runtime_cost as rc
+        from gym_anything_robotics.backends.newton_drilling import NewtonDrillingBackend
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        b = NewtonDrillingBackend(robot="single-fr3", preset="bench", task="press-drill", seed=0,
+                                  output_dir=tmp.name + "/session", recording=False)
+        self.addCleanup(b.close)
+        self.assertEqual(b.cameras, ("station_rgb", "overview_rgb", "right_wrist_rgb"))   # the arm on the right mount
+        self.assertEqual(b.min_command_s, rc.min_command_s(NATIVE[3], b.config.policy_samples))
 
     def test_floor_is_the_same_for_every_idle_release(self) -> None:
         """No setting of renderer_options idle_release_s can put a worker start inside a policy command (a live session

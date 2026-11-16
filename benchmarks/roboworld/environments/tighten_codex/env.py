@@ -28,10 +28,8 @@ class TightenEnv:
     # this past its angle at that click (loosening; a seated screw cannot back
     # off by itself). Recorded after-click back-rotation: <= 1.76 mrad.
     MIXED_BACKOFF_TOLERANCE_RAD = .010
-    # Mounted D405 wrist cameras by name (scene.add_wrist_cameras); none unless the session selects them.
-    wrist_cameras = {}
 
-    def __init__(self, config=None, robot_setup="tighten-fr3", wrist_cameras=()):
+    def __init__(self, config=None, robot_setup="tighten-fr3"):
         import newton
         import warp as wp
         from newton.solvers import SolverMuJoCo
@@ -40,9 +38,8 @@ class TightenEnv:
         self.lock = threading.RLock()
         self.builder, self.items, self.materials, self.rig, self.setup = build(
             self.config, robot_setup)
-        # Selected wrist cameras only: each mounts its arm's D405 (scene.add_wrist_cameras).
-        self.wrist_cameras = add_wrist_cameras(self.builder, self.materials, self.rig, self.config,
-                                               wrist_cameras) if wrist_cameras else {}
+        # Every arm's D405 wrist camera by name (scene.add_wrist_cameras), whichever cameras a session observes.
+        self.wrist_cameras = add_wrist_cameras(self.builder, self.materials, self.rig, self.config)
         self.bearing_targets={}
         for name in self.screws:
             target=("sensor_mount_ear",) if name.startswith("sensor_") else (
@@ -1046,8 +1043,7 @@ class TightenEnv:
                   "screw_lock":{n:[l["locked_at"],l["slide_at"]] for n,l in self._screw_lock.items()},
                   "clamp_stick":[st["locked_at"] for st in self._clamp_stick],
                   "head_touched":dict(self._head_touched)}
-            if self.wrist_cameras:
-                meta["wrist_cameras"]=sorted(self.wrist_cameras)
+            meta["wrist_cameras"]=sorted(self.wrist_cameras)
             return arrays,meta
 
     def restore(self, arrays, meta):

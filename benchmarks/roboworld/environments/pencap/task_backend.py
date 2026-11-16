@@ -16,7 +16,7 @@ from .tasks import DEFAULT_TASK, INSTRUCTIONS, validate
 
 
 class NewtonPenCapTaskBackend(NewtonPenCapBackend):
-    def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=("bench_rgb",),
+    def __init__(self, *, robot="dual-panda", config=None, device=None, cameras=POLICY_CAMERAS,
                  output_dir=None, renderer_options=None, recording=True, task="seat-cap", contract=None):
         from pencap.newton15.config import Config
         from pencap.task_env import TaskPenCapEnv
@@ -45,14 +45,12 @@ class NewtonPenCapTaskBackend(NewtonPenCapBackend):
                              "labels")
         if self.cameras and config.scene != "studio":
             raise ValueError("Mounted policy camera requires the studio scene")
-        # The D405 of a wrist camera is built on its arm only when the session selects that camera.
-        self.wrist_cameras = {arm: f"{arm}_wrist_rgb" for arm in ("left", "right")
-                              if f"{arm}_wrist_rgb" in self.cameras}
+        # Each arm carries its D405 whichever cameras the session selects (wrist_camera.py).
+        self.wrist_cameras = wrist_camera.NAMES
         self.options = dict(renderer_options or {})
         self.output = Path(output_dir or Path(__file__).resolve().parent/"output"/uuid.uuid4().hex)
         self.output.mkdir(parents=True, exist_ok=False)
-        with wrist_camera.selected(self.wrist_cameras):
-            self.env = TaskPenCapEnv(config, task)
+        self.env = TaskPenCapEnv(config, task)
         self.catalog, self.ik = Catalog(self.env), Kinematics()
         self.images = deque()
         self.trace = None
@@ -63,7 +61,7 @@ class NewtonPenCapTaskBackend(NewtonPenCapBackend):
         focal = .018/math.tan(math.radians(69/2))
         self.camera_specs = {"bench_rgb": CameraSpec("bench_rgb", "floor_stand_D435_enclosure", width, height,
             1920, 1080, (.036, .036*height/width), (focal, focal))}
-        self.camera_specs.update((n, wrist_camera.spec(n, width, height)) for n in self.wrist_cameras.values())
+        self.camera_specs.update((n, wrist_camera.spec(n, width, height)) for n in self.wrist_cameras)
         self.kinds = frozenset({"named_joint_target", "gripper", "cartesian_pose", "cartesian_delta"})
         self.capabilities = Capabilities("pencap", "newton", robot, self.kinds,
             frozenset({"proprioception", *(["rgb"] if self.cameras else [])}), True, False, True,
@@ -76,7 +74,7 @@ class NewtonPenCapTaskBackend(NewtonPenCapBackend):
                 "camera": "Ideal pinhole, D435-like RGB FOV; filmback is virtual, not a measured sensor size",
                 "gripper": "0..40 mm per finger; fixed baseline 8 N effort limit; no effort action",
                 "joint_units": "panda_joint1..7 radians; panda_finger_joint1/2 metres",
-                **({"wrist_cameras": wrist_camera.note(self.wrist_cameras.values())} if self.wrist_cameras else {})})
+                "wrist_cameras": wrist_camera.note(self.wrist_cameras)})
 
     def policy_access(self):
         return replace(super().policy_access(), instruction=lambda: INSTRUCTIONS[self.env.task])

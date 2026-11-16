@@ -11,7 +11,7 @@ def add_robot(builder, arm, config, materials):
     sign=1 if arm=='left' else -1
     addresses = build(builder,'panda','laundry',instance=arm,
         placement=mount((0.,sign*config.robot_base_y,config.table_top),-sign*math.pi/2)).metadata['legacy_addresses']
-    # The D405 wrist camera, only on an arm whose camera the session selects (pencap/newton15/wrist_camera.py);
-    # its case and bracket touch the scene like the workstation furniture (scene.py).
+    # The D405 wrist camera on every arm (pencap/newton15/wrist_camera.py); its case and bracket touch the scene
+    # like the workstation furniture (scene.py).
     install(builder, arm, newton.ModelBuilder.ShapeConfig(mu=.4, ke=1e7, kd=1000., gap=.0003), materials)
     return addresses

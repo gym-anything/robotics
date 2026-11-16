@@ -127,6 +127,22 @@ class Discovery(unittest.TestCase):
         self.assertGreater(min_command_s(1), bare)                               # an observation: a longer floor
         self.assertGreater(min_command_s(4), min_command_s(1))                   # four cameras: a longer one still
 
+    def test_a_session_that_names_no_cameras_gets_the_wrist_cameras(self):
+        """The station camera, then the wrist D405 of each arm the setup has; the default session's first command floor
+        stays inside what check_renderer_options accepts."""
+        import inspect
+        from robots.catalog import ENVIRONMENTS
+        from gym_anything_robotics.backends import newton_ingredient_mixing as B
+        self.assertIsNone(inspect.signature(B.NewtonIngredientMixingBackend).parameters["cameras"].default)
+        both, right = ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"), ("station_rgb", "right_wrist_rgb")
+        expected = {"dual-fr3": both, "dual-panda": both, "single-fr3": right, "single-panda": right}
+        self.assertEqual(set(expected), set(ENVIRONMENTS["ingredient-mixing"]["aliases"]))
+        for robot, cams in expected.items():
+            with self.subTest(robot=robot):
+                self.assertEqual(B.default_cameras(robot), cams)
+                o = B.check_renderer_options(None, len(cams))
+                self.assertLessEqual(B.min_command_s(len(cams), o["width"], o["height"], o["samples"]), B.FLOOR_MAX_S)
+
     def test_command_floor_follows_the_measured_cost(self):
         """The floor in force keeps the fixed cost of a command, its physics and its observation under 200x for what
         was measured; it is never below the published one, grows with each of the three, and is capped."""

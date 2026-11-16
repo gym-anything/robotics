@@ -109,7 +109,8 @@ and in-process runs while another job held the GPU at 100 % utilisation and 18 G
   IDLE_RELEASE_S (authored) - how long a paused session keeps its render worker before it gives the GPU back
     (renderer_options idle_release_s overrides it; 0 at the pause, null never): long enough that the usual pause
     between two `gar benchmark` runs costs the owner no restart, short enough that a forgotten paused session frees
-    its 4.2-4.6 GB of GPU memory (measured with the two default cameras: 4,191 and 4,630 MiB) within ten minutes.
+    its 4.2-4.6 GB of GPU memory (measured with the station and overview cameras: 4,191 and 4,630 MiB) within ten
+    minutes.
 
 Validation: E15 times every configuration at these floors with six command kinds (Cartesian commands to far poses
 among them), one session at a time and several sessions at once, and reports per case the commands over the limit,

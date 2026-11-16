@@ -8,8 +8,8 @@
 - a cheap real build per deployment: the backend over the real world built rigid-only (Config(cloth=False): the
   robots, table and machine casting, no cloth, no machine model, no start state), for the FR3 pair, the single FR3,
   the Panda pair and the G1, checked for the contract facts test_sewing_robots.py checks over its stand-in world, and
-  the stand-in world's shape checked against the real one; the wrist D405 a selected wrist camera builds on its arm,
-  and the G1's head camera.
+  the stand-in world's shape checked against the real one; the wrist D405 every arm carries whichever cameras are
+  selected, and the G1's head camera.
 
 The real builds run on the CPU (the rigid model and MuJoCo are on the host; nothing touches the GPU without cloth) in
 seconds; a deployment whose locked robot assets are not installed is skipped (resolved as sewing/doctor.py does). The
@@ -17,6 +17,7 @@ physics class at the end (a cloth session switching variations) is skipped unles
 repository's convention for GPU tests.
 """
 
+import contextlib
 import json
 
 import numpy as np
@@ -621,9 +622,11 @@ class RigidBuildContractTest(unittest.TestCase):
             self.assertEqual("gripper" in b.kinds, gripper)
             self.assertTrue({"named_joint_target", "cartesian_pose", "cartesian_delta", "tool_io"} <= b.kinds)
             self.assertEqual((b.policy_cameras, b.cameras), (DeploymentContractTest.OFFERED[robot], cams))
-            # no wrist D405 without its camera: the robot-mounted cameras are the G1's head camera only
-            self.assertEqual(set(w.scene.cameras), {"head_rgb"} if robot == "g1" else set())
-            self.assertFalse([s for s in w.model.shape_label if "_camera_" in s])
+            # the robot-mounted cameras: the G1's head camera, or each arm's wrist D405 with its case and bracket
+            g1 = robot == "g1"
+            self.assertEqual(set(w.scene.cameras), {"head_rgb"} if g1 else {f"{a}_wrist_rgb" for a in arms})
+            self.assertEqual(sorted(s for s in w.model.shape_label if "_camera_" in s),
+                             [] if g1 else sorted(f"{a}_camera_{p}" for a in arms for p in ("case", "bracket")))
             pa = b.policy_access()
             caps = pa.capabilities()
             self.assertEqual([c.name for c in pa.cameras], list(cams))
@@ -671,32 +674,37 @@ class RigidBuildContractTest(unittest.TestCase):
 
 
 class WristCameraBuildTest(unittest.TestCase):
-    """The wrist D405 in the real rigid-only world: built on link7 of exactly the arms whose wrist camera the session
-    selects (sewing/scene.py WRIST_D405: the case and the bracket at the reference pose and size, 60 g and 10 g), the
-    camera mounted on that link, nothing else of the model different from the same session without it; the G1's head
+    """The wrist D405 in the real rigid-only world: built on link7 of every arm whichever cameras the session selects
+    (sewing/scene.py WRIST_D405: the case and the bracket at the reference pose and size, 60 g and 10 g) after every
+    other shape, the camera mounted on that link, nothing else of the model different from the arms without it (the
+    scene built with Scene._wrist_camera switched off), and the same model for every camera selection; the G1's head
     camera on its torso link's D435 frame."""
 
-    def _pair(self, robot, cameras):
+    ARRAYS = ("body_mass", "body_inertia", "body_com", "shape_transform", "shape_scale", "shape_body",
+              "shape_collision_group", "shape_flags")
+
+    def _build(self, robot, cameras, bare=False):
         reason = _missing_assets(robot)
         if reason:
             self.skipTest(reason)
-        plain, wrist = _rigid_backend(robot=robot, cameras=None), _rigid_backend(robot=robot, cameras=cameras)
-        self.addCleanup(plain.close)
-        self.addCleanup(wrist.close)
-        return plain.env.world.model, wrist
+        from sewing.scene import Scene
+        with patch.object(Scene, "_wrist_camera", lambda *args: None) if bare else contextlib.nullcontext():
+            b = _rigid_backend(robot=robot, cameras=cameras)
+        self.addCleanup(b.close)
+        return b
 
     def _check(self, robot, cameras):
         from sewing.scene import WRIST_D405
-        m0, b = self._pair(robot, cameras)
+        b, m0 = self._build(robot, cameras), self._build(robot, (), bare=True).env.world.model
         w = b.env.world
         m = w.model
-        arms = tuple(a for a in ("left", "right") if f"{a}_wrist_rgb" in cameras)      # in the rig's order
-        self.assertEqual(b.wrist_camera_arms, arms)
-        self.assertEqual(b.get_state()["config"]["wrist_camera_arms"], arms)
+        arms = tuple(w.rig.instances)                                  # every arm, in the rig's order
+        self.assertEqual(b.cameras, cameras)
         labels, shapes = list(m.body_label), list(m.shape_label)
         n0 = m0.shape_count
         self.assertEqual((m.body_count, m.shape_count), (m0.body_count, n0 + 2*len(arms)))
         self.assertEqual(shapes[:n0], list(m0.shape_label))
+        self.assertEqual(shapes[n0:], [f"{a}_camera_{p}" for a in arms for p in ("case", "bracket")])
         for k in ("shape_transform", "shape_scale", "shape_body", "shape_collision_group", "shape_flags"):
             np.testing.assert_array_equal(getattr(m, k).numpy()[:n0], getattr(m0, k).numpy(), err_msg=k)
         mass, mass0 = m.body_mass.numpy(), m0.body_mass.numpy()
@@ -717,6 +725,12 @@ class WristCameraBuildTest(unittest.TestCase):
                              (body, [.075, -.012, .083], [.075, -.012, .283], [0., 1., 0.], 87.))
         self.assertEqual(set(w.scene.cameras), {f"{a}_wrist_rgb" for a in arms})
         self.assertEqual(tuple(s.name for s in b.capabilities.camera_specs), tuple(cameras))
+        # the same model with the default cameras and with none
+        for other in (None, ()):
+            mo = self._build(robot, other).env.world.model
+            self.assertEqual((list(mo.body_label), list(mo.shape_label)), (labels, shapes))
+            for k in self.ARRAYS:
+                np.testing.assert_array_equal(getattr(mo, k).numpy(), getattr(m, k).numpy(), err_msg=k)
 
     def test_dual_fr3_one_wrist(self):
         self._check("dual-fr3", ("left_wrist_rgb",))
@@ -725,17 +739,18 @@ class WristCameraBuildTest(unittest.TestCase):
         self._check("dual-fr3", ("operator", "overhead", "needle", "left_wrist_rgb", "right_wrist_rgb"))
 
     def test_single_fr3(self):
-        self._check("single-fr3", ("right_wrist_rgb",))
+        self._check("single-fr3", ("needle",))
 
     def test_dual_panda(self):
         self._check("dual-panda", ("right_wrist_rgb", "left_wrist_rgb"))
 
-    def test_a_variation_switch_keeps_the_wrist_cameras(self):
-        _, b = self._pair("single-fr3", ("right_wrist_rgb",))
+    def test_a_variation_switch_keeps_the_d405(self):
+        b = self._build("single-fr3", ("right_wrist_rgb",))
         b.reset(options={"variation_id": 63})                      # square-plies seed 3: its own Config class
-        self.assertEqual(type(b.env.world.config).__name__, "SquareWristCameraConfig")
-        self.assertEqual(b.env.world.config.wrist_camera_arms, ("right",))
+        self.assertEqual(type(b.env.world.config).__name__, "SquareConfig")
         self.assertEqual(set(b.env.world.scene.cameras), {"right_wrist_rgb"})
+        self.assertEqual([s for s in b.env.world.model.shape_label if "_camera_" in s],
+                         ["right_camera_case", "right_camera_bracket"])
 
     def test_g1_head_camera_on_its_d435_frame(self):
         from scipy.spatial.transform import Rotation
@@ -753,7 +768,8 @@ class WristCameraBuildTest(unittest.TestCase):
         np.testing.assert_allclose(cam["target"], eye + .3*Rotation.from_euler("y", HEAD_CAMERA["pitch"]).apply(
             (1., 0., 0.)))
         self.assertEqual((cam["fov"], b.camera_specs["head_rgb"].mount_frame), (69., "g1_head_d435_mount"))
-        self.assertEqual(b.wrist_camera_arms, ())
+        self.assertEqual(set(w.scene.cameras), {"head_rgb"})
+        self.assertFalse([s for s in w.model.shape_label if "_camera_" in s])
 
 
 @unittest.skipUnless(os.environ.get("GAR_SEWING_PHYSICS_TESTS") == "1", "set GAR_SEWING_PHYSICS_TESTS=1 (GPU)")

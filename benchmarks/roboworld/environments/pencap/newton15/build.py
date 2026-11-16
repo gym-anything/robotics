@@ -13,7 +13,7 @@ def robot(builder, arm, position, yaw, contact, materials):
     from robots.backends.newton import add_robot as build, mount
     from .wrist_camera import install
     addresses = build(builder,'panda','pencap',instance=arm,placement=mount(position,yaw)).metadata['legacy_addresses']
-    # The D405 wrist camera, only on an arm whose camera the session selects (wrist_camera.py).
+    # The D405 wrist camera on every arm (wrist_camera.py).
     install(builder, arm, contact, materials)
     return addresses
 

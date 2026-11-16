@@ -2,11 +2,12 @@
 
 Physics, the evaluator and camera-less sessions need ruckig (the arms' jerk-limited trajectory generator: drilling/world.py
 imports it at module level, so without it no session starts), scipy (rotations, the inverse-kinematics least squares)
-and the locked FR3 and Panda descriptions of the shared robot catalogue. RGB observations (the default session has two
-cameras) also need the Isaac render interpreter (ISAAC_RENDER_PYTHON; drilling/render.py starts
-`python -m drilling.render_worker` with it), usd-core (pxr: the scene export), manifold3d (the drilled workpieces'
-meshes), trimesh (normals), pillow (the worker's white balance and the generated textures), the worker's modules
-beside drilling, the pinned dressing assets and about 4.6 GB of free GPU memory per session. A camera-less session
+and the locked FR3 and Panda descriptions of the shared robot catalogue. RGB observations (the default session has the
+station and overview cameras and each arm's wrist camera) also need the Isaac render interpreter (ISAAC_RENDER_PYTHON;
+drilling/render.py starts `python -m drilling.render_worker` with it), usd-core (pxr: the scene export), manifold3d
+(the drilled workpieces' meshes), trimesh (normals), pillow (the worker's white balance and the generated textures), the
+worker's modules beside drilling, the pinned dressing assets and about 4.6 GB of free GPU memory per session (measured
+with the station and overview cameras). A camera-less session
 (`--backend-options-json '{"cameras": []}'`) runs without any of the second group; its physics is on the CPU, and where
 a GPU is present its process still opens a CUDA context of about 0.5 GB (532 MiB per process measured with nvidia-smi:
 Warp initialises the device it finds).
@@ -21,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # files the Isaac render worker (python -m drilling.render_worker, PYTHONPATH = gym_anything_robotics.paths.worker_path()) loads at start-up
 WORKER_FILES = ("drilling/render_worker.py", "whiteboard/ipc.py", "whiteboard/usd_scene.py",
                 "gym_anything_robotics/render_lifecycle.py")
-RENDER_GPU_MIB = 4600.            # one render worker with the two default cameras (measured: 4.2-4.6 GB)
+RENDER_GPU_MIB = 4600.            # one render worker with the station and overview cameras (measured: 4.2-4.6 GB)
 PHYSICS = (("ruckig", "ruckig>=0.19 (the arms' jerk-limited trajectory generator; no session starts without it)"),
            ("scipy", "scipy (rotations, the inverse-kinematics solve, the evaluator)"),
            ("mujoco", "mujoco (collision queries of tools, parts and holes)"))

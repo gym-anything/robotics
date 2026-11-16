@@ -37,6 +37,19 @@ class Discovery(unittest.TestCase):
         self.assertGreaterEqual(min_command_s(1), 0.010)
         self.assertGreater(min_command_s(3), min_command_s(1))                    # three cameras: a longer floor
 
+    def test_default_cameras_are_the_station_and_the_wrists(self):
+        from gym_anything_robotics.backends.newton_wine_pouring import POLICY_CAMERAS, default_cameras, min_command_s
+        from robots.catalog import ENVIRONMENTS
+        expected = {"dual-fr3": ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "dual-panda": ("station_rgb", "left_wrist_rgb", "right_wrist_rgb"),
+                    "single-fr3": ("station_rgb", "left_wrist_rgb"),        # one arm, on the left mount
+                    "single-panda": ("station_rgb", "left_wrist_rgb")}
+        self.assertEqual({a: default_cameras(a) for a in ENVIRONMENTS["wine-pouring"]["aliases"]}, expected)
+        for cameras in expected.values():
+            self.assertLessEqual(set(cameras), set(POLICY_CAMERAS))
+        self.assertEqual(min_command_s(len(expected["dual-fr3"])), 0.020)       # 1280x720 at 24 samples
+        self.assertEqual(min_command_s(len(expected["single-fr3"])), 0.015)
+
     def test_robot_setup_objects(self):
         from robots.catalog import resolve, select_for_backend
         for alias, rig in (("dual-fr3", "pour-fr3"), ("single-fr3", "pour-fr3-single"), ("dual-panda", "pour-panda")):

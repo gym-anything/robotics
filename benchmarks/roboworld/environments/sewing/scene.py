@@ -1,7 +1,7 @@
 """Rigid scene of the sewing cell (Newton ModelBuilder -> MuJoCo on the CPU): floor, the K-leg table with the
 machine bed flush in its top, the machine head (pillar, arm, head, needle and presser bars, handwheel) as static
-colliders, the robot pedestal, and the robots from the shared catalog with the Franka Hand's URDF finger boxes (and
-the wrist D405 with its bracket on each arm whose wrist camera the session selects).
+colliders, the robot pedestal, and the robots from the shared catalog with the Franka Hand's URDF finger boxes and the
+wrist D405 with its bracket on each arm.
 
 The cloth, the needle, the feed dog and the presser foot live in the cloth solver (sewing/cloth.py, sewing/machine.py).
 Here the foot's shank and the needle bar are static keep-out colliders for the arms only (they never touch cloth in
@@ -27,8 +27,8 @@ HAND_HOUSING = dict(center=(0.0, 0.0, 0.035), half=(0.030, 0.102, 0.032))
 # Intel RealSense D405 on a Franka arm's wrist (link7 frame), the mount of drilling, label_application, wine_pouring,
 # syringe_handling, percussion and barcode_scanning: the case (centre, half extents; 42 x 42 x 23 mm, 60 g [read:
 # robots/attachments/d405]) and its aluminium bracket (10 g [estimate]), and the camera's optical centre looking along
-# link7's +z, the hand's approach (87 deg HFOV, 1280 x 720 native, ideal RGB pinhole). Built only on the arms whose
-# wrist camera the session selects (wrist_camera_arms of task_set_env.WristCameraConfig)
+# link7's +z, the hand's approach (87 deg HFOV, 1280 x 720 native, ideal RGB pinhole). Built on every arm, whichever
+# cameras the session selects
 WRIST_D405 = dict(case=((.075, 0., .07), (.021, .021, .0115), .060),
                   bracket=((.05, 0., .046), (.025, .013, .003), .010),
                   eye=(.075, -.012, .083), target=(.075, -.012, .283), up=(0., 1., 0.), hfov_deg=87.)
@@ -46,7 +46,7 @@ class Scene:
         self.finger_boxes = {}           # arm -> list of (body, xyz, quat_xyzw, half) in the finger body frame
         self.hand_bodies = {}            # arm -> hand body id
         self.hand_housing = {}           # arm -> (centre, half) of the hand body as the cloth sees it (hand frame)
-        self.cameras = {}                # robot-mounted cameras (the G1's head camera, the selected wrist cameras)
+        self.cameras = {}                # robot-mounted cameras (the G1's head camera, each arm's wrist camera)
         self.g1 = config.robot == "g1"
         self.room()
         self.machine()
@@ -132,12 +132,9 @@ class Scene:
                 self.materials[i] = "robot_" + self.arm_hw[name]["model"]
             if self.arm_hw[name].get("hand"):
                 self._fingers(name, handle)
-        # the D405 of each selected wrist camera (task_set_env.WristCameraConfig), after every other shape: the shapes
-        # of the cell without them keep their indices
-        wrist = getattr(self.c, "wrist_camera_arms", ())
+        # each arm's wrist D405, after every other shape
         for name, handle in self.rig_pending.instances.items():
-            if name in wrist:
-                self._wrist_camera(name, handle)
+            self._wrist_camera(name, handle)
 
     def _g1_robot(self):
         """Unitree G1 + two Dex3-1 hands standing on the floor in front of the table (g1.py; rig

@@ -5,8 +5,8 @@ The robot stands on the floor behind the table, facing the seam (-y), on its pos
 no pelvis support, no balance controller (as in the sewing, barcode-scanning and whiteboard environments). The light
 torch (welding/torch.py RM2 on G1_TORCH_MOUNT) is clamped to the back of the right Dex3 palm; the left Dex3 hand
 handles the part. Nothing here is task logic: the standing place, the ready posture over the controller profile's
-standing pose, the head camera (head_rgb, when the session selects it), the arm kinematics (IK computes joint targets
-only; the servos move the arm).
+standing pose, the head camera (head_rgb), the arm kinematics (IK computes joint targets only; the servos move the
+arm).
 
 Robot model: robots/models/g1/robot.json (pinned URDF g1_29dof_with_hand_rev_1_0, the Unitree URDF limits: shoulders
 and elbow 25 N m, wrist roll 25 N m, wrist pitch and yaw 5 N m) with the repository's standing G1 controller profile

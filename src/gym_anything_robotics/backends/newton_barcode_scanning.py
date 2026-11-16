@@ -21,6 +21,10 @@ from ..types import BackendStep, CameraSpec, Capabilities, ImageFrame, Observati
 
 POLICY_CAMERAS = ("cart_rgb", "left_wrist_rgb", "right_wrist_rgb")
 G1_POLICY_CAMERAS = ("head_rgb", "cart_rgb")       # the G1's head D435 (policy default) and the cart mast camera
+# the cameras each robot setup carries: a D405 on every Franka arm's wrist (single-fr3: its one arm on the left
+# mount), the G1's head D435
+ROBOT_CAMERAS = {"dual-fr3": ("left_wrist_rgb", "right_wrist_rgb"), "dual-panda": ("left_wrist_rgb", "right_wrist_rgb"),
+                 "single-fr3": ("left_wrist_rgb",), "g1": ("head_rgb",)}
 DIAGNOSTIC = ("room", "front", "tray", "slot", "side", "imager")
 SESSION_MARKER = ".gar-barcode-session"
 SESSION_RETENTION = 20
@@ -35,6 +39,13 @@ def _session_folder():
     for p in old[:max(0, len(old) - (SESSION_RETENTION - 1))]:
         shutil.rmtree(p, ignore_errors=True)
     return base/uuid.uuid4().hex
+
+
+def default_cameras(robot):
+    """The policy cameras of a session that names none: the cart mast camera (for the G1, its head D435) and then
+    every other camera the robot carries, in policy camera order."""
+    first = ("head_rgb",) if robot == "g1" else ("cart_rgb",)
+    return first + tuple(c for c in ROBOT_CAMERAS.get(robot, ()) if c not in first)
 
 
 
@@ -85,7 +96,7 @@ class NewtonBarcodeScanningBackend(RoboticsBackend):
         self.config = Config.from_dict(values)
         self.g1 = robot == "g1"
         self.policy_cameras = G1_POLICY_CAMERAS if self.g1 else POLICY_CAMERAS
-        self.cameras = tuple(cameras if cameras is not None else (("head_rgb",) if self.g1 else ("cart_rgb",)))
+        self.cameras = tuple(cameras if cameras is not None else default_cameras(robot))
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(self.policy_cameras):
             raise ValueError(f"Policy cameras are {self.policy_cameras}; others are privileged diagnostics")
         if robot == "single-fr3" and "right_wrist_rgb" in self.cameras:

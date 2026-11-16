@@ -48,6 +48,15 @@ def _session_folder():
     return base/uuid.uuid4().hex
 
 
+def default_cameras(robot):
+    """The policy cameras of a session that names none: the G1's head D435, or the station camera and the wrist D405
+    of every arm (a single arm is on the right mount)."""
+    if robot == "g1":
+        return ("head_rgb",)
+    wrists = ("right_wrist_rgb",) if robot.startswith("single-") else ("left_wrist_rgb", "right_wrist_rgb")
+    return ("station_rgb", *wrists)
+
+
 def min_command_s(n_cameras, width=1280, height=720, samples=24):
     """The session's minimum policy command (s), fixed when it starts: the shortest command whose wall time - physics
     plus the observation it returns - stays under 200x wall/sim with the reference costs (physics PHYSICS_RATIO_START,
@@ -85,7 +94,7 @@ class NewtonPercussionBackend(RoboticsBackend):
             raise UnsupportedConfigurationError(str(exc)) from exc
         g1 = robot == "g1"
         allowed = ("head_rgb",) if g1 else POLICY_CAMERAS[:3]
-        self.cameras = tuple(cameras if cameras is not None else (allowed[0],))
+        self.cameras = tuple(cameras if cameras is not None else default_cameras(robot))
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(allowed):
             raise ValueError(f"Policy cameras of {robot} are {allowed}; others are privileged diagnostics")
         if robot.startswith("single-") and "left_wrist_rgb" in self.cameras:  # noqa: E501

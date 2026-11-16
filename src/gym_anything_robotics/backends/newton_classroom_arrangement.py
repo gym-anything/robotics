@@ -97,7 +97,7 @@ class NewtonClassroomArrangementBackend(RoboticsBackend):
         self.arms = tuple(w.arms)
         self.ik = ArmKinematics(w)
         self.policy_cameras = tuple(c for c in POLICY_CAMERAS if c == "head_rgb" or c in BASE_CAMERAS or c.split("_")[0] in self.arms)
-        self.cameras = tuple(cameras if cameras is not None else ("head_rgb",))
+        self.cameras = tuple(cameras if cameras is not None else self.policy_cameras)   # default: every robot camera
         if len(set(self.cameras)) != len(self.cameras) or set(self.cameras) - set(self.policy_cameras):
             raise ValueError(f"Policy cameras are {self.policy_cameras}; others are privileged diagnostics")
         width, height = self.options.get("width", 640), self.options.get("height", 360)
@@ -144,7 +144,7 @@ class NewtonClassroomArrangementBackend(RoboticsBackend):
                              "render load) so that each command stays inside 200x wall/sim",
             "base_sensors": "robot_status.base_sensors: IMU (angular rate, specific force; base frame) and two corner LIDAR "
                             "scans (275 deg, 0.5 deg steps, 0.05-10 m); base RGB cameras front_rgb, rear_rgb, left_rgb, "
-                            "right_rgb (D455, 90 deg) are selectable policy cameras",
+                            "right_rgb (D455, 90 deg) are policy cameras, on by default",
             "task": f"{self.config.preset}/{self.config.task} seed {self.config.seed}, glides {self.config.glides}, "
                     f"contents {self.config.contents}",
             "clock": "One tick = 0.5 ms (MuJoCo rigid step); joint-target actions give ticks, others duration_s",

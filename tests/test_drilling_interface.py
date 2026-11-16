@@ -288,10 +288,11 @@ class CameraLabelAfterResetTest(unittest.TestCase):
             self.assertEqual(caps, policy)
             self.assertEqual(caps, seen)
             return caps
-        self.assertEqual(mounts(), {"station_rgb": "cart_rear_mast", "overview_rgb": "ceiling_corner"})
+        wrists = {"left_wrist_rgb": "link7_d405_envelope", "right_wrist_rgb": "link7_d405_envelope"}
+        self.assertEqual(mounts(), {"station_rgb": "cart_rear_mast", "overview_rgb": "ceiling_corner", **wrists})
         floor = b.min_command_s
         b.reset(options={"preset": "bench", "task": "take-drill"})
-        self.assertEqual(mounts(), {"station_rgb": "bench_fixed", "overview_rgb": "ceiling_corner"})
+        self.assertEqual(mounts(), {"station_rgb": "bench_fixed", "overview_rgb": "ceiling_corner", **wrists})
         self.assertEqual(b.capabilities.notes["task"], "bench/take-drill seed 0")
         self.assertEqual(b.min_command_s, floor)                             # same cameras, same floor
         self.assertTrue(b.capabilities.notes["min_command_s"].startswith(f"{floor:g}:"))

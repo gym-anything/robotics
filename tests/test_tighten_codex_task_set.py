@@ -68,6 +68,7 @@ def fake(env_class, task, seed=0, start=False):
     env.items.update(rail=0, bracket=1, sensor=2, flag=3, flag_joint=9, flag_center_z_m=1.083)
     env.model = SimpleNamespace(joint_q_start=Arr([0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]))
     env.builder = SimpleNamespace(joint_label=["horizontal_profile_slot_travel"])
+    env.wrist_cameras = {"left_wrist_rgb": {}, "right_wrist_rgb": {}}     # every arm's D405
     env._bracket_origin = np.array([.013, .095, 1.075])
     body = np.array([[.14, .1, 1.0955, 0, 0, 0, 1], [*env._bracket_origin, 0, 0, 0, 1],
                      [.2655, .08, 1.088, 0, 0, 0, 1], [.2655 + flag_home(env.config), -.063, .934, 0, 0, 0, 1]])
@@ -441,7 +442,7 @@ def test_checkpoint_restores_original_progress_baseline(env_class):
     env.restore(arrays, meta)
 
 
-def test_checkpoint_restores_only_into_its_wrist_camera_selection(env_class):
+def test_checkpoint_restores_only_into_a_scene_with_the_same_d405s(env_class):
     env = fake(env_class, "front-m4")
     env.lock = __import__("threading").RLock()
     env.state.body_qd = Arr(np.zeros((4, 6)))
@@ -460,19 +461,19 @@ def test_checkpoint_restores_only_into_its_wrist_camera_selection(env_class):
     env._map_friction_rows = lambda: None
     env._setup_arm_motion = lambda *args: None
     env.get_state = lambda: env.evaluation
-    plain_arrays, plain_meta = env.checkpoint()
-    # Without a wrist camera the checkpoint carries no camera field, as before.
-    assert "wrist_cameras" not in plain_meta
-    env.wrist_cameras = {"right_wrist_rgb": {}}     # the D405 adds mass to the arm: another scene
-    with pytest.raises(ValueError):
-        env.restore(plain_arrays, plain_meta)
     arrays, meta = env.checkpoint()
-    assert meta["wrist_cameras"] == ["right_wrist_rgb"]
+    # The checkpoint names the arms that carry a D405 (every arm of the scene).
+    assert meta["wrist_cameras"] == ["left_wrist_rgb", "right_wrist_rgb"]
     env.restore(arrays, meta)
-    del env.wrist_cameras
-    with pytest.raises(ValueError):
-        env.restore(arrays, meta)
-    env.restore(plain_arrays, plain_meta)
+    # A scene without a D405 on some arm, or on any, is another scene: the D405 adds mass to the arm.
+    for cameras in (["right_wrist_rgb"], None):
+        other = dict(meta)
+        if cameras is None:
+            del other["wrist_cameras"]
+        else:
+            other["wrist_cameras"] = cameras
+        with pytest.raises(ValueError, match="different scene configuration"):
+            env.restore(arrays, other)
 
 
 def test_public_policy_instruction_uses_selected_contract_without_leaking_truth():

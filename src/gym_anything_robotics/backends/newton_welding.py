@@ -9,11 +9,12 @@ bounded idle retention).
 Owner-side extras: a per-physics-tick trace of every action (welding/trace.py; GAR's /v1/history/{id}/trace) and the
 frozen variation catalogue (welding/variations.py; /v1/variations, variation_id at launch or reset).
 
-Policy cameras (backend option cameras, default ['bench']): the cell's 'bench', 'side' and 'weld_camera' on every
-deployment, and the robot cameras the deployment's robots carry (ROBOT_CAMERAS): each FR3 or Panda arm's wrist D405,
-'<arm>_wrist_rgb' with the arm named as its rig names it (ur10e-fr3: left_wrist_rgb; dual-fr3 and dual-panda: both;
-single-fr3: right_wrist_rgb), and the G1's head D435, 'head_rgb' (g1); a UR10e carries no camera. A selected wrist
-camera adds the D405's case and bracket to its arm (welding/scene.py); a session without one builds the bare arms.
+Policy cameras (backend option cameras; default: 'bench' and the deployment's robot cameras, default_cameras): the
+cell's 'bench', 'side' and 'weld_camera' on every deployment, and the robot cameras the deployment's robots carry
+(ROBOT_CAMERAS): each FR3 or Panda arm's wrist D405, '<arm>_wrist_rgb' with the arm named as its rig names it
+(ur10e-fr3: left_wrist_rgb; dual-fr3 and dual-panda: both; single-fr3: right_wrist_rgb), and the G1's head D435,
+'head_rgb' (g1); a UR10e carries no camera. Every FR3 and Panda arm carries its D405's case and bracket
+(welding/scene.py) whichever cameras the session selects.
 
 State and evaluation: GAR reads the state before and after every command (its action history) and for the command's
 result and observation; the backend reads WeldingEnv's state once per tick and runs the task evaluator only on demand
@@ -160,7 +161,7 @@ def _wall_time_note(f):
         f"Measured through gar run + HTTP with the policy key on the shared RTX 5090 while {f['load']} "
         f"(physics {f['physics_hash']}: fillet-2f on ur10e-fr3, arc on along the seam). Every request pays a fixed "
         f"cost, mostly the observation's images (all requested cameras are rendered in one request): an observation alone "
-        f"{f['one_observation_s']} s with the default 'bench' camera, {f['three_observation_s']} s with 'bench', 'side' "
+        f"{f['one_observation_s']} s with the 'bench' camera alone, {f['three_observation_s']} s with 'bench', 'side' "
         f"and 'weld_camera'; a command's fixed cost {f['one_fixed_s']} s and {f['three_fixed_s']} s. On top of it each "
         f"simulated second cost {f['physics_arc_on']} wall s with the arc burning, {f['physics_arc_off']} with the arc "
         f"off on the warm coupon (the fit's slope: the physics; other jobs on the GPU slow it as well as the renders). "
@@ -273,6 +274,12 @@ def robot_cameras(robot):
     return tuple(c for c in ROBOT_CAMERAS if c in offered)
 
 
+def default_cameras(robot):
+    """The cameras a session renders when its launch names none: the cell's 'bench' and the deployment's robot cameras
+    (robot_cameras)."""
+    return ("bench",) + robot_cameras(robot)
+
+
 def _robot_camera_refusal(robot, refused, offered):
     """Why a deployment refuses robot cameras it does not carry (UnsupportedConfigurationError text)."""
     from robots.catalog import for_environment
@@ -340,7 +347,7 @@ def check_options(robot="ur10e-fr3", **options):
                 else "")
         raise UnsupportedConfigurationError(f"Unknown welding backend option(s) {unknown}; options: "
                                             f"{', '.join(BACKEND_OPTIONS)}{hint}")
-    o = dict(preset=None, task=None, seed=None, device=None, config=None, cameras=("bench",), renderer_options=None,
+    o = dict(preset=None, task=None, seed=None, device=None, config=None, cameras=None, renderer_options=None,
              variation_id=None, trace=True, trace_bytes=None, state_evaluation=False)
     o.update(options)
     robot = _check_robot(robot)
@@ -370,7 +377,7 @@ def check_options(robot="ur10e-fr3", **options):
     seed = o["seed"]
     if seed is not None and (isinstance(seed, bool) or not isinstance(seed, int)):
         raise ValueError("seed must be an integer")
-    cams = o["cameras"]
+    cams = default_cameras(robot) if o["cameras"] is None else o["cameras"]
     if isinstance(cams, str) or not isinstance(cams, (list, tuple)) or not all(isinstance(c, str) for c in cams):
         raise ValueError(f"cameras must be a list of policy camera names {POLICY_CAMERAS}")
     cameras = tuple(cams)
@@ -421,7 +428,7 @@ class _WeldingPolicyAccess(PolicyAccess):
 
 class NewtonWeldingBackend(RoboticsBackend):
     def __init__(self, *, robot="ur10e-fr3", preset=None, task=None, seed=None, device=None, config=None,
-                 cameras=("bench",), output_dir=None, renderer_options=None, variation_id=None, trace=True,
+                 cameras=None, output_dir=None, renderer_options=None, variation_id=None, trace=True,
                  trace_bytes=None, state_evaluation=False):
         robot, chosen, self.variation, values, self.cameras, self.options = check_options(
             robot, preset=preset, task=task, seed=seed, device=device, config=config, cameras=cameras,
@@ -460,7 +467,8 @@ class NewtonWeldingBackend(RoboticsBackend):
         from welding.humanoid import HEAD_CAMERA
         from welding.scene import D405
         self.camera_specs = {}
-        for name in POLICY_CAMERAS + robot_cameras(robot):
+        self.robot_cameras = robot_cameras(robot)
+        for name in POLICY_CAMERAS + self.robot_cameras:
             fov = float(LY.WELD_CAMERA["hfov"] if name == "weld_camera" else D405["hfov"] if name.endswith("_wrist_rgb")
                         else HEAD_CAMERA["hfov_deg"] if name == "head_rgb" else LY.CAMERAS[name]["hfov"])
             focal = .018/math.tan(math.radians(fov/2))
@@ -518,7 +526,8 @@ class NewtonWeldingBackend(RoboticsBackend):
                                                                     "option state_evaluation=true adds it)")),
                 "cameras": "Ideal pinhole RGB rendered by Isaac RTX from the simulated state; the weld camera uses a "
                            "process-camera exposure (welding filter) and sees the arc and pool; no depth or noise" +
-                           "".join(f"; {self._robot_camera_note(n)}" for n in self.cameras if n in ROBOT_CAMERAS),
+                           "".join(f"; {self._robot_camera_note(n)}" for n in self.cameras if n in ROBOT_CAMERAS) +
+                           self._wrist_d405_note(),
                 "render_worker": (f"The images come from an Isaac render worker started with the session's first "
                                   f"observation (10-13 s) and kept warm {self._idle_release_s():g} s after each "
                                   f"request (renderer_options idle_release_s, default {IDLE_RELEASE_S:g}; 0 releases it "
@@ -542,20 +551,27 @@ class NewtonWeldingBackend(RoboticsBackend):
         arm = name[:-len("_wrist_rgb")]
         model = MODEL_NAMES.get(self.env.world.scene.arm_hw[arm]["model"], "Franka")
         return (f"{name}: an Intel RealSense D405 on the {arm} {model}'s link7 (Franka wrist mount), 87 deg HFOV, "
-                f"ideal pinhole, looking along the {'torch' if arm == self.torch_arm else 'hand'}; selecting it adds "
-                f"the D405's 60 g case and its 10 g bracket to the arm as collision geometry")
+                f"ideal pinhole, looking along the {'torch' if arm == self.torch_arm else 'hand'}")
+
+    def _wrist_d405_note(self):
+        """The capability text of the wrist D405s the deployment's FR3 and Panda arms carry, selected or not (empty
+        without such an arm)."""
+        from welding.scene import D405
+        arms = [c[:-len("_wrist_rgb")] for c in self.robot_cameras if c.endswith("_wrist_rgb")]
+        if not arms:
+            return ""
+        return (f"; each FR3 or Panda arm ({', '.join(arms)}) carries its wrist D405, the "
+                f"{D405['case'][2]*1e3:g} g case and the {D405['bracket'][2]*1e3:g} g bracket on link7 as collision "
+                f"geometry, whether or not its camera is selected")
 
     # ------------------------------------------------------------------ lifecycle
     def _make_env(self, config, variation):
         """The environment for a configuration, with the task's start preset (welding/presets.py) and then a catalogue
-        variation's initial conditions applied before tick 0. The selected robot cameras go to the world: a wrist camera
-        installs its D405 on the arm (welding/scene.py)."""
+        variation's initial conditions applied before tick 0."""
         from welding.env import WeldingEnv
         from welding import variations as VR
         from welding.presets import apply_start_preset
-        mounted = tuple(c for c in getattr(self, "cameras", ()) if c in ROBOT_CAMERAS)
-        extra = {"robot_cameras": mounted} if mounted else {}      # none selected: the environment's own default
-        env = WeldingEnv(config, output_dir=self.output, **extra)
+        env = WeldingEnv(config, output_dir=self.output)
         apply_start_preset(env)
         if variation is not None:
             VR.apply_initial(env, variation)
@@ -1038,7 +1054,7 @@ class NewtonWeldingBackend(RoboticsBackend):
 
     def render(self, *, label="interactive"):
         name = "hero" if label in ("interactive", "http") else label
-        valid = POLICY_CAMERAS + DIAGNOSTIC + tuple(c for c in self.cameras if c in ROBOT_CAMERAS)
+        valid = POLICY_CAMERAS + DIAGNOSTIC + self.robot_cameras
         if name not in valid:
             raise ValueError(f"Render label must be one of {valid}")
         return self._render((name,))[name]
